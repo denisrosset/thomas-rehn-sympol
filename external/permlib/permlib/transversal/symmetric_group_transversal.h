@@ -49,28 +49,28 @@ class SymmetricGroupTransversal {
 		 * @param sg group
 		 * @param basePos position of the element in the group base that this transversal belongs to
 		 */
-		SymmetricGroupTransversal(const SymmetricGroup<PERM>* sg, unsigned int basePos) : symmetricGroup(sg), basePos(basePos) {}
+		SymmetricGroupTransversal(const SymmetricGroup<PERM>* sg, unsigned int basePos) : symmetricGroup(sg), m_basePos(basePos) {}
 		
 		/// computes a transversal element on demand if one exists
 		PERM* at(unsigned long val) const {
-			for (unsigned int i=0; i<basePos; ++i) {
+			for (unsigned int i=0; i<m_basePos; ++i) {
 				if ((symmetricGroup->B)[i] == val)
 					return 0;
 			}
 			
 			PERM* p = new PERM(symmetricGroup->B.size());
-			p->setTransposition((symmetricGroup->B)[basePos],val);
+			p->setTransposition((symmetricGroup->B)[m_basePos],val);
 			return p;
 		}
 
 		/// size of basic orbit / transversal
-		unsigned int size() const { return symmetricGroup->n - basePos; }
+		unsigned int size() const { return symmetricGroup->n - m_basePos; }
 		
-		boost::counting_iterator<unsigned int> begin() const { return boost::counting_iterator<int>(0); };
-		boost::counting_iterator<unsigned int> end() const { return boost::counting_iterator<int>(symmetricGroup->n-basePos ); };
+		boost::counting_iterator<unsigned int> begin() const { return boost::counting_iterator<unsigned int>(0); };
+		boost::counting_iterator<unsigned int> end() const { return boost::counting_iterator<unsigned int>(symmetricGroup->n-m_basePos ); };
 	private:
 		const SymmetricGroup<PERM>* symmetricGroup;
-		unsigned int basePos;
+		unsigned int m_basePos;
 };
 
 }

@@ -2,7 +2,7 @@
 //
 // This file is part of SymPol
 //
-// Copyright (C) 2006-2010  Thomas Rehn <thomas@carmen76.de>
+// Copyright (C) 2006-2012  Thomas Rehn <thomas@carmen76.de>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -20,28 +20,24 @@
 //
 // ---------------------------------------------------------------------------
 
-#include "common.h"
-#include "polyhedron.h"
-#include "config.h"
-#include "yal/logger.h"
+#include "../common.h"
+#include "../polyhedron.h"
 
 #include <boost/shared_ptr.hpp>
 
-#ifndef SYMPOL_AUTOMORPHISMCOMPUTATION_H_
-#define SYMPOL_AUTOMORPHISMCOMPUTATION_H_
+#ifndef SYMPOL_GRAPHCONSTRUCTION_H_
+#define SYMPOL_GRAPHCONSTRUCTION_H_
 
 namespace sympol {
 
-class AutomorphismComputation {
+class MatrixConstruction;
+	
+class GraphConstruction {
 public:
-	static boost::shared_ptr<PermutationGroup> computeRestrictedIsomorphisms(const Polyhedron& poly);
-#if HAVE_NAUTY && HAVE_NTL
-	static boost::shared_ptr<PermutationGroup> computeRestrictedIsomorphismsNauty(const Polyhedron& poly);
-#endif
-private:
-	static yal::LoggerPtr logger;
+	virtual ~GraphConstruction() {}
+	virtual boost::shared_ptr<PermutationGroup> compute(const MatrixConstruction* matrix) const = 0;
 };
 
-}
+} // end NS
 
-#endif // AUTOMORPHISMCOMPUTATION_H_
+#endif // SYMPOL_GRAPHCONSTRUCTION_H_

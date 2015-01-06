@@ -37,7 +37,7 @@
 
 namespace permlib {
 
-namespace exports { class BSGSSchreierExport; class BSGSSchreierImport; }
+namespace exports { struct BSGSSchreierExport; struct BSGSSchreierImport; }
 
 /// Transversal class that stores transversal elements in a Schreier tree
 template <class PERM>
@@ -63,8 +63,8 @@ public:
 protected:
     virtual void registerMove(unsigned long from, unsigned long to, const typename PERM::ptr &p);
 	
-	friend class permlib::exports::BSGSSchreierExport;
-	friend class permlib::exports::BSGSSchreierImport;
+	friend struct permlib::exports::BSGSSchreierExport;
+	friend struct permlib::exports::BSGSSchreierImport;
 };
 
 //

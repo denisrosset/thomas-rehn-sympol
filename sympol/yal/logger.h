@@ -29,6 +29,7 @@
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <ostream>
+#include <sstream>
 #include <iomanip>
 
 namespace yal {

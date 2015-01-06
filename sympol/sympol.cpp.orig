@@ -25,7 +25,7 @@
 #include "polyhedronio.h"
 #include "raycomputationlrs.h"
 #include "raycomputationcdd.h"
-#include "symmetrygroupconstruction/computesymmetries.h"
+#include "automorphismcomputation.h"
 #include "recursionstrategy.h"
 #include "recursionstrategyidmadm.h"
 #include "recursionstrategyidmadmlevel.h"
@@ -35,10 +35,11 @@
 #include "symmetrycomputationidm.h"
 #include "yal/logger.h"
 #include "yal/usagestats.h"
+#include "config.h"
 
 // PermLib
 #include <permlib/version.h>
-#include <permlib/permlib_api.h>
+#include <permlib/construct/schreier_sims_construction.h>
 
 #include <csignal>
 #include <string>
@@ -63,7 +64,7 @@ void stats(int param) {
 }
 #endif //SIGUSR1
 
-void print_group(const boost::shared_ptr<sympol::PermutationGroup>& pg) {
+void print_group(const boost::shared_ptr<PermutationGroup>& pg) {
 	cout << pg->S.size() << endl;
 	BOOST_FOREACH( const Permutation::ptr &p, pg->S ) {
 		ostringstream ssPerm;
@@ -87,14 +88,10 @@ uint correct_id(uint id, uint apexIndex) {
 	return (id > apexIndex) ? (id - 1) : id;
 }
 
-
 int main(int argc, char* argv[]) {
-	std::cout << "SymPol " << SYMPOL_VERSION << " and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
-#if HAVE_BLISS
-	std::cout << " and bliss";
-#endif
-#if HAVE_EIGEN
-	std::cout << " and Eigen";
+	std::cout << "SymPol v0.1.5a and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
+#if HAVE_NAUTY && HAVE_NTL
+	std::cout << " and nauty and NTL";
 #endif
 	std::cout << std::endl;
 	
@@ -120,12 +117,8 @@ int main(int argc, char* argv[]) {
 		("input-file,i", po::value<string>(), "input file  (.ine or .ext)")
 		("automorphisms-only", "compute only restricted automorphisms and then exit")
 		("no-automorphisms", "ignores given symmetry group and does not attempt to compute restricted automorphisms")
-#if HAVE_BLISS
-		("bliss", "use bliss graph automorphism tool to compute restricted automorphisms (default)")
-		("permlibmatrix", "use PermLib matrix automorphism search to compute restricted automorphisms")
-#endif
-#if HAVE_EIGEN
-		("eigen", "use floating point arithmetic based on Eigen to compute restricted automorphisms")
+#if HAVE_NAUTY && HAVE_NTL
+		("nauty", "use nauty graph isomorphism tool and NTL to compute restricted isomorphisms")
 #endif
 		("estimation-only,e", "compute only LRS estimation and then exit")
 		("direct,d", "compute dual description directly")
@@ -195,9 +188,6 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 	
-	YALLOG_INFO(logger, "usage after reading the polytope:");
-	logger->logUsageStats();
-
 	const bool bTimeMeasurement = vm.count("time") > 0;
 	double timeVal = 0.0;
 	if (bTimeMeasurement) {
@@ -213,31 +203,26 @@ int main(int argc, char* argv[]) {
 	
 	rayComp->initialize();
 	
-	boost::shared_ptr<sympol::PermutationGroup> pg;
-	if (vm.count("permlibmatrix") && vm.count("bliss")) {
-		YALLOG_ERROR(logger, "multiple automorphism tools selected");
-		return 1;
-	}
-	
-	// use bliss as default if it is available
-	bool useBliss = false;
-#if HAVE_BLISS
-	if (!vm.count("permlibmatrix") || vm.count("bliss"))
-		useBliss = true;
-#endif
-	
-	ComputeSymmetries computeSymmetries(useBliss, vm.count("eigen"));
+	boost::shared_ptr<PermutationGroup> pg;
 	if (!vm.count("no-automorphisms")) {
 		if (groupGenerators.empty()) {
-			pg = computeSymmetries.compute(*poly);
+#if HAVE_NAUTY
+			if (vm.count("nauty"))
+				pg = AutomorphismComputation::computeRestrictedIsomorphismsNauty(*poly);
+#endif
+			if (!pg)
+				pg = AutomorphismComputation::computeRestrictedIsomorphisms(*poly);
 		} else {
 			YALLOG_INFO(logger, "input file contains group generators; skip automorphism search");
-			pg = permlib::construct(poly->realRowNumber(), groupGenerators.begin(), groupGenerators.end(), groupBase.begin(), groupBase.end());
-			YALLOG_INFO(logger, "input group has order " << pg->order<mpz_class>());
+			SchreierSimsConstruction<PERM, TRANSVERSAL> ssc(poly->realRowNumber());
+			pg = boost::shared_ptr<PermutationGroup>(new PermutationGroup(
+				ssc.construct(groupGenerators.begin(), groupGenerators.end(), groupBase.begin(), groupBase.end())
+			));
+			YALLOG_INFO(logger, "input group has order " << pg->order());
 		}
 	} else {
 		YALLOG_INFO(logger, "computation with empty symmetry group");
-		pg = boost::shared_ptr<sympol::PermutationGroup>(new sympol::PermutationGroup(poly->realRowNumber()));
+		pg = boost::shared_ptr<PermutationGroup>(new PermutationGroup(poly->realRowNumber()));
 	}
 	
 	BOOST_ASSERT( pg );
@@ -245,12 +230,12 @@ int main(int argc, char* argv[]) {
 	if (vm.count("automorphisms-only")) {
 		if (yal::ReportLevel::get() >= yal::DEBUG3) {
 			cout << "transversal sizes for Aut(P) " << endl;
-			BOOST_FOREACH( const sympol::TRANSVERSAL &u, pg->U ) {
+			BOOST_FOREACH( const TRANSVERSAL &u, pg->U ) {
 				cout << u.size() << " * ";
 			}
 			cout << endl;
 		}
-		cout << "generators for Aut(P) of order " << pg->order<mpz_class>() << ":" << endl;
+		cout << "generators for Aut(P) of order " << pg->order() << ":" << endl;
 		BOOST_FOREACH( const Permutation::ptr &p, pg->S ) {
 			cout << " " << *p << endl;
 		}
@@ -340,7 +325,7 @@ int main(int argc, char* argv[]) {
 					PolyhedronIO::write(row, poly->homogenized(), cout);
 				}
 				PolyhedronIO::write(rd, poly->homogenized(), cout);
-				cout << "end" << endl << "permutation group" << endl << "* order " << pg->order<mpz_class>() << endl << "* w.r.t. to the original inequalities/vertices" << endl;
+				cout << "end" << endl << "permutation group" << endl << "* order " << pg->order() << endl << "* w.r.t. to the original inequalities/vertices" << endl;
 				print_group(pg);
 
 				if (withAdjacencies) {

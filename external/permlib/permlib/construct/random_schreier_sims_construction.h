@@ -121,7 +121,7 @@ BSGS<PERM, TRANS> RandomSchreierSimsConstruction<PERM, TRANS, Integer>
 	std::vector<dom_int> &B = ret.B;
 	std::vector<TRANS> &U = ret.U;
 	std::vector<std::list<typename PERM::ptr> > S;
-	setup(generatorsBegin, generatorsEnd, prescribedBaseBegin, prescribedBaseEnd, ret, S);
+	this->setup(generatorsBegin, generatorsEnd, prescribedBaseBegin, prescribedBaseEnd, ret, S);
 	
 	unsigned int consecutiveSiftingElementCount = m_minimalConsecutiveSiftingElementCount;
 	if (m_knownOrder > 0) {
@@ -162,7 +162,7 @@ BSGS<PERM, TRANS> RandomSchreierSimsConstruction<PERM, TRANS, Integer>
 			break;
 	}
 	
-	mergeGenerators(S, ret);
+	this->mergeGenerators(S, ret);
 	
 	// convenience check of group order
 	guaranteedBSGS = ret.template order<Integer>() == m_knownOrder;

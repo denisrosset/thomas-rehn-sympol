@@ -24,7 +24,6 @@
 #define SYMPOL_FACESUPTOSYMMETRYLIST_H_
 
 #include "configuration.h"
-#include "config.h"
 #include "qarray.h"
 #include "facewithdata.h"
 #include "yal/logger.h"

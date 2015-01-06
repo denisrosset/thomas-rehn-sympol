@@ -207,7 +207,7 @@ template<class BSGSIN,class TRANSRET>
 void RBase<BSGSIN,TRANSRET>::search(BSGS<PERM,TRANSRET> &groupK) {
 	BOOST_ASSERT( this->m_pred != 0 );
 	
-	setupEmptySubgroup(groupK);
+	this->setupEmptySubgroup(groupK);
 	
 	unsigned int completed = partitions.size();
 	BSGS<PERM,TRANSRET> groupL(groupK);
@@ -241,7 +241,7 @@ unsigned int RBase<BSGSIN,TRANSRET>::search(PartitionIt pIt, Partition &pi, cons
 
 	if (pIt == partitions.end() || this->checkLeaf(level)) {
 		PERMLIB_DEBUG(std::cout << "LEAF: " << pi << " with t = " << t << std::endl;)
-		return processLeaf(t, level, backtrackLevel, completed, groupK, groupL);
+		return this->processLeaf(t, level, backtrackLevel, completed, groupK, groupL);
 	}
 	
 	const Partition& sigma = *((*pIt).first);
@@ -321,7 +321,7 @@ unsigned int RBase<BSGSIN,TRANSRET>::search(PartitionIt pIt, Partition &pi, cons
 			}
 		}
 		if (this->m_pruningLevelDCM && isBacktrack) {
-			if (pruneDCM(tG, backtrackLevel, groupK, groupL)) {
+			if (this->pruneDCM(tG, backtrackLevel, groupK, groupL)) {
 				++this->m_statNodesPrunedCosetMinimality2;
 				ref2->undo(pi, strictRefinement);
 				continue;

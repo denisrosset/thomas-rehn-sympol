@@ -85,7 +85,7 @@ unsigned int ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,T
 	while (baseBegin != baseEnd && baseTargetPos < bsgs.B.size()) {
 		const unsigned long alpha = cInv.at(*baseBegin);
 		const unsigned long beta = bsgs.B[baseTargetPos];
-		const bool redundant = skipRedundant && isRedundant(bsgs, baseTargetPos, alpha);
+		const bool redundant = skipRedundant && this->isRedundant(bsgs, baseTargetPos, alpha);
 		
 		if (!redundant && beta != alpha) {
 			boost::scoped_ptr<PERM> r(bsgs.U[baseTargetPos].at(alpha));

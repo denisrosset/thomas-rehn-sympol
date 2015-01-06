@@ -60,6 +60,8 @@ class QArray {
 
 		QArray& operator=(const QArray& a);    
 		QArray& operator+=(const QArray& a);
+		
+		bool operator<(const QArray& a) const;
 
 		friend std::istream & operator>>(std::istream & is, sympol::QArray & q);
 		friend std::ostream & operator<<(std::ostream & os, const sympol::QArray & q);

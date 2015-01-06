@@ -96,7 +96,7 @@ template <class BSGSIN, class TRANSRET>
 void BacktrackSearch<BSGSIN,TRANSRET>::search(BSGS<PERM,TRANSRET> &groupK) {
 	BOOST_ASSERT(this->m_pred != 0);
 	
-	setupEmptySubgroup(groupK);
+	this->setupEmptySubgroup(groupK);
 	
 	this->m_order = BaseSorterByReference::createOrder(this->m_bsgs.n, this->m_bsgs.B.begin(), this->m_bsgs.B.end());
 	this->m_sorter.reset(new BaseSorterByReference(this->m_order));
@@ -112,8 +112,8 @@ template <class BSGSIN, class TRANSRET>
 typename BaseSearch<BSGSIN,TRANSRET>::PERM::ptr BacktrackSearch<BSGSIN,TRANSRET>::searchCosetRepresentative(BSGS<PERM,TRANSRET> &groupK, BSGS<PERM,TRANSRET> &groupL) {
 	BOOST_ASSERT(this->m_pred != 0);
 		
-	setupEmptySubgroup(groupK);
-	setupEmptySubgroup(groupL);
+	this->setupEmptySubgroup(groupK);
+	this->setupEmptySubgroup(groupL);
 	
 	this->m_order = BaseSorterByReference::createOrder(this->m_bsgs.n, this->m_bsgs.B.begin(), this->m_bsgs.B.end());
 	this->m_sorter.reset(new BaseSorterByReference(this->m_order));
@@ -134,7 +134,7 @@ unsigned int BacktrackSearch<BSGSIN,TRANSRET>::search(const PERM& g, unsigned in
 
 	if (level == B.size() || this->checkLeaf(level)) {
 		PERMLIB_DEBUG(std::cout << "limit reached for " << g << " // " << (*this->m_pred)(g) << std::endl;)
-		return processLeaf(g, level, level, completed, groupK, groupL);
+		return this->processLeaf(g, level, level, completed, groupK, groupL);
 	}
 
 
@@ -166,7 +166,7 @@ unsigned int BacktrackSearch<BSGSIN,TRANSRET>::search(const PERM& g, unsigned in
 				break;
 			continue;
 		}
-		if (this->m_pruningLevelDCM && pruneDCM(*u_beta_ptr, level, groupK, groupL)) {
+		if (this->m_pruningLevelDCM && this->pruneDCM(*u_beta_ptr, level, groupK, groupL)) {
 			++this->m_statNodesPrunedCosetMinimality2;
 			continue;
 		}

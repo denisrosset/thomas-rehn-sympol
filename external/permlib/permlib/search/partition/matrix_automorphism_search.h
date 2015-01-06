@@ -54,13 +54,21 @@ public:
 	 */
 	MatrixAutomorphismSearch(const BSGSIN& bsgs, unsigned int pruningLevelDCM);
 	
+	/// initializes search with inital partition
+	/**
+	 * @param matrix symmetric matrix
+	 * @param initialPartitionBegin begin-iterator to initial list of row/column indices that have to be mapped onto each other
+	 * @param initialPartitionEnd   end-iterator to initial list of row/column indices that have to be mapped onto each other
+	 */
+	template<class MATRIX, class Iterator>
+	void construct(const MATRIX& matrix, Iterator initialPartitionBegin, Iterator initialPartitionEnd);
+	
 	/// initializes search
 	/**
 	 * @param matrix symmetric matrix
-	 * @param initialPartition initial list of row/column indices that have to be mapped onto each other, may be NULL
 	 */
 	template<class MATRIX>
-	void construct(const MATRIX& matrix, const std::list<unsigned long>* initialPartition = 0);
+	void construct(const MATRIX& matrix) { construct<MATRIX, unsigned int*>(matrix, 0, 0); }
 };
 
 template<class BSGSIN,class TRANSRET>
@@ -69,14 +77,14 @@ MatrixAutomorphismSearch<BSGSIN,TRANSRET>::MatrixAutomorphismSearch(const BSGSIN
 { }
 
 template<class BSGSIN,class TRANSRET>
-template<class MATRIX>
-void MatrixAutomorphismSearch<BSGSIN,TRANSRET>::construct(const MATRIX& matrix, const std::list<unsigned long>* initialPartition) {
+template<class MATRIX, class Iterator>
+void MatrixAutomorphismSearch<BSGSIN,TRANSRET>::construct(const MATRIX& matrix, Iterator initialPartitionBegin, Iterator initialPartitionEnd) {
 	MatrixAutomorphismPredicate<PERM,MATRIX>* matrixPred = new MatrixAutomorphismPredicate<PERM,MATRIX>(matrix);
 	
-	if (initialPartition) {
+	if (initialPartitionBegin != initialPartitionEnd) {
 		// set up partitions such that the elements of initialPartition will be mapped onto itself
-		RBase<BSGSIN,TRANSRET>::m_partition.intersect(initialPartition->begin(), initialPartition->end(), 0);
-		RBase<BSGSIN,TRANSRET>::m_partition2.intersect(initialPartition->begin(), initialPartition->end(), 0);
+		RBase<BSGSIN,TRANSRET>::m_partition.intersect(initialPartitionBegin, initialPartitionEnd, 0);
+		RBase<BSGSIN,TRANSRET>::m_partition2.intersect(initialPartitionBegin, initialPartitionEnd, 0);
 	}
 	
 	MatrixRefinement1<PERM,MATRIX> matRef(RBase<BSGSIN,TRANSRET>::m_bsgs.n, matrix);

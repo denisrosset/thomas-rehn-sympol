@@ -71,7 +71,7 @@ void SimpleBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &bsgs, 
     while (baseBegin != baseEnd && baseTargetPos < bsgs.B.size()) {
 		unsigned long alpha = *baseBegin;
 		unsigned long beta = bsgs.B[baseTargetPos];
-		const bool redundant = skipRedundant && isRedundant(bsgs, baseTargetPos, alpha);
+		const bool redundant = skipRedundant && this->isRedundant(bsgs, baseTargetPos, alpha);
 		
 		if (!redundant && beta != alpha) {
 			unsigned int pos = bsgs.insertRedundantBasePoint(alpha);

@@ -2,7 +2,7 @@
 //
 // This file is part of SymPol
 //
-// Copyright (C) 2006-2010  Thomas Rehn <thomas@carmen76.de>
+// Copyright (C) 2006-2012  Thomas Rehn <thomas@carmen76.de>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -20,43 +20,21 @@
 //
 // ---------------------------------------------------------------------------
 
-#ifndef SYMPOL_COMMON_H_
-#define SYMPOL_COMMON_H_
+#include "graphconstruction.h"
 
-#include <boost/dynamic_bitset.hpp>
-#include <set>
-#include <map>
-#include <iostream>
+#ifndef SYMPOL_GRAPHCONSTRUCTIONBLISS_H_
+#define SYMPOL_GRAPHCONSTRUCTIONBLISS_H_
 
-#include "config.h"
-#include "types.h"
-
-#include <permlib/permutation.h>
-//#include <permlib/transversal/explicit_transversal.h>
-#include <permlib/transversal/schreier_tree_transversal.h>
-#include <permlib/bsgs.h>
+#if HAVE_BLISS
 
 namespace sympol {
 
-typedef boost::dynamic_bitset<> Face;
-typedef permlib::Permutation PERM;
-//typedef permlib::ExplicitTransversal<PERM> TRANSVERSAL;
-typedef permlib::SchreierTreeTransversal<PERM> TRANSVERSAL;
-typedef permlib::BSGS<PERM,TRANSVERSAL> PermutationGroup;
-
-struct FaceAction {
-	Face operator()(const PERM &p, const Face &f) const {
-		Face ret(f.size());
-		for (uint i = 0; i < f.size(); ++i) {
-			if (f[i])
-				ret.set(p / i, 1);
-		}
-		return ret;
-	}
+class GraphConstructionBliss : public GraphConstruction {
+public:
+	virtual boost::shared_ptr<PermutationGroup> compute(const MatrixConstruction* matrix) const;
 };
 
-enum SymmetryComputationMethod { DIRECT, ADM, IDM };
+} // end NS
 
-}
-
-#endif // COMMON_H_
+#endif // HAVE_BLISS
+#endif // SYMPOL_GRAPHCONSTRUCTIONBLISS_H_

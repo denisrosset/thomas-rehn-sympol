@@ -27,6 +27,7 @@
 
 #include <algorithm>		// for std::min
 #include <list>
+#include <set>
 #include <boost/foreach.hpp>
 #include <boost/assert.hpp>
 
@@ -113,27 +114,24 @@ inline void Rank<Matrix>::rowReducedEchelonForm(bool rankOnly, InsertIterator fr
 
 	const ulong maxRank = std::min(m_matrix->cols(), m_matrix->rows());
 	ulong rank = 0;
-	ulong freeV = 0;
+	uint k = 0;
 	const ulong m = m_matrix->rows();
 	const ulong n = m_matrix->cols();
 	std::vector<ulong> pi(m);
 	for (uint i = 0; i < m; ++i)
 		pi[i] = i;
 
-	for (uint k = 0; k < n; ++k) {
+	for (uint r = 0; r < n; ++r) {
 		typename Matrix::Type p;
 		uint k_prime = 0;
-		for (uint i = k; i < m+freeV; ++i) {
-			if (cmp(abs(at(i-freeV,k)), p) > 0) {
-				p = abs(at(i-freeV,k));
+		for (uint i = k; i < m; ++i) {
+			if (cmp(abs(at(i,r)), p) > 0) {
+				p = abs(at(i,r));
 				k_prime = i;
 			}
 		}
 		if (sgn(p) == 0) {
-			*freeVariablesIt++ = k;
-			if (m_matrix->cols() > m_matrix->rows())
-				// we only need freeV logic if there are more columns than rows
-				++freeV;
+			*freeVariablesIt++ = r;
 			continue;
 		}
 		++rank;
@@ -141,20 +139,21 @@ inline void Rank<Matrix>::rowReducedEchelonForm(bool rankOnly, InsertIterator fr
 			return;
 
 		std::swap(pi[k], pi[k_prime]);
-		for (uint i = 0; i < n; ++i) {
-			std::swap(at(k-freeV,i), at(k_prime-freeV, i));
+		for (uint j = 0; j < n; ++j) {
+			std::swap(at(k,j), at(k_prime, j));
 		}
-		for (uint i = k+1; i < m+freeV; ++i) {
-			at(i-freeV,k) /= at(k-freeV,k);
-			for (uint j = k+1; j < n; ++j) {
-				at(i-freeV,j) -= at(i-freeV,k) * at(k-freeV,j);
+		for (uint i = k+1; i < m; ++i) {
+			at(i,r) /= at(k,r);
+			for (uint j = r+1; j < n; ++j) {
+				at(i,j) -= at(i,k) * at(k,j);
 			}
-			at(i-freeV,k) = 0;
+			at(i,r) = 0;
 		}
-		for (uint i = k+1; i < n; ++i) {
-			at(k-freeV,i) /= at(k-freeV,k);
+		for (uint j = r+1; j < n; ++j) {
+			at(k,j) /= at(k,r);
 		}
-		at(k-freeV,k) = 1;
+		at(k,r) = 1;
+		++k;
 	}
 }
 

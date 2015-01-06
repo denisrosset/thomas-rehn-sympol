@@ -34,8 +34,10 @@
 #define BASECONSTRUCTION_H
 
 #include <map>
+#include <algorithm>
 
 #include <permlib/predicate/pointwise_stabilizer_predicate.h>
+#include <permlib/predicate/identity_predicate.h>
 
 namespace permlib {
 
@@ -90,13 +92,15 @@ void BaseConstruction<PERM,TRANS>::setup(ForwardIterator generatorsBegin, Forwar
 {
 	std::vector<dom_int> &B = bsgs.B;
 	std::vector<TRANS> &U = bsgs.U;
+	
+	std::list<typename PERM::ptr> nonIdentityGenerators;
+	std::remove_copy_if(generatorsBegin, generatorsEnd, std::back_inserter(nonIdentityGenerators), IdentityPredicate<PERM>());
 
 	B.insert(B.begin(), prescribedBaseBegin, prescribedBaseEnd);
 	// extend base so that no group element fixes all base elements
 	dom_int beta = m_n + 1;
 	PointwiseStabilizerPredicate<PERM> stab_k(B.begin(), B.end());
-	for (ForwardIterator genIt = generatorsBegin ; genIt != generatorsEnd; ++genIt) {
-		const typename PERM::ptr &gen = *genIt;
+	BOOST_FOREACH(const typename PERM::ptr &gen, nonIdentityGenerators) {
 		if (stab_k(gen)) {
 			if (bsgs.chooseBaseElement(*gen, beta)) {
 				B.push_back(beta);
@@ -121,7 +125,7 @@ void BaseConstruction<PERM,TRANS>::setup(ForwardIterator generatorsBegin, Forwar
 	std::vector<dom_int>::iterator Bit;
 	for (Bit = B.begin(); Bit != B.end(); ++Bit) {
 		std::list<typename PERM::ptr> S_i;
-		std::copy_if(generatorsBegin, generatorsEnd,
+		std::copy_if(nonIdentityGenerators.begin(), nonIdentityGenerators.end(),
 				std::back_inserter(S_i), PointwiseStabilizerPredicate<PERM>(B.begin(), Bit));
 
 		U.push_back(TRANS(m_n));

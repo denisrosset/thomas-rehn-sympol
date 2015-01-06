@@ -109,8 +109,8 @@ void DadeInvariants<BSGSIN>::invariants(std::list<LinearFormList>& invariantList
 			OrbitSet<PERM, LinearForm> formOrbit;
 			formOrbit.orbit(form, m_bsgs.S, LinearFormAction<PERM>());
 			LinearFormList list;
-			BOOST_FOREACH(const LinearForm& l, std::make_pair(formOrbit.begin(), formOrbit.end())) {
-				list.add(l);
+			BOOST_FOREACH(const LinearForm& lform, std::make_pair(formOrbit.begin(), formOrbit.end())) {
+				list.add(lform);
 			}
 			
 			if (!maximalDegree || list.size() < maximalDegree)

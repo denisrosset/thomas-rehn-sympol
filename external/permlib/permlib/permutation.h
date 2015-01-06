@@ -52,7 +52,7 @@
 
 namespace permlib {
 
-namespace exports { class BSGSSchreierExport; }
+namespace exports { struct BSGSSchreierExport; }
 
 /// Permutation class storing all values explicitly
 class Permutation {
@@ -75,7 +75,7 @@ public:
 	Permutation(const Permutation &p) : m_perm(p.m_perm), m_isIdentity(p.m_isIdentity) {};
 	/// construct from dom_int-iterator  
 	template<class InputIterator>
-	Permutation(InputIterator begin, InputIterator end) : m_perm(begin, end) {}
+	Permutation(InputIterator begin, InputIterator end) : m_perm(begin, end), m_isIdentity(false) {}
 
 	/// permutation multiplication from the right
 	Permutation operator*(const Permutation &p) const;
@@ -156,7 +156,7 @@ protected:
 	/// initializes permutation data from a string in cycle form
 	void initFromCycleString(const std::string& cycles);
 	
-	friend class permlib::exports::BSGSSchreierExport;
+	friend struct permlib::exports::BSGSSchreierExport;
 };
 
 
@@ -171,23 +171,35 @@ inline Permutation::Permutation(dom_int n)
 		m_perm[i] = i;
 }
 
-inline void Permutation::initFromCycleString(const std::string& cycles) {
+inline void Permutation::initFromCycleString(const std::string& cycleString) {
 	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 	boost::char_separator<char> sepCycles(",");
-	tokenizer tokens(cycles, sepCycles);
+	tokenizer tokens(cycleString, sepCycles);
 
 	for (dom_int i=0; i<m_perm.size(); ++i)
 		m_perm[i] = i;
-
+	
+#ifdef PERMLIB_DEBUGMODE
+	boost::dynamic_bitset<> seenIndices(m_perm.size());
+#endif
+	
 	for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
 		std::stringstream ss(*tok_iter);
 
 		unsigned int first, last, temp;
 		ss >> first;
 		last = first;
-
+#ifdef PERMLIB_DEBUGMODE
+		BOOST_ASSERT( !seenIndices[first-1] );
+		seenIndices.set(first-1, 1);
+#endif
+		
 		while (!ss.eof()) {
 			ss >> temp;
+#ifdef PERMLIB_DEBUGMODE
+			BOOST_ASSERT( !seenIndices[temp-1] );
+			seenIndices.set(temp-1, 1);
+#endif
 			m_perm[last-1] = temp-1;
 			last = temp;
 		}
@@ -196,16 +208,16 @@ inline void Permutation::initFromCycleString(const std::string& cycles) {
 }
 
 
-inline Permutation::Permutation(dom_int n, const std::string & cycles) 
+inline Permutation::Permutation(dom_int n, const std::string & cycleString) 
 	: m_perm(n), m_isIdentity(false) 
 {
-	initFromCycleString(cycles);
+	initFromCycleString(cycleString);
 }
 
-inline Permutation::Permutation(dom_int n, const char* cycles) 
+inline Permutation::Permutation(dom_int n, const char* cycleString) 
 	: m_perm(n), m_isIdentity(false) 
 {
-	initFromCycleString(std::string(cycles));
+	initFromCycleString(std::string(cycleString));
 }
 
 
@@ -237,10 +249,13 @@ inline Permutation Permutation::operator*(const Permutation &p) const {
 inline Permutation& Permutation::operator*=(const Permutation &p) {
 	BOOST_ASSERT(p.m_perm.size() == m_perm.size());
 	m_isIdentity = false;
+	perm tmp(m_perm);
 	
 	for (dom_int i=0; i<m_perm.size(); ++i) {
-		m_perm[i] = p.m_perm[m_perm[i]];
+		tmp[i] = p.m_perm[m_perm[i]];
 	}
+	m_perm = tmp;
+	
 	return *this;
 }
 
@@ -293,7 +308,7 @@ inline bool Permutation::isIdentity() const {
 inline std::list<std::pair<dom_int, unsigned int> > Permutation::cycles(bool includeTrivialCycles) const {
 	boost::dynamic_bitset<> worked(m_perm.size());
 	typedef std::pair<dom_int, unsigned int> CyclePair;
-	std::list<CyclePair> cycles;
+	std::list<CyclePair> cycleList;
 	unsigned int cycleLength = 0;
 	
 	for (dom_int x=0; x<m_perm.size(); ++x) {
@@ -306,7 +321,7 @@ inline std::list<std::pair<dom_int, unsigned int> > Permutation::cycles(bool inc
 		px = m_perm[x];
 		if (x == px) {
 			if (includeTrivialCycles)
-				cycles.push_back(CyclePair(x, 1));
+				cycleList.push_back(CyclePair(x, 1));
 			continue;
 		}
 		
@@ -318,10 +333,10 @@ inline std::list<std::pair<dom_int, unsigned int> > Permutation::cycles(bool inc
 				++cycleLength;
 		}
 		worked.set(px, 1);
-		cycles.push_back(CyclePair(startX, cycleLength));
+		cycleList.push_back(CyclePair(startX, cycleLength));
 	}
 	
-	return cycles;
+	return cycleList;
 }
 
 inline boost::uint64_t Permutation::order() const {
@@ -343,7 +358,7 @@ Permutation* Permutation::project(unsigned int n_proj, ForwardIterator begin, Fo
 	}
 	
 	Permutation* proj = new Permutation(n_proj);
-	bool isIdentity = true;
+	bool is_identity = true;
 	
 	while (begin != end) {
 		dom_int x = *begin++;
@@ -356,10 +371,10 @@ Permutation* Permutation::project(unsigned int n_proj, ForwardIterator begin, Fo
 		proj->m_perm[ proj_x ] = proj_px;
 		
 		if (proj_x != proj_px)
-			isIdentity = false;
+			is_identity = false;
 	}
 	
-	proj->m_isIdentity = isIdentity;
+	proj->m_isIdentity = is_identity;
 	
 	return proj;
 }

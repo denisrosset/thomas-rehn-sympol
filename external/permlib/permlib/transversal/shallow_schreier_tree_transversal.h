@@ -78,32 +78,31 @@ ShallowSchreierTreeTransversal<PERM>::ShallowSchreierTreeTransversal(unsigned in
 
 template <class PERM>
 void ShallowSchreierTreeTransversal<PERM>::orbitUpdate(unsigned long beta, const std::list<typename PERM::ptr> &generators, const typename PERM::ptr &g) {
-    this->orbit(beta, generators);
+	this->orbit(beta, generators);
 }
 
 template <class PERM>
 void ShallowSchreierTreeTransversal<PERM>::orbit(unsigned long beta, const std::list<typename PERM::ptr> &generators) {
-    const unsigned long &n = Transversal<PERM>::m_n;
 	std::vector<boost::shared_ptr<PERM> > &transversal = Transversal<PERM>::m_transversal;
     
-    if (Transversal<PERM>::size() == 0) {
-    	Transversal<PERM>::m_orbit.push_back(beta);
-    	boost::shared_ptr<PERM> identity(new PERM(n));
-        transversal[beta] = identity;
-    }
+	if (Transversal<PERM>::size() == 0) {
+		Transversal<PERM>::m_orbit.push_back(beta);
+		boost::shared_ptr<PERM> identity(new PERM(this->m_n));
+			transversal[beta] = identity;
+	}
         
-    typename std::list<unsigned long>::const_iterator it;
+	typename std::list<unsigned long>::const_iterator it;
 
-    PERM g(n);
-    typename std::list<typename PERM::ptr>::const_iterator genIt = generators.begin();
-    for (it = Transversal<PERM>::m_orbit.begin(); it != Transversal<PERM>::m_orbit.end(); ++it) {
-        for (genIt = generators.begin(); genIt != generators.end(); ++genIt) {
+	PERM g(this->m_n);
+	typename std::list<typename PERM::ptr>::const_iterator genIt = generators.begin();
+	for (it = Transversal<PERM>::m_orbit.begin(); it != Transversal<PERM>::m_orbit.end(); ++it) {
+		for (genIt = generators.begin(); genIt != generators.end(); ++genIt) {
 			const unsigned long &beta_prime = *it;
-            if (!transversal[**genIt / beta_prime]) {
+			if (!transversal[**genIt / beta_prime]) {
 				addNewCubeLabel(beta, **genIt, beta_prime);
-            }
-        }
-    }
+			}
+		}
+	}
 }
 
 template <class PERM>
@@ -143,13 +142,12 @@ void ShallowSchreierTreeTransversal<PERM>::addNewCubeLabel(unsigned long beta, c
 		Transversal<PERM>::m_orbit.push_back(beta1);
 	}
 	
-	const unsigned long &n = Transversal<PERM>::m_n;
-	boost::dynamic_bitset<> omega(n);
-	boost::dynamic_bitset<> todo(n);
+	boost::dynamic_bitset<> omega(this->m_n);
+	boost::dynamic_bitset<> todo(this->m_n);
 	unsigned long i;
 	omega[beta1] = 1;
 	BOOST_FOREACH(const typename PERM::ptr& l, m_cubeLabels) {
-		for (i = 0; i < n; ++i) {
+		for (i = 0; i < this->m_n; ++i) {
 			if (!omega[i])
 				continue;
 			unsigned long alpha = *l / i;

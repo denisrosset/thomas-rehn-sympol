@@ -62,7 +62,7 @@ class RecursionStrategy {
 		uint m_recursionDepth;
 		
 		SymmetryComputation* symmetryComputationFactory(SymmetryComputationMethod method, const RayComputation* rayComp,
-						const Polyhedron& data, const PermutationGroup & permGroup, FacesUpToSymmetryList& rays) {
+								const Polyhedron& data, const PermutationGroup & permGroup, FacesUpToSymmetryList& rays) {
 			switch (method) {
 				case DIRECT:
 					return new SymmetryComputationDirect(this, rayComp, data, permGroup, rays);

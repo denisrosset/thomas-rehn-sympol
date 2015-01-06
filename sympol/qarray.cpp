@@ -85,6 +85,23 @@ QArray& QArray::operator=(const QArray& a) {
 	return *this;
 }
 
+bool QArray::operator<(const QArray& a) const {
+	if (m_ulN < a.m_ulN)
+		return true;
+	if (m_ulN > a.m_ulN)
+		return false;
+	
+	for (unsigned int i = 0; i < m_ulN; ++i) {
+		const int cmp = mpq_cmp(m_aq[i], a.m_aq[i]);
+		if (cmp < 0)
+			return true;
+		if (cmp > 0)
+			return false;
+	}
+	
+	return false;
+}
+
 void QArray::initFromArray(ulong size, mpq_t* a) {
 	BOOST_ASSERT(m_ulN >= size);
 	const ulong offset = m_ulN-size;

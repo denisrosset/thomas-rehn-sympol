@@ -1,13 +1,23 @@
 #!/usr/bin/perl
 
+# Rudimentary test script for SymPol.
+# Runs a number of tests, measuring time.
+#
+# Parameters:
+#  build name (optional, defaults to 'release'):  this script uses the sympol files in ../build/$BUILDNAME
+#
+# Return code:
+#  0 if all tests were successful, 1 otherwise
+#
+
 use strict;
 use warnings;
 use File::Find;
 
-my $sympol_root = '../build/debug';
+my $sympol_root = '../build/release';
 
 if ($#ARGV >= 0) {
-    $sympol_root = '../build/' . $ARGV[0];
+    $sympol_root = $ARGV[0];
 }
 print "using root $sympol_root\n";
 
@@ -25,48 +35,51 @@ sub test_polyhedron {
 		my $dimension = $2;
 		if ($number_of_rays != $expected_rays) {
 			warn "  failed: $number_of_rays != $expected_rays";
+			return 0;
 		} else {
 			print "  PASS  $time";
 		}
 	} else {
 		warn "  output format mismatch";
 		print $sympol;
+		return 0;
 	}
 	print "\n";
+	return 1;
 }
 
-test_polyhedron('-d', 'misc/santos_prismatoid.ext', 6);
-test_polyhedron('-d --cdd', 'misc/santos_prismatoid.ext', 6);
-test_polyhedron('-d', 'misc/santos_prismatoid-reduced_symmetry.ext', 12);
-test_polyhedron('-d --cdd', 'misc/santos_prismatoid-reduced_symmetry.ext', 12);
+my $success = 1;
 
-test_polyhedron('-d --cdd', 'metric/metric_5.ine', 2);
-test_polyhedron('-d', 'metric/metric_5.ine', 2);
+$success &= test_polyhedron('-d', 'hirsch_counterexample/santos_prismatoid.ext', 6);
+$success &= test_polyhedron('-d --cdd', 'hirsch_counterexample/santos_prismatoid.ext', 6);
+$success &= test_polyhedron('-d', 'hirsch_counterexample/santos_prismatoid-reduced_symmetry.ext', 12);
+$success &= test_polyhedron('-d --cdd', 'hirsch_counterexample/santos_prismatoid-reduced_symmetry.ext', 12);
 
-test_polyhedron('-d', 'cyclic/cyclic4-5.ext', 1);
-test_polyhedron('-d --cdd', 'cyclic/cyclic4-5.ext', 1);
+$success &= test_polyhedron('-d --cdd', 'metric/metric_5.ine', 2);
+$success &= test_polyhedron('-d', 'metric/metric_5.ine', 2);
+
+$success &= test_polyhedron('-d', 'cyclic/cyclic4-5.ext', 1);
+$success &= test_polyhedron('-d --cdd', 'cyclic/cyclic4-5.ext', 1);
 # homogenized polar .ine contains cone apex
-test_polyhedron('-d', 'cyclic/cyclic4-5.ine', 2);
+$success &= test_polyhedron('-d', 'cyclic/cyclic4-5.ine', 2);
 
-test_polyhedron('-d --cdd', 'metric/metric_6.ine', 3);
-test_polyhedron('-a 10 --cdd', 'metric/metric_6.ine', 3);
-test_polyhedron('-a 10', 'metric/metric_6.ine', 3);
-test_polyhedron('--idm-adm 5 10', 'metric/metric_6.ine', 3);
-test_polyhedron('--idm-adm-level 1 2', 'metric/metric_6.ine', 3);
-test_polyhedron('--cdd --idm-adm-level 1 1', 'metric/metric_6.ine', 3);
+$success &= test_polyhedron('-d --cdd', 'metric/metric_6.ine', 3);
+$success &= test_polyhedron('-a --cdd', 'metric/metric_6.ine', 3);
+$success &= test_polyhedron('-a', 'metric/metric_6.ine', 3);
+$success &= test_polyhedron('--idm-adm-level 1 2', 'metric/metric_6.ine', 3);
+$success &= test_polyhedron('--cdd --idm-adm-level 1 1', 'metric/metric_6.ine', 3);
 
-test_polyhedron('-d --cdd', 'voronoi_cones/d4.ine', 2);
-test_polyhedron('-d', 'voronoi_cones/d4.ine', 2);
+$success &= test_polyhedron('-d --cdd', 'voronoi_cones/d4.ine', 2);
+$success &= test_polyhedron('-d', 'voronoi_cones/d4.ine', 2);
 
-test_polyhedron('-d --cdd', 'voronoi_cones/d5.ine', 3);
-test_polyhedron('-d', 'voronoi_cones/d5.ine', 3);
+$success &= test_polyhedron('-d --cdd', 'voronoi_cones/d5.ine', 3);
+$success &= test_polyhedron('-d', 'voronoi_cones/d5.ine', 3);
 
-test_polyhedron('-d', 'voronoi_cones/e6.ine', 12);
-test_polyhedron('-d --cdd', 'voronoi_cones/e6.ine', 12);
-test_polyhedron('-a 20', 'voronoi_cones/e6.ine', 12);
-test_polyhedron('--idm-adm 5 10', 'voronoi_cones/e6.ine', 12);
-test_polyhedron('--idm-adm-level 0 2', 'voronoi_cones/e6.ine', 12);
-test_polyhedron('--idm-adm-level 0 1', 'voronoi_cones/e6.ine', 12);
-test_polyhedron('--cdd --idm-adm-level 0 1', 'voronoi_cones/e6.ine', 12);
-test_polyhedron('--idm-adm-level 1 2', 'voronoi_cones/e6.ine', 12);
+$success &= test_polyhedron('-d', 'voronoi_cones/e6.ine', 12);
+$success &= test_polyhedron('-a', 'voronoi_cones/e6.ine', 12);
+$success &= test_polyhedron('--idm-adm-level 0 2', 'voronoi_cones/e6.ine', 12);
+$success &= test_polyhedron('--idm-adm-level 0 1', 'voronoi_cones/e6.ine', 12);
+$success &= test_polyhedron('--cdd --idm-adm-level 0 1', 'voronoi_cones/e6.ine', 12);
+$success &= test_polyhedron('--idm-adm-level 1 2', 'voronoi_cones/e6.ine', 12);
 
+exit 1 unless $success;

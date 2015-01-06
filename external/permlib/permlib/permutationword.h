@@ -239,12 +239,12 @@ inline unsigned long PermutationWord::operator%(unsigned long val) const {
 	return ret;
 }
 
-inline bool PermutationWord::isIdentity(bool flush) const {
+inline bool PermutationWord::isIdentity(bool flush_) const {
 	if (m_word.empty()) {
 		return true;
 	}
 	if (m_word.size() == 1) {
-		if (flush)
+		if (flush_)
 			return true;
 		int e = m_word.front();
 		if (e>0)
@@ -263,9 +263,9 @@ inline bool PermutationWord::isIdentity(bool flush) const {
 				: *ms_elementsInverse[-e].get();
 	}
 
-	const bool isIdentity = resMult->isIdentity();
+	const bool permIsIdentity = resMult->isIdentity();
 
-	if (!isIdentity) {
+	if (!permIsIdentity) {
 		addElement(resMult);
 		m_word.clear();
 		m_word.reserve(2);
@@ -273,7 +273,7 @@ inline bool PermutationWord::isIdentity(bool flush) const {
 	}
 
 
-	return isIdentity;
+	return permIsIdentity;
 }
 
 inline std::ostream &operator<< (std::ostream &out, const PermutationWord &p) {

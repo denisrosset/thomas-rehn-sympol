@@ -204,19 +204,50 @@ Polyhedron* sympol::PolyhedronIO::read (std::istream& is, std::list<boost::share
                         setLinearities, setRedundancies);
       
   
-  BOOST_FOREACH(const std::string& row, inequalityRows) {
-    std::stringstream ss(row);
-    // don't read directly into p.m_aQIneq[ulQOffset]
-    // because STL-vector seems to get confused
-    QArray dummy(poly->dimension(), ulQOffset, !homogeneous);
-    ss >> dummy;
-    poly->addRow(dummy);
-    ++ulQOffset;
-  }
-  
-  if (!homogeneous)
-    poly->setHomogenized();
-  
+	typedef std::map<QArray, unsigned int> RowMap;
+	RowMap uniqueRows;
+	unsigned int skipped = 0;
+	BOOST_FOREACH(const std::string& row, inequalityRows) {
+		std::stringstream ss(row);
+		// don't read directly into p.m_aQIneq[ulQOffset]
+		// because STL-vector seems to get confused
+		QArray dummy(poly->dimension(), ulQOffset, !homogeneous);
+		ss >> dummy;
+		unsigned int origOffset = ulQOffset;
+		RowMap::iterator mapIt = uniqueRows.find(dummy);
+		if (mapIt == uniqueRows.end()) {
+			uniqueRows.insert(std::make_pair(dummy, ulQOffset));
+			poly->addRow(dummy);
+			++ulQOffset;
+		} else {
+			origOffset = (*mapIt).second;
+			YALLOG_DEBUG(logger, "skipping duplicate inequality " << row);
+			++skipped;
+		}
+		
+		// correct indices after deleting duplicate rows
+		std::set<unsigned long>::iterator setIt;
+		setIt = setLinearities.find(ulQOffset + skipped - 1);
+		if (setIt != setLinearities.end()) {
+			setLinearities.erase(setIt);
+			setLinearities.insert(origOffset);
+		}
+		setIt = setRedundancies.find(ulQOffset + skipped - 1);
+		if (setIt != setRedundancies.end()) {
+			setRedundancies.erase(setIt);
+			setRedundancies.insert(origOffset);
+		}
+	}
+	
+	if (skipped) {
+		YALLOG_INFO(logger, "skipped " << skipped << " duplicate inequalities");
+		poly->setRedundancies(setRedundancies);
+		poly->setLinearities(setLinearities);
+	}
+
+	if (!homogeneous)
+		poly->setHomogenized();
+
   
   BOOST_FOREACH(const std::string& row, generatorRows) {
     boost::shared_ptr<PERM> gen(new PERM(poly->realRowNumber(), row));

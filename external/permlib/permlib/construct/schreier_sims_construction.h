@@ -96,7 +96,7 @@ BSGS<PERM, TRANS> SchreierSimsConstruction<PERM, TRANS>
 	std::vector<dom_int> &B = ret.B;
 	std::vector<TRANS> &U = ret.U;
 	std::vector<std::list<typename PERM::ptr> > S;
-	setup(generatorsBegin, generatorsEnd, prescribedBaseBegin, prescribedBaseEnd, ret, S);
+	this->setup(generatorsBegin, generatorsEnd, prescribedBaseBegin, prescribedBaseEnd, ret, S);
 	
 	std::vector<boost::shared_ptr<SchreierGenerator<PERM, TRANS> > > SchreierGens;
 	for (unsigned int i = 0; i < B.size(); ++i) {
@@ -153,7 +153,7 @@ BSGS<PERM, TRANS> SchreierSimsConstruction<PERM, TRANS>
 			--j;
 	}
 
-	mergeGenerators(S, ret);
+	this->mergeGenerators(S, ret);
 
 	return ret;
 }
