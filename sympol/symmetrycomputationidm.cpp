@@ -119,6 +119,7 @@ bool SymmetryComputationIDM::enumerateRaysUpToSymmetry() {
     YALLOG_DEBUG3(logger, "IDM polyhedron " << pdat);
 
     PermutationGroup stab = stabilizer(m_permGroup, test);
+    YALLOG_DEBUG2(logger, "order of stabilizer: " << stab.order());
     FacesUpToSymmetryList localRays(stab);
 
     if (!m_recursionStrategy->enumerateRaysUpToSymmetry(m_rayCompDefault, pdat, stab, localRays))

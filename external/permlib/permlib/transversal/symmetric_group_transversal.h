@@ -60,6 +60,9 @@ class SymmetricGroupTransversal {
 			p->setTransposition((symmetricGroup->B)[basePos],val);
 			return p;
 		}
+
+		/// size of basic orbit / transversal
+		uint size() const { return symmetricGroup->n - basePos; }
 	private:
 		const SymmetricGroup<PERM>* symmetricGroup;
 		uint basePos;

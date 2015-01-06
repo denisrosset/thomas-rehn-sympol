@@ -30,6 +30,7 @@
 #include <permlib/search/classic/set_stabilizer_search.h>
 #include <permlib/search/classic/set_image_search.h>
 #include <permlib/invariant/dade_invariants.h>
+#include <permlib/search/orbit_lex_min_search.h>
 
 #include <ctime>
 
@@ -44,8 +45,11 @@ time_t FacesUpToSymmetryList::ms_lastMemCheck = 0;
 uint FacesUpToSymmetryList::ms_lastMem = 0;
 
 FacesUpToSymmetryList::FacesUpToSymmetryList(const PermutationGroup& group, bool sorted, bool withAdjacencies)
-	: m_sorted(sorted), m_withAdjacencies(withAdjacencies), m_group(group), m_computeInvariants(Configuration::getInstance().computeInvariants),
-	  m_computeOrbits(Configuration::getInstance().computeOrbitLimit), totalOrbitSize(0)
+	: m_sorted(sorted), m_withAdjacencies(withAdjacencies), m_group(group),
+	  m_computeInvariants(Configuration::getInstance().computeInvariants),
+	  m_computeOrbits(Configuration::getInstance().computeOrbitLimit),
+	  m_computeCanonicalRepresentative(Configuration::getInstance().computeCanonicalRepresentatives),
+	  totalOrbitSize(0)
 {
 	if (m_computeInvariants)
 		computeInvariants();
@@ -63,6 +67,18 @@ bool FacesUpToSymmetryList::equivalentToKnown(FaceWithData& f, FaceWithDataPtr* 
 			YALLOG_DEBUG2(logger, "face accepted by invariant fingerprint");
 			return false;
 		}
+	}
+
+	if (m_computeCanonicalRepresentative) {
+		OrbitLexMinSearch<PermutationGroup> orbitLexMinSearch(m_group);
+		YALLOG_DEBUG2(logger, "compute canonical repr (equiv) " << f.face);
+		f.canonicalRepresentative.reset(new Face(orbitLexMinSearch.lexMin(f.face)));
+		YALLOG_DEBUG2(logger, "computed canonical repr (equiv) " << *f.canonicalRepresentative);
+		BOOST_FOREACH(const FaceWithDataPtr& face, m_inequivalentFaces) {
+			if (*(face->canonicalRepresentative) == *(f.canonicalRepresentative))
+				return true;
+		}
+		return false;
 	}
 
 	BOOST_FOREACH(const FaceWithDataPtr& face, m_inequivalentFaces) {
@@ -160,6 +176,12 @@ void FacesUpToSymmetryList::forceAdd(FaceWithDataPtr& fd) {
 	if (m_computeInvariants) {
 		// fd.fingerprint was computed by equivalentToKnown
 		m_fingerprints.insert(fd->fingerprint);
+	}
+	if (m_computeCanonicalRepresentative) {
+		OrbitLexMinSearch<PermutationGroup> orbitLexMinSearch(m_group);
+		YALLOG_DEBUG2(logger, "compute canonical repr " << fd->face);
+		fd->canonicalRepresentative.reset(new Face(orbitLexMinSearch.lexMin(fd->face)));
+		YALLOG_DEBUG2(logger, "computed canonical repr " << *fd->canonicalRepresentative);
 	}
 
 	totalOrbitSize += fd->orbitSize;

@@ -29,7 +29,7 @@
 #include <iostream>
 
 #include <permlib/permutation.h>
-//#include <transversal/explicit_transversal.h>
+//#include <permlib/transversal/explicit_transversal.h>
 #include <permlib/transversal/schreier_tree_transversal.h>
 #include <permlib/bsgs.h>
 

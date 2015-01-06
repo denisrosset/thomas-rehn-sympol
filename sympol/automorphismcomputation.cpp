@@ -80,8 +80,10 @@ boost::shared_ptr< PermutationGroup > AutomorphismComputation::computeRestricted
 	QMatrix Q(matrixRank - freeColumns.size());
 	ulong iQ = 0, jQ = 0;
 	for (ulong i=0; i<matrixRank; ++i) {
-		if (freeColumns.count(i))
+		if (freeColumns.count(i)) {
+			YALLOG_DEBUG3(logger, "free column #" << (i+1));
 			continue;
+		}
 		jQ = 0;
 		for (ulong j=0; j<matrixRank; ++j) {
 			if (freeColumns.count(j))

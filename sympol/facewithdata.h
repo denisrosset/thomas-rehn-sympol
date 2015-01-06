@@ -25,6 +25,7 @@
 
 #include "common.h"
 #include <permlib/transversal/orbit_set.h>
+#include <permlib/search/orbit_lex_min_search.h>
 
 namespace sympol {
 
@@ -34,12 +35,14 @@ struct FaceWithData {
 	typedef permlib::OrbitSet<PERM,Face> FaceOrbit;
 	typedef std::vector<boost::uint64_t> Fingerprint;
 	typedef boost::shared_ptr<Fingerprint> FingerprintPtr;
+	typedef boost::shared_ptr<Face> CanonicalRepresentativePtr;
 
 	Face face;
 	QArrayPtr ray;
 	uint incidenceNumber;
 	boost::shared_ptr<FaceOrbit> orbit;
 	FingerprintPtr fingerprint;
+	CanonicalRepresentativePtr canonicalRepresentative;
 	ulong orbitSize;
 	ulong id;
 	std::set<boost::shared_ptr<FaceWithData> > adjacencies;

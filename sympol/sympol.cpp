@@ -89,7 +89,7 @@ uint correct_id(uint id, uint apexIndex) {
 }
 
 int main(int argc, char* argv[]) {
-	std::cout << "SymPol v0.1.1 and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
+	std::cout << "SymPol v0.1.2 and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
 #if HAVE_NAUTY && HAVE_NTL
 	std::cout << " and nauty and NTL";
 #endif
@@ -144,6 +144,7 @@ int main(int argc, char* argv[]) {
 		("conf-lrs-estimate-maxdepth", po::value<uint>(&Configuration::getInstance().lrsEstimateMaxDepth)->default_value(Configuration::getInstance().lrsEstimateMaxDepth), "maximal allowed depth of LRS estimates")
 		("conf-compute-invariants", po::value<uint>(&Configuration::getInstance().computeInvariants)->default_value(Configuration::getInstance().computeInvariants), "maximal degree of permutation group invariant polynomials to use")
 		("conf-compute-orbit-limit", po::value<uint>(&Configuration::getInstance().computeOrbitLimit)->default_value(Configuration::getInstance().computeOrbitLimit), "memory limit for computing full orbit (in megabytes)")
+		("conf-compute-canonical-representatives", po::value<bool>(&Configuration::getInstance().computeCanonicalRepresentatives)->default_value(Configuration::getInstance().computeCanonicalRepresentatives), "compute canonical representatives for faces or not")
 		("conf-intermediate-poly-fileprefix", po::value<string>(&Configuration::getInstance().intermediatePolyFilePrefix)->default_value(""), "prefix for filenames in which intermediate polyhedra are saved (useful for debugging and analyzing instances)")
 	;
 	desc.add(confOptions);

@@ -34,6 +34,7 @@
 #define RANDOMSCHREIERSIMSCONSTRUCTION_H_
 
 #include <permlib/construct/base_construction.h>
+#include <permlib/generator/random_generator.h>
 #include <permlib/bsgs.h>
 
 #include <boost/foreach.hpp>

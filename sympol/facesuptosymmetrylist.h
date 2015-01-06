@@ -81,6 +81,7 @@ private:
 
 	uint m_computeInvariants;
 	uint m_computeOrbits;
+	bool m_computeCanonicalRepresentative;
 	//WARNING: not thread-safe
 	static time_t ms_lastMemCheck;
 	static uint ms_lastMem;

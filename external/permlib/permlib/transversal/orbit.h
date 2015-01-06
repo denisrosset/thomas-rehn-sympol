@@ -48,8 +48,8 @@ public:
 	/// true iff there exists a transversal element mapping \f$\alpha\f$ to val
 	virtual bool contains(const DOMAIN& val) const = 0;
 
-    /// returns one element of the orbit
-    virtual const DOMAIN& element() const = 0;
+	/// returns one element of the orbit
+	virtual const DOMAIN& element() const = 0;
 protected:
 	/// computes orbit of beta under generators
 	/**

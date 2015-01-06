@@ -113,7 +113,7 @@ inline void Rank<Matrix>::rowReducedEchelonForm(bool rankOnly, InsertIterator fr
 
 	const ulong maxRank = std::min(m_matrix->cols(), m_matrix->rows());
 	ulong rank = 0;
-
+	ulong freeV = 0;
 	const ulong m = m_matrix->rows();
 	const ulong n = m_matrix->cols();
 	std::vector<ulong> pi(m);
@@ -123,14 +123,17 @@ inline void Rank<Matrix>::rowReducedEchelonForm(bool rankOnly, InsertIterator fr
 	for (uint k = 0; k < n; ++k) {
 		typename Matrix::Type p;
 		uint k_prime = 0;
-		for (uint i = k; i < m; ++i) {
-			if (cmp(abs(at(i,k)), p) > 0) {
-				p = abs(at(i,k));
+		for (uint i = k; i < m+freeV; ++i) {
+			if (cmp(abs(at(i-freeV,k)), p) > 0) {
+				p = abs(at(i-freeV,k));
 				k_prime = i;
 			}
 		}
 		if (sgn(p) == 0) {
 			*freeVariablesIt++ = k;
+			if (m_matrix->cols() > m_matrix->rows())
+				// we only need freeV logic if there are more columns than rows
+				++freeV;
 			continue;
 		}
 		++rank;
@@ -139,19 +142,19 @@ inline void Rank<Matrix>::rowReducedEchelonForm(bool rankOnly, InsertIterator fr
 
 		std::swap(pi[k], pi[k_prime]);
 		for (uint i = 0; i < n; ++i) {
-			std::swap(at(k,i), at(k_prime, i));
+			std::swap(at(k-freeV,i), at(k_prime-freeV, i));
 		}
-		for (uint i = k+1; i < m; ++i) {
-			at(i,k) /= at(k,k);
+		for (uint i = k+1; i < m+freeV; ++i) {
+			at(i-freeV,k) /= at(k-freeV,k);
 			for (uint j = k+1; j < n; ++j) {
-				at(i,j) -= at(i,k) * at(k,j);
+				at(i-freeV,j) -= at(i-freeV,k) * at(k-freeV,j);
 			}
-			at(i,k) = 0;
+			at(i-freeV,k) = 0;
 		}
 		for (uint i = k+1; i < n; ++i) {
-			at(k,i) /= at(k,k);
+			at(k-freeV,i) /= at(k-freeV,k);
 		}
-		at(k,k) = 1;
+		at(k-freeV,k) = 1;
 	}
 }
 

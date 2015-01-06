@@ -202,6 +202,7 @@ bool SymmetryComputationADM::findNeighborRays(FaceWithDataPtr& faceData, FacesUp
 
 	if (!faceData->stabilizer)
 		faceData->stabilizer.reset(new PermutationGroup(stabilizer(m_permGroup, f)));
+	YALLOG_DEBUG2(logger, "order of stabilizer: " << faceData->stabilizer->order());
 
 	const PermutationGroup& stab = *faceData->stabilizer.get();
 	FacesUpToSymmetryList localRays(stab);

@@ -73,6 +73,12 @@ namespace permlib {
 		std::cout << std::endl;
 	}
 
+	/// callable object to delete a pointer
+	struct delete_object {
+	  template <typename T>
+	  void operator()(T *ptr){ delete ptr; }
+	};
+
 #define PERMptr boost::shared_ptr<PERM>
 #define PERMlist std::list<boost::shared_ptr<PERM> >
 

@@ -59,7 +59,7 @@ public:
 	/// number of orbit elements
 	ulong size() const {return m_orbitSet.size(); }
     
-    virtual const DOMAIN& element() const;
+	virtual const DOMAIN& element() const;
 	
 	typedef typename std::set<DOMAIN>::const_iterator OrbitIt;
 	/// begin-iterator to orbit elements

@@ -28,7 +28,8 @@ Configuration::Configuration()
 	: lrsEstimates(8),
 		lrsEstimateMaxDepth(3),
 		computeInvariants(0),
-		computeOrbitLimit(1024)
+		computeOrbitLimit(1024),
+		computeCanonicalRepresentatives(false)
 { }
 
 Configuration& Configuration::getInstance() {
