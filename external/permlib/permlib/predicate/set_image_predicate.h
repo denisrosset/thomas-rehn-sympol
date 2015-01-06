@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -48,21 +48,21 @@ class SetImagePredicate : public SubgroupPredicate<PERM> {
 public:
 	/// constructor
 	/**
-	 * @param deltaBegin begin iterator for source list of points (ulong) mapped to be onto target
-	 * @param deltaEnd   end   iterator for source list of points (ulong) mapped to be onto target
-	 * @param gammaBegin begin iterator for target list of points (ulong)
-	 * @param gammaEnd   end   iterator for target list of points (ulong)
+	 * @param deltaBegin begin iterator for source list of points (unsigned long) mapped to be onto target
+	 * @param deltaEnd   end   iterator for source list of points (unsigned long) mapped to be onto target
+	 * @param gammaBegin begin iterator for target list of points (unsigned long)
+	 * @param gammaEnd   end   iterator for target list of points (unsigned long)
 	 */
 	template<class InputIterator>
 	SetImagePredicate(InputIterator deltaBegin, InputIterator deltaEnd, InputIterator gammaBegin, InputIterator gammaEnd);
 
 	virtual bool operator()(const PERM &p) const;
-	virtual bool childRestriction(const PERM &h, uint i, ulong beta_i) const;
-	virtual uint limit() const;
+	virtual bool childRestriction(const PERM &h, unsigned int i, unsigned long beta_i) const;
+	virtual unsigned int limit() const;
 private:
 	//TODO: perhaps use std::set here?
-	std::vector<ulong> m_delta;
-	std::vector<ulong> m_gamma;
+	std::vector<unsigned long> m_delta;
+	std::vector<unsigned long> m_gamma;
 };
 
 //
@@ -80,7 +80,7 @@ SetImagePredicate<PERM>::SetImagePredicate(InputIterator deltaBegin, InputIterat
 
 template <class PERM>
 bool SetImagePredicate<PERM>::operator()(const PERM &p) const {
-	BOOST_FOREACH(ulong delta_i, m_delta) {
+	BOOST_FOREACH(unsigned long delta_i, m_delta) {
 		if (std::find(m_gamma.begin(), m_gamma.end(), p / delta_i) == m_gamma.end())
 			return false;
 	}
@@ -88,14 +88,14 @@ bool SetImagePredicate<PERM>::operator()(const PERM &p) const {
 }
 
 template <class PERM>
-bool SetImagePredicate<PERM>::childRestriction(const PERM &h, uint i, ulong beta_i) const {
+bool SetImagePredicate<PERM>::childRestriction(const PERM &h, unsigned int i, unsigned long beta_i) const {
 	if (std::find(m_gamma.begin(), m_gamma.end(), h / beta_i) == m_gamma.end())
 		return false;
 	return true;
 }
 
 template <class PERM>
-uint SetImagePredicate<PERM>::limit() const {
+unsigned int SetImagePredicate<PERM>::limit() const {
 	return m_delta.size();
 }
 

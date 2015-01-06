@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@
 #ifndef SYMMETRIC_GROUP_TRANSVERSAL_H_
 #define SYMMETRIC_GROUP_TRANSVERSAL_H_
 
+#include <boost/iterator/counting_iterator.hpp>
+
 namespace permlib {
 
 template<class PERM>
@@ -47,11 +49,11 @@ class SymmetricGroupTransversal {
 		 * @param sg group
 		 * @param basePos position of the element in the group base that this transversal belongs to
 		 */
-		SymmetricGroupTransversal(const SymmetricGroup<PERM>* sg, uint basePos) : symmetricGroup(sg), basePos(basePos) {}
+		SymmetricGroupTransversal(const SymmetricGroup<PERM>* sg, unsigned int basePos) : symmetricGroup(sg), basePos(basePos) {}
 		
 		/// computes a transversal element on demand if one exists
-		PERM* at(ulong val) const {
-			for (uint i=0; i<basePos; ++i) {
+		PERM* at(unsigned long val) const {
+			for (unsigned int i=0; i<basePos; ++i) {
 				if ((symmetricGroup->B)[i] == val)
 					return 0;
 			}
@@ -62,10 +64,13 @@ class SymmetricGroupTransversal {
 		}
 
 		/// size of basic orbit / transversal
-		uint size() const { return symmetricGroup->n - basePos; }
+		unsigned int size() const { return symmetricGroup->n - basePos; }
+		
+		boost::counting_iterator<unsigned int> begin() const { return boost::counting_iterator<int>(0); };
+		boost::counting_iterator<unsigned int> end() const { return boost::counting_iterator<int>(symmetricGroup->n-basePos ); };
 	private:
 		const SymmetricGroup<PERM>* symmetricGroup;
-		uint basePos;
+		unsigned int basePos;
 };
 
 }

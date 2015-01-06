@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -53,26 +53,26 @@ public:
 	/// constructor
 	/**
 	 * @param n cardinality of the set the group acts on
-	 * @param begin iterator(ulong) begin of the set \f$\Delta\f$
-	 * @param end iterator(ulong) end of the set \f$\Delta\f$
-	 * @param beginImg iterator(ulong) begin of the set \f$\Gamma\f$
-	 * @param endImg iterator(ulong) end of the set \f$\Gamma\f$
+	 * @param begin iterator(unsigned long) begin of the set \f$\Delta\f$
+	 * @param end iterator(unsigned long) end of the set \f$\Delta\f$
+	 * @param beginImg iterator(unsigned long) begin of the set \f$\Gamma\f$
+	 * @param endImg iterator(unsigned long) end of the set \f$\Gamma\f$
 	 */
 	template<class InputIterator>
-	SetImageRefinement(ulong n, InputIterator begin, InputIterator end, InputIterator beginImg, InputIterator endImg);
+	SetImageRefinement(unsigned long n, InputIterator begin, InputIterator end, InputIterator beginImg, InputIterator endImg);
 	
-	virtual uint apply(Partition& pi) const;
-	virtual uint apply2(Partition& pi, const PERM& t) const;
+	virtual unsigned int apply(Partition& pi) const;
+	virtual unsigned int apply2(Partition& pi, const PERM& t) const;
 	
 	virtual bool init(Partition& pi);
 private:
-	std::vector<ulong> delta;
-	std::vector<ulong> gamma;
+	std::vector<unsigned long> delta;
+	std::vector<unsigned long> gamma;
 };
 
 template<class PERM>
 template<class InputIterator>
-SetImageRefinement<PERM>::SetImageRefinement(ulong n, InputIterator begin, InputIterator end, InputIterator beginImg, InputIterator endImg) 
+SetImageRefinement<PERM>::SetImageRefinement(unsigned long n, InputIterator begin, InputIterator end, InputIterator beginImg, InputIterator endImg) 
 	: Refinement<PERM>(n, Default), delta(begin, end), gamma(beginImg, endImg)
 {
 	std::sort(delta.begin(), delta.end());
@@ -80,11 +80,11 @@ SetImageRefinement<PERM>::SetImageRefinement(ulong n, InputIterator begin, Input
 }
 
 template<class PERM>
-uint SetImageRefinement<PERM>::apply(Partition& pi) const {
+unsigned int SetImageRefinement<PERM>::apply(Partition& pi) const {
 	BOOST_ASSERT( this->initialized() );
-	uint ret = 0;
-	BOOST_FOREACH(uint cell, Refinement<PERM>::m_cellPairs) {
-		DEBUG(std::cout << "apply set image1 " << cell << std::endl;)
+	unsigned int ret = 0;
+	BOOST_FOREACH(unsigned int cell, Refinement<PERM>::m_cellPairs) {
+		PERMLIB_DEBUG(std::cout << "apply set image1 " << cell << std::endl;)
 		if (pi.intersect(delta.begin(), delta.end(), cell))
 			++ret;
 	}
@@ -92,11 +92,11 @@ uint SetImageRefinement<PERM>::apply(Partition& pi) const {
 }
 
 template<class PERM>
-uint SetImageRefinement<PERM>::apply2(Partition& pi, const PERM& t) const {
+unsigned int SetImageRefinement<PERM>::apply2(Partition& pi, const PERM& t) const {
 	BOOST_ASSERT( this->initialized() );
-	uint ret = 0;
-	BOOST_FOREACH(uint cell, Refinement<PERM>::m_cellPairs) {
-		DEBUG(std::cout << "apply set image2 " << cell << std::endl;)
+	unsigned int ret = 0;
+	BOOST_FOREACH(unsigned int cell, Refinement<PERM>::m_cellPairs) {
+		PERMLIB_DEBUG(std::cout << "apply set image2 " << cell << std::endl;)
 		if (pi.intersect(gamma.begin(), gamma.end(), cell))
 			++ret;
 	}
@@ -105,7 +105,7 @@ uint SetImageRefinement<PERM>::apply2(Partition& pi, const PERM& t) const {
 
 template<class PERM>
 bool SetImageRefinement<PERM>::init(Partition& pi) {
-	for (uint c = 0; c < pi.cells(); ++c) {
+	for (unsigned int c = 0; c < pi.cells(); ++c) {
 		if (pi.intersect(delta.begin(), delta.end(), c))
 			Refinement<PERM>::m_cellPairs.push_back(c);
 	}

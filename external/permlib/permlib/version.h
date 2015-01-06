@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,6 @@
 #ifndef PERMLIBVERSION_H_
 #define PERMLIBVERSION_H_
 
-#define PERMLIB_VERSION "0.2.2"
+#define PERMLIB_VERSION "0.2.3"
 
 #endif // PERMLIBVERSION_H_

@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@ template<class PERM>
 class Refinement {
 public:
 	/// constructor
-	Refinement(ulong n, RefinementType type);
+	Refinement(unsigned long n, RefinementType type);
 	/// destructor
 	virtual ~Refinement();
 	
@@ -68,7 +68,7 @@ public:
 	 * @see apply2
 	 * @return number of elementary intersections that were needed for refinement application
 	 */
-	virtual uint apply(Partition& pi) const = 0;
+	virtual unsigned int apply(Partition& pi) const = 0;
 	
 	/// applies (right-)refinement to pi which is the image of the original partition this refinement was initialized to under t
 	/**
@@ -76,10 +76,10 @@ public:
 	 * @see apply
 	 * @return number of elementary intersections that were needed for refinement application
 	 */
-	virtual uint apply2(Partition& pi, const PERM& t) const;
+	virtual unsigned int apply2(Partition& pi, const PERM& t) const;
 	
 	/// reverts the last count elementary intersections of partition pi
-	void undo(Partition& pi, uint count) const;
+	void undo(Partition& pi, unsigned int count) const;
 	
 	typedef typename boost::shared_ptr<Refinement<PERM> > RefinementPtr;
 	typedef typename std::vector<RefinementPtr>::const_iterator RefinementPtrIterator;
@@ -87,7 +87,7 @@ public:
 	/// the type of this refinement
 	RefinementType type() const;
 	/// number of sibling of this refinement in the search tree
-	uint alternatives() const;
+	unsigned int alternatives() const;
 	/// iterator to begin of refinement siblings in the search tree
 	RefinementPtrIterator backtrackBegin() const { return m_backtrackRefinements.begin(); }
 	/// iterator to end of refinement siblings in the search tree
@@ -100,7 +100,7 @@ public:
 	virtual void sort(const BaseSorterByReference&, const Partition*) { }
 protected:
 	/// length of partitions to work with
-	ulong m_n;
+	unsigned long m_n;
 	/// refinement siblings in the search tree
 	std::vector<RefinementPtr> m_backtrackRefinements;
 	/// indices of elementary intersections to apply during refinement application
@@ -114,7 +114,7 @@ private:
 };
 
 template<class PERM>
-Refinement<PERM>::Refinement(ulong n, RefinementType type) 
+Refinement<PERM>::Refinement(unsigned long n, RefinementType type) 
 	: m_n(n), m_initialized(false), m_type(type)
 { }
 
@@ -123,7 +123,7 @@ Refinement<PERM>::~Refinement()
 { }
 
 template<class PERM>
-uint Refinement<PERM>::alternatives() const {
+unsigned int Refinement<PERM>::alternatives() const {
 	return m_backtrackRefinements.size();
 }
 
@@ -147,13 +147,13 @@ bool Refinement<PERM>::initialized() const {
 }
 
 template<class PERM>
-void Refinement<PERM>::undo(Partition& pi, uint count) const {
-	for (uint i=0; i<count; ++i)
+void Refinement<PERM>::undo(Partition& pi, unsigned int count) const {
+	for (unsigned int i=0; i<count; ++i)
 		pi.undoIntersection();
 }
 
 template<class PERM>
-uint Refinement<PERM>::apply2(Partition& pi, const PERM& t) const { 
+unsigned int Refinement<PERM>::apply2(Partition& pi, const PERM& t) const { 
 	return this->apply(pi); 
 }
 

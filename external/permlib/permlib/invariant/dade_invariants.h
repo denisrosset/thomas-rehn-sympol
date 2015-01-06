@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@ public:
 	 * @param invariantList list to store the invariants (LinearFormList)
 	 * @param maximalDegree maximal degree that a constructed invariant may have, or zero if unbounded
 	 */
-	void invariants(std::list<LinearFormList>& invariantList, uint maximalDegree = 0) const;
+	void invariants(std::list<LinearFormList>& invariantList, unsigned int maximalDegree = 0) const;
 private:
 	const BSGSIN& m_bsgs;
 };
@@ -72,13 +72,13 @@ DadeInvariants<BSGSIN>::DadeInvariants(const BSGSIN& bsgs)
 {  }
 
 template<class BSGSIN>
-void DadeInvariants<BSGSIN>::invariants(std::list<LinearFormList>& invariantList, uint maximalDegree) const
+void DadeInvariants<BSGSIN>::invariants(std::list<LinearFormList>& invariantList, unsigned int maximalDegree) const
 {
-	const ulong n = m_bsgs.n;
+	const unsigned long n = m_bsgs.n;
 	
-	std::map<ulong,OrbitSet<PERM,ulong> > orbits;
+	std::map<unsigned long,OrbitSet<PERM,unsigned long> > orbits;
 	boost::dynamic_bitset<> checked(n);
-	ulong alpha = 0;
+	unsigned long alpha = 0;
 	while (true) {
 		while (checked[alpha] && alpha < n) {
 			++alpha;
@@ -86,22 +86,22 @@ void DadeInvariants<BSGSIN>::invariants(std::list<LinearFormList>& invariantList
 		if (alpha >= n)
 			break;
 		
-		OrbitSet<PERM, ulong> orbit;
+		OrbitSet<PERM, unsigned long> orbit;
 		orbit.orbit(alpha, m_bsgs.S, typename Transversal<PERM>::TrivialAction());
-		BOOST_FOREACH(const ulong& beta, std::make_pair(orbit.begin(), orbit.end())) {
+		BOOST_FOREACH(const unsigned long& beta, std::make_pair(orbit.begin(), orbit.end())) {
 			checked.set(beta, 1);
 		}
 		orbits.insert(std::make_pair(alpha, orbit));
 	}
 	
-	typedef std::pair<ulong,OrbitSet<PERM,ulong> > pair_t;
-	std::set<ulong>::const_iterator setIt;
+	typedef std::pair<unsigned long,OrbitSet<PERM,unsigned long> > pair_t;
+	std::set<unsigned long>::const_iterator setIt;
 	BOOST_FOREACH(const pair_t& orbit, orbits) {
-		ulong l = 1;
+		unsigned long l = 1;
 		while (l < orbit.second.size()) {
 			LinearForm form(n);
 			setIt = orbit.second.begin();
-			for (uint i = 0; i < orbit.second.size()-l; ++i) {
+			for (unsigned int i = 0; i < orbit.second.size()-l; ++i) {
 				form.set(*setIt, 1);
 				++setIt;
 			}

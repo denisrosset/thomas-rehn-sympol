@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@ public:
 	/**
 	 * @param n cardinality of the set the group is acting on
 	 */
-	explicit SchreierSimsConstruction(uint n);
+	explicit SchreierSimsConstruction(unsigned int n);
 
 	/// constructs a BSGS for group given by generators with no base prescribed
 	/** @see construct(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd)
@@ -61,14 +61,14 @@ public:
 	/**
 	 * @param generatorsBegin begin iterator of group generators of type PERM
 	 * @param generatorsEnd  end iterator of group generators of type PERM
-	 * @param prescribedBaseBegin begin iterator of prescribed base of type ulong
-	 * @param prescribedBaseEnd  end iterator of prescribed base of type ulong
+	 * @param prescribedBaseBegin begin iterator of prescribed base of type unsigned long
+	 * @param prescribedBaseEnd  end iterator of prescribed base of type unsigned long
 	 */
 	template <class ForwardIterator, class InputIterator>
 	BSGS<PERM, TRANS> construct(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd) const;
 
 	/// number of Schreier generators examined during the last construct call
-	mutable uint m_statScheierGeneratorsConsidered;
+	mutable unsigned int m_statScheierGeneratorsConsidered;
 };
 
 //
@@ -76,7 +76,7 @@ public:
 //
 
 template <class PERM, class TRANS>
-SchreierSimsConstruction<PERM,TRANS>::SchreierSimsConstruction(uint n) 
+SchreierSimsConstruction<PERM,TRANS>::SchreierSimsConstruction(unsigned int n) 
 	: BaseConstruction<PERM, TRANS>(n), m_statScheierGeneratorsConsidered(0)
 { }
 
@@ -91,42 +91,42 @@ template <class ForwardIterator, class InputIterator>
 BSGS<PERM, TRANS> SchreierSimsConstruction<PERM, TRANS>
 	::construct(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd) const
 {
-	const uint &n = BaseConstruction<PERM, TRANS>::m_n;
+	const dom_int &n = BaseConstruction<PERM, TRANS>::m_n;
 	BSGS<PERM, TRANS> ret(n);
-	std::vector<ulong> &B = ret.B;
+	std::vector<dom_int> &B = ret.B;
 	std::vector<TRANS> &U = ret.U;
-	std::vector<PERMlist> S;
+	std::vector<std::list<typename PERM::ptr> > S;
 	setup(generatorsBegin, generatorsEnd, prescribedBaseBegin, prescribedBaseEnd, ret, S);
 
 	std::vector<boost::shared_ptr<SchreierGenerator<PERM, TRANS> > > SchreierGens;
 	SchreierGens.push_back(boost::shared_ptr<SchreierGenerator<PERM, TRANS> >(new SchreierGenerator<PERM, TRANS>(&U[0], S[0].begin(), S[0].end())));
 
-	uint j = 1;
+	unsigned int j = 1;
 	bool breakUp = false;
 	while (j >= 1) {
 		breakUp = false;
 		SchreierGenerator<PERM, TRANS> &sg = *SchreierGens[j-1];
 		sg.update(&U[j-1], S[j-1].begin(), S[j-1].end());
 
-        while (sg.hasNext()) {
+		while (sg.hasNext()) {
 			++m_statScheierGeneratorsConsidered;
-			DEBUG(for(uint jjj=0; jjj<j; ++jjj) std::cout << " ";)
-			DEBUG(std::cout << "schreier j = " << (j-1) << " [" << S[j-1].size() << "," << U[j-1].size() << "]:   ";)
+			PERMLIB_DEBUG(for(unsigned int jjj=0; jjj<j; ++jjj) std::cout << " ";)
+			PERMLIB_DEBUG(std::cout << "schreier j = " << (j-1) << " [" << S[j-1].size() << "," << U[j-1].size() << "]:   ";)
 			PERM g = sg.next();
 			PERM h(n);
 			// sift for S_{j+1}, so use index j here
-			uint k = ret.sift(g, h, j);
+			unsigned int k = ret.sift(g, h, j);
 			if (k < B.size() - j || !h.isIdentity()) {
 				// flush it, because we add it as a generator
 				h.flush();
 				
 				if (j == B.size()) {
-					ulong gamma = n+1;
+					dom_int gamma = n+1;
 					if (ret.chooseBaseElement(h, gamma)) {
 						B.push_back(gamma);
 					}
 					BOOST_ASSERT(j < B.size());
-					S.push_back(PERMlist());
+					S.push_back(std::list<typename PERM::ptr>());
 					U.push_back(TRANS(n));
 				}
 				boost::shared_ptr<PERM> hPtr(new PERM(h));

@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ namespace permlib {
 
 /// predicate matching points that are stabilized by given permutations
 template <class PERM>
-class StabilizesPointPredicate : public std::unary_function<ulong, bool> {
+class StabilizesPointPredicate : public std::unary_function<unsigned long, bool> {
 public:
 	/// constructor
 	/**
@@ -52,7 +52,7 @@ public:
 	{ }
 
 	/// evaluate predicate
-    bool operator()(const ulong beta) const {
+    bool operator()(const unsigned long beta) const {
         BOOST_FOREACH(const PERM &p, m_toStabilize) {
             if (p / beta != beta)
                 return false;

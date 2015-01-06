@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -50,23 +50,23 @@ public:
 	 * @param bsgs BSGS of group
 	 * @param pruningLevelDCM level up to which expensive double coset minimality pruning is performed; zero to disable
 	 */
-	SetStabilizerSearch(const BSGSIN& bsgs, uint pruningLevelDCM);
+	SetStabilizerSearch(const BSGSIN& bsgs, unsigned int pruningLevelDCM);
 	
 	/// initializes search
 	/**
-	 * @param begin iterator(ulong) begin of the set to be stabilized
-	 * @param end iterator(ulong) end of the set to be stabilized
+	 * @param begin iterator(unsigned long) begin of the set to be stabilized
+	 * @param end iterator(unsigned long) end of the set to be stabilized
 	 */
 	template<class InputIterator>
 	void construct(InputIterator begin, InputIterator end);
 protected:
-	virtual uint processNewFixPoints(const Partition& pi, uint backtrackCount);
+	virtual unsigned int processNewFixPoints(const Partition& pi, unsigned int backtrackCount);
 private:
-	std::vector<ulong> toStab;
+	std::vector<unsigned long> toStab;
 };
 
 template<class BSGSIN,class TRANSRET>
-SetStabilizerSearch<BSGSIN,TRANSRET>::SetStabilizerSearch(const BSGSIN& bsgs, uint pruningLevelDCM) 
+SetStabilizerSearch<BSGSIN,TRANSRET>::SetStabilizerSearch(const BSGSIN& bsgs, unsigned int pruningLevelDCM) 
 	: RBase<BSGSIN,TRANSRET>(bsgs, pruningLevelDCM)
 { }
 
@@ -85,11 +85,11 @@ void SetStabilizerSearch<BSGSIN,TRANSRET>::construct(InputIterator begin, InputI
 }
 
 template<class BSGSIN,class TRANSRET>
-uint SetStabilizerSearch<BSGSIN,TRANSRET>::processNewFixPoints(const Partition& pi, uint level) {
-	const uint basePos = RBase<BSGSIN,TRANSRET>::processNewFixPoints(pi, level);
+unsigned int SetStabilizerSearch<BSGSIN,TRANSRET>::processNewFixPoints(const Partition& pi, unsigned int level) {
+	const unsigned int basePos = RBase<BSGSIN,TRANSRET>::processNewFixPoints(pi, level);
 	if (!this->m_limitInitialized) {
 		bool allFound = true;
-		BOOST_FOREACH(ulong alpha, toStab) {
+		BOOST_FOREACH(unsigned long alpha, toStab) {
 			if (std::find(pi.fixPointsBegin(), pi.fixPointsEnd(), alpha) == pi.fixPointsEnd()) {
 				allFound = false;
 				break;

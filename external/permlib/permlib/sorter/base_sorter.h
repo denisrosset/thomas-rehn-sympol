@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -39,10 +39,10 @@ namespace permlib {
 
 /// A sorter that sorts a sequence with respect to a given input ordering
 template<class ORDER>
-class OrderedSorter : public std::binary_function<ulong, ulong, bool> {
+class OrderedSorter : public std::binary_function<unsigned long, unsigned long, bool> {
 public:
 	/// true iff a preceeds b in given sequence
-	bool operator() (ulong a, ulong b) const {
+	bool operator() (unsigned long a, unsigned long b) const {
 		BOOST_ASSERT(a < m_size && b < m_size);
 		return m_order[a] < m_order[b];
 	}
@@ -51,7 +51,7 @@ protected:
 	/**
 	 * @param size size of domain which the order applies to
 	 */
-	explicit OrderedSorter(uint size) 
+	explicit OrderedSorter(unsigned int size) 
 		: m_size(size),
 		// initialize m_size elements with value m_size
 		m_order(m_size, m_size)
@@ -63,7 +63,7 @@ protected:
 	{}
 	
 	/// size of domain which the order applies to
-	uint m_size;
+	unsigned int m_size;
 	/// array which defines the order of points
 	ORDER m_order;
 };
@@ -73,7 +73,7 @@ protected:
  * note that copying (as it is implicitly done e.g. when used with std::sort) is expensive
  * in this cases try BaseSorterByReference instead
  */
-class BaseSorter : public OrderedSorter<std::vector<ulong> > {
+class BaseSorter : public OrderedSorter<std::vector<unsigned long> > {
 public:
 	/// constructor
 	/**
@@ -82,8 +82,8 @@ public:
 	 * @param end   end   iterator for partial sequence that induces the ordering
 	 */
 	template <class InputIterator>
-	BaseSorter(uint size, InputIterator begin, InputIterator end) 
-		: OrderedSorter<std::vector<ulong> >(size)
+	BaseSorter(unsigned int size, InputIterator begin, InputIterator end) 
+		: OrderedSorter<std::vector<unsigned long> >(size)
 	{
 		fillOrder(begin, end, m_order);
 	}
@@ -95,9 +95,9 @@ public:
 	 * @param order vector to store the ordering array
 	 */
 	template <class InputIterator>
-	static void fillOrder(InputIterator begin, InputIterator end, std::vector<ulong>& order) {
+	static void fillOrder(InputIterator begin, InputIterator end, std::vector<unsigned long>& order) {
 		InputIterator it;
-		uint i = 0;
+		unsigned int i = 0;
 		// base elements first
 		for (it = begin; it != end; ++it) {
 			order[*it] = ++i;
@@ -110,16 +110,16 @@ public:
 /**
  * This class uses a reference to a given ordering array to determine the order of elements
  */
-class BaseSorterByReference : public OrderedSorter<const std::vector<ulong>&> {
+class BaseSorterByReference : public OrderedSorter<const std::vector<unsigned long>&> {
 public:
 	/// constructor
-	explicit BaseSorterByReference(const std::vector<ulong>& order) : OrderedSorter<const std::vector<ulong>& >(order)
+	explicit BaseSorterByReference(const std::vector<unsigned long>& order) : OrderedSorter<const std::vector<unsigned long>& >(order)
 	{ }
 	
 	/// constructs an ordering array with the same parameters as BaseSorter for use with BaseSorterByReference
 	template <class InputIterator>
-	static std::vector<ulong> createOrder(uint size, InputIterator begin, InputIterator end) {
-		std::vector<ulong> order(size,size);
+	static std::vector<unsigned long> createOrder(unsigned int size, InputIterator begin, InputIterator end) {
+		std::vector<unsigned long> order(size,size);
 		BaseSorter::fillOrder(begin, end, order);
 		return order;
 	}

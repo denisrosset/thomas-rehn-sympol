@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@ public:
 	 * @param bsgs BSGS of group
 	 * @param pruningLevelDCM level up to which expensive double coset minimality pruning is performed; zero to disable
 	 */
-	MatrixAutomorphismSearch(const BSGSIN& bsgs, uint pruningLevelDCM);
+	MatrixAutomorphismSearch(const BSGSIN& bsgs, unsigned int pruningLevelDCM);
 	
 	/// initializes search
 	/**
@@ -60,17 +60,17 @@ public:
 	 * @param initialPartition initial list of row/column indices that have to be mapped onto each other, may be NULL
 	 */
 	template<class MATRIX>
-	void construct(const MATRIX& matrix, const std::list<ulong>* initialPartition = 0);
+	void construct(const MATRIX& matrix, const std::list<unsigned long>* initialPartition = 0);
 };
 
 template<class BSGSIN,class TRANSRET>
-MatrixAutomorphismSearch<BSGSIN,TRANSRET>::MatrixAutomorphismSearch(const BSGSIN& bsgs, uint pruningLevelDCM) 
+MatrixAutomorphismSearch<BSGSIN,TRANSRET>::MatrixAutomorphismSearch(const BSGSIN& bsgs, unsigned int pruningLevelDCM) 
 	: RBase<BSGSIN,TRANSRET>(bsgs, pruningLevelDCM)
 { }
 
 template<class BSGSIN,class TRANSRET>
 template<class MATRIX>
-void MatrixAutomorphismSearch<BSGSIN,TRANSRET>::construct(const MATRIX& matrix, const std::list<ulong>* initialPartition) {
+void MatrixAutomorphismSearch<BSGSIN,TRANSRET>::construct(const MATRIX& matrix, const std::list<unsigned long>* initialPartition) {
 	MatrixAutomorphismPredicate<PERM,MATRIX>* matrixPred = new MatrixAutomorphismPredicate<PERM,MATRIX>(matrix);
 	
 	if (initialPartition) {

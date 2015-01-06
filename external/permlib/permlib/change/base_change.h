@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -49,10 +49,10 @@ public:
     BaseChange() : m_statTranspositions(0), m_statScheierGeneratorsConsidered(0) {}
 	
 	/// nuber of base transpositions needed since construction
-	mutable uint m_statTranspositions;
+	mutable unsigned int m_statTranspositions;
 	
 	/// nuber of Schreier generators considered in transposition since construction
-	mutable uint m_statScheierGeneratorsConsidered;
+	mutable unsigned int m_statScheierGeneratorsConsidered;
 protected:
 	/// checks if insertion of a base point at given position is redundant
 	/**
@@ -60,14 +60,14 @@ protected:
 	 * @param baseTargetPos designated insertion position
 	 * @param alpha designated base point
 	 */
-	bool isRedundant(const BSGSCore<PERM,TRANS>& bsgs, uint baseTargetPos, ulong alpha) const;
+	bool isRedundant(const BSGSCore<PERM,TRANS>& bsgs, unsigned int baseTargetPos, unsigned long alpha) const;
 };
 
 template<class PERM,class TRANS>
-bool BaseChange<PERM,TRANS>::isRedundant(const BSGSCore<PERM,TRANS>& bsgs, uint baseTargetPos, ulong alpha) const {
+bool BaseChange<PERM,TRANS>::isRedundant(const BSGSCore<PERM,TRANS>& bsgs, unsigned int baseTargetPos, unsigned long alpha) const {
 	bool redundant = true;
 	const PointwiseStabilizerPredicate<PERM> stab_i(bsgs.B.begin(), bsgs.B.begin() + baseTargetPos);
-	BOOST_FOREACH(const PERMptr& g, bsgs.S) {
+	BOOST_FOREACH(const typename PERM::ptr& g, bsgs.S) {
 		if (!stab_i(g))
 			continue;
 		if (*g / alpha != alpha) {
@@ -76,7 +76,7 @@ bool BaseChange<PERM,TRANS>::isRedundant(const BSGSCore<PERM,TRANS>& bsgs, uint 
 		}
 	}
 	
-#ifdef DEBUG_OUTPUT
+#ifdef PERMLIB_DEBUG_OUTPUT
 	if (redundant) {
 		std::cout << "skip redundant " << (alpha+1) << std::endl;
 		print_iterable(bsgs.B.begin(), bsgs.B.begin() + baseTargetPos, 1, " redundant for");

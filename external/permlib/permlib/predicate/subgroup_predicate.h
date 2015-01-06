@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -59,13 +59,13 @@ public:
 	 * @param i backtrack recursion level
 	 * @param beta_i base element corresponding to current backtrack recursion level
 	 */
-	virtual bool childRestriction(const PERM &h, uint i, ulong beta_i) const = 0;
+	virtual bool childRestriction(const PERM &h, unsigned int i, unsigned long beta_i) const = 0;
 	
 	/// limit of recursion depth in backtrack search
 	/**
 	 * only images of the #{limit()} first base points have to be considered
 	 */
-	virtual uint limit() const = 0;
+	virtual unsigned int limit() const = 0;
 };
 
 }

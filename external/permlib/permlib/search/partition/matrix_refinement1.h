@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -48,34 +48,34 @@ template<class PERM,class MATRIX>
 class MatrixRefinement1 : public Refinement<PERM> {
 public:
 	/// constructor
-	explicit MatrixRefinement1(ulong n, const MATRIX& matrix);
+	explicit MatrixRefinement1(unsigned long n, const MATRIX& matrix);
 	
-	virtual uint apply(Partition& pi) const;
+	virtual unsigned int apply(Partition& pi) const;
 	
 	virtual bool init(Partition& pi);
 	
 private:
 	const MATRIX& m_matrix;
-	std::vector<std::list<ulong> > m_diagonalPartition;
+	std::vector<std::list<unsigned long> > m_diagonalPartition;
 };
 
 template<class PERM,class MATRIX>
-MatrixRefinement1<PERM,MATRIX>::MatrixRefinement1(ulong n, const MATRIX& matrix) 
+MatrixRefinement1<PERM,MATRIX>::MatrixRefinement1(unsigned long n, const MATRIX& matrix) 
 	: Refinement<PERM>(n, Default), m_matrix(matrix)
 {
 }
 
 template<class PERM,class MATRIX>
-uint MatrixRefinement1<PERM,MATRIX>::apply(Partition& pi) const {
+unsigned int MatrixRefinement1<PERM,MATRIX>::apply(Partition& pi) const {
 	BOOST_ASSERT( this->initialized() );
 	
-	uint ret = 0;
+	unsigned int ret = 0;
 	std::list<int>::const_iterator cellPairIt = Refinement<PERM>::m_cellPairs.begin();
 	while (cellPairIt != Refinement<PERM>::m_cellPairs.end()) {
-		ulong cell = *cellPairIt;
+		unsigned long cell = *cellPairIt;
 		++cellPairIt;
 		while (cellPairIt != Refinement<PERM>::m_cellPairs.end() && *cellPairIt != -1) {
-			ulong diagIndex = *cellPairIt;
+			unsigned long diagIndex = *cellPairIt;
 			if (pi.intersect(m_diagonalPartition[diagIndex].begin(), m_diagonalPartition[diagIndex].end(), cell))
 				++ret;
 			++cellPairIt;
@@ -89,14 +89,14 @@ uint MatrixRefinement1<PERM,MATRIX>::apply(Partition& pi) const {
 template<class PERM,class MATRIX>
 bool MatrixRefinement1<PERM,MATRIX>::init(Partition& pi) {
 	m_diagonalPartition.resize(m_matrix.k());
-	for (ulong i = 0; i < m_matrix.dimension(); ++i) {
+	for (unsigned long i = 0; i < m_matrix.dimension(); ++i) {
 		m_diagonalPartition[m_matrix.at(i,i)].push_back(i);
 	}
 	
 	bool foundIntersection = false;
-	for (uint c = 0; c < pi.cells(); ++c) {
+	for (unsigned int c = 0; c < pi.cells(); ++c) {
 		Refinement<PERM>::m_cellPairs.push_back(c);
-		for (ulong i = 0; i < m_diagonalPartition.size(); ++i) {
+		for (unsigned long i = 0; i < m_diagonalPartition.size(); ++i) {
 			if (pi.intersect(m_diagonalPartition[i].begin(), m_diagonalPartition[i].end(), c)) {
 				Refinement<PERM>::m_cellPairs.push_back(i);
 				foundIntersection = true;

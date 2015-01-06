@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,9 @@ namespace permlib {
 template<class PERM, class TRANS>
 class RandomBaseTranspose : public BaseTranspose<PERM,TRANS> {
 protected:
-	virtual Generator<PERM>* setupGenerator(BSGS<PERM,TRANS> &bsgs, uint i, const PERMlist &S_i, const TRANS &U_i) const;
+	typedef typename BaseTranspose<PERM,TRANS>::PERMlist PERMlist;
+	
+	virtual Generator<PERM>* setupGenerator(BSGS<PERM,TRANS> &bsgs, unsigned int i, const PERMlist &S_i, const TRANS &U_i) const;
 };
 
 //
@@ -57,7 +59,7 @@ protected:
 //
 
 template<class PERM, class TRANS>
-Generator<PERM>* RandomBaseTranspose<PERM,TRANS>::setupGenerator(BSGS<PERM,TRANS> &bsgs, uint i, const PERMlist &S_i, const TRANS &U_i) const {
+Generator<PERM>* RandomBaseTranspose<PERM,TRANS>::setupGenerator(BSGS<PERM,TRANS> &bsgs, unsigned int i, const PERMlist &S_i, const TRANS &U_i) const {
     return new RandomSchreierGenerator<PERM,TRANS>(bsgs, i, U_i);
 }
 

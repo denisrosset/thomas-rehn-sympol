@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -51,29 +51,29 @@ class SetStabilizeRefinement : public Refinement<PERM> {
 public:
 	/// constructor
 	template<class InputIterator>
-	SetStabilizeRefinement(ulong n, InputIterator begin, InputIterator end);
+	SetStabilizeRefinement(unsigned long n, InputIterator begin, InputIterator end);
 	
-	virtual uint apply(Partition& pi) const;
+	virtual unsigned int apply(Partition& pi) const;
 	
 	virtual bool init(Partition& pi);
 private:
-	std::vector<ulong> toStab;
+	std::vector<unsigned long> toStab;
 };
 
 template<class PERM>
 template<class InputIterator>
-SetStabilizeRefinement<PERM>::SetStabilizeRefinement(ulong n, InputIterator begin, InputIterator end) 
+SetStabilizeRefinement<PERM>::SetStabilizeRefinement(unsigned long n, InputIterator begin, InputIterator end) 
 	: Refinement<PERM>(n, Default), toStab(begin, end)
 {
 	std::sort(toStab.begin(), toStab.end());
 }
 
 template<class PERM>
-uint SetStabilizeRefinement<PERM>::apply(Partition& pi) const {
+unsigned int SetStabilizeRefinement<PERM>::apply(Partition& pi) const {
 	BOOST_ASSERT( this->initialized() );
-	uint ret = 0;
-	BOOST_FOREACH(uint cell, Refinement<PERM>::m_cellPairs) {
-		DEBUG(std::cout << "apply set stab " << cell << std::endl;)
+	unsigned int ret = 0;
+	BOOST_FOREACH(unsigned int cell, Refinement<PERM>::m_cellPairs) {
+		PERMLIB_DEBUG(std::cout << "apply set stab " << cell << std::endl;)
 		if (pi.intersect(toStab.begin(), toStab.end(), cell))
 			++ret;
 	}
@@ -82,7 +82,7 @@ uint SetStabilizeRefinement<PERM>::apply(Partition& pi) const {
 
 template<class PERM>
 bool SetStabilizeRefinement<PERM>::init(Partition& pi) {
-	for (uint c = 0; c < pi.cells(); ++c) {
+	for (unsigned int c = 0; c < pi.cells(); ++c) {
 		if (pi.intersect(toStab.begin(), toStab.end(), c))
 			Refinement<PERM>::m_cellPairs.push_back(c);
 	}

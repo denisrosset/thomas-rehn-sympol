@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,8 @@ public:
 	/// constructor
 	explicit GroupRefinement(const BSGSCore<PERM,TRANS>& bsgs);
 	
-	virtual uint apply(Partition& pi) const;
-	virtual uint apply2(Partition& pi, const PERM& t) const;
+	virtual unsigned int apply(Partition& pi) const;
+	virtual unsigned int apply2(Partition& pi, const PERM& t) const;
 	
 	virtual bool init(Partition& pi);
 	
@@ -56,10 +56,10 @@ public:
 private:
 	const BSGSCore<PERM,TRANS>& m_bsgs;
 	
-	std::vector<ulong> thetaOrbit;
+	std::vector<unsigned long> thetaOrbit;
 	std::vector<int> thetaBorder;
 	
-	uint apply2(Partition& pi, const PERM* t) const;
+	unsigned int apply2(Partition& pi, const PERM* t) const;
 };
 
 template<class PERM,class TRANS>
@@ -69,25 +69,25 @@ GroupRefinement<PERM,TRANS>::GroupRefinement(const BSGSCore<PERM,TRANS>& bsgs)
 }
 
 template<class PERM,class TRANS>
-uint GroupRefinement<PERM,TRANS>::apply(Partition& pi) const {
+unsigned int GroupRefinement<PERM,TRANS>::apply(Partition& pi) const {
 	return apply2(pi, 0);
 }
 
 template<class PERM,class TRANS>
-uint GroupRefinement<PERM,TRANS>::apply2(Partition& pi, const PERM& t) const {
+unsigned int GroupRefinement<PERM,TRANS>::apply2(Partition& pi, const PERM& t) const {
 	return apply2(pi, &t);
 }
 
 template<class PERM,class TRANS>
-uint GroupRefinement<PERM,TRANS>::apply2(Partition& pi, const PERM* t) const {
+unsigned int GroupRefinement<PERM,TRANS>::apply2(Partition& pi, const PERM* t) const {
 	BOOST_ASSERT( this->initialized() );
 	
-	std::vector<ulong> myTheta(thetaOrbit);	
+	std::vector<unsigned long> myTheta(thetaOrbit);	
 	
-	std::vector<ulong>::iterator thetaIt;
-	std::vector<ulong>::iterator thetaBeginIt, thetaEndIt;
+	std::vector<unsigned long>::iterator thetaIt;
+	std::vector<unsigned long>::iterator thetaBeginIt, thetaEndIt;
 	std::list<int>::const_iterator cellPairIt = Refinement<PERM>::m_cellPairs.begin();
-	uint ret = false;
+	unsigned int ret = false;
 	while (cellPairIt != Refinement<PERM>::m_cellPairs.end()) {
 		const int thetaC = *cellPairIt;
 		++cellPairIt;
@@ -111,9 +111,9 @@ uint GroupRefinement<PERM,TRANS>::apply2(Partition& pi, const PERM* t) const {
 		
 		for (int c = *cellPairIt; c >= 0; c = *(++cellPairIt)) {
 			if (t) {
-				DEBUG(std::cout << "apply theta " << thetaC << "," << c << " t = " << *t << " to " << pi << std::endl;)
+				PERMLIB_DEBUG(std::cout << "apply theta " << thetaC << "," << c << " t = " << *t << " to " << pi << std::endl;)
 			} else {
-				DEBUG(std::cout << "apply theta " << thetaC << "," << c << " t = 0 to " << pi << std::endl;)
+				PERMLIB_DEBUG(std::cout << "apply theta " << thetaC << "," << c << " t = 0 to " << pi << std::endl;)
 			}
 			//print_iterable(thetaBeginIt, thetaEndIt, 1, "theta apply");
 			if (pi.intersect(thetaBeginIt, thetaEndIt, c))
@@ -127,55 +127,55 @@ uint GroupRefinement<PERM,TRANS>::apply2(Partition& pi, const PERM* t) const {
 
 template<class PERM,class TRANS>
 bool GroupRefinement<PERM,TRANS>::init(Partition& pi) {
-	uint fixSize = pi.fixPointsSize();
+	unsigned int fixSize = pi.fixPointsSize();
 	if (fixSize > 0) {
 		boost::dynamic_bitset<> orbitCharacterstic(m_bsgs.n);
 		
-		std::vector<ulong>::const_iterator Bit;
-		std::vector<ulong>::const_iterator fixIt = pi.fixPointsBegin();
-		std::vector<ulong>::const_iterator fixEndIt = pi.fixPointsEnd();
+		std::vector<dom_int>::const_iterator Bit;
+		std::vector<unsigned long>::const_iterator fixIt = pi.fixPointsBegin();
+		std::vector<unsigned long>::const_iterator fixEndIt = pi.fixPointsEnd();
 		for (Bit = m_bsgs.B.begin(); Bit != m_bsgs.B.end(); ++Bit) {
 			while (fixIt != fixEndIt && *fixIt != *Bit) {
-				DEBUG(std::cout << "skip " << (*fixIt + 1) << " for " << (*Bit + 1) << std::endl;)
+				PERMLIB_DEBUG(std::cout << "skip " << (*fixIt + 1) << " for " << (*Bit + 1) << std::endl;)
 				++fixIt;
 			}
 			if (fixIt == fixEndIt)
 				break;
 			++fixIt;
 		}
-		//PointwiseStabilizerPredicate<PERM> fixStab(m_bsgs.B.begin(), m_bsgs.B.begin() + std::min(fixSize, static_cast<uint>(m_bsgs.B.size())));
-#ifdef DEBUG_OUTPUT
+		//PointwiseStabilizerPredicate<PERM> fixStab(m_bsgs.B.begin(), m_bsgs.B.begin() + std::min(fixSize, static_cast<unsigned int>(m_bsgs.B.size())));
+#ifdef PERMLIB_DEBUG_OUTPUT
 		print_iterable(m_bsgs.B.begin(), m_bsgs.B.end(), 1, " BSGS ");
 		print_iterable(m_bsgs.B.begin(), Bit, 1, "to fix");
 		print_iterable(pi.fixPointsBegin(), pi.fixPointsEnd(), 1, "   fix");
 #endif
 		PointwiseStabilizerPredicate<PERM> fixStab(m_bsgs.B.begin(), Bit);
 		std::list<PERM> S_fix;
-		BOOST_FOREACH(const PERMptr& p, m_bsgs.S) {
+		BOOST_FOREACH(const typename PERM::ptr& p, m_bsgs.S) {
 			if (fixStab(p)) {
-				//std::cout << "$ " << *p << " fixes " << std::min(fixSize, static_cast<ulong>(m_bsgs.B.size())) << " points" << std::endl;
+				//std::cout << "$ " << *p << " fixes " << std::min(fixSize, static_cast<unsigned long>(m_bsgs.B.size())) << " points" << std::endl;
 				S_fix.push_back(*p);
 			}
 		}
 		
-		uint thetaIndex = 0;
+		unsigned int thetaIndex = 0;
 		std::vector<int>::iterator thetaBorderIt = thetaBorder.begin();
-		std::vector<ulong>::iterator thetaIt = thetaOrbit.begin();
-		for (ulong alpha = 0; alpha < m_bsgs.n; ++alpha) {
+		std::vector<unsigned long>::iterator thetaIt = thetaOrbit.begin();
+		for (unsigned long alpha = 0; alpha < m_bsgs.n; ++alpha) {
 			if (orbitCharacterstic[alpha])
 				continue;
 			orbitCharacterstic.flip(alpha);
-			std::vector<ulong>::iterator thetaOrbitBeginIt = thetaIt;
+			std::vector<unsigned long>::iterator thetaOrbitBeginIt = thetaIt;
 			*thetaIt = alpha;
 			++thetaIt;
 			++thetaIndex;
-			std::vector<ulong>::iterator thetaOrbitEndIt = thetaIt;
+			std::vector<unsigned long>::iterator thetaOrbitEndIt = thetaIt;
 			
-			std::vector<ulong>::iterator it;
+			std::vector<unsigned long>::iterator it;
 			for (it = thetaOrbitBeginIt; it != thetaOrbitEndIt; ++it) {
-				ulong beta = *it;
+				unsigned long beta = *it;
 				BOOST_FOREACH(const PERM &p, S_fix) {
-					ulong beta_p = p / beta;
+					unsigned long beta_p = p / beta;
 					if (!orbitCharacterstic[beta_p]) {
 						*thetaIt = beta_p;
 						++thetaIt;
@@ -190,9 +190,9 @@ bool GroupRefinement<PERM,TRANS>::init(Partition& pi) {
 		}
 		
 		thetaIt = thetaOrbit.begin();
-		std::vector<ulong>::iterator thetaItEnd;
+		std::vector<unsigned long>::iterator thetaItEnd;
 		thetaBorderIt = thetaBorder.begin();
-		uint thetaC = 0;
+		unsigned int thetaC = 0;
 		int oldBorder = 0;
 		while (thetaBorderIt != thetaBorder.end() && *thetaBorderIt >= 0) {
 			thetaItEnd = thetaOrbit.begin() + *thetaBorderIt;
@@ -200,15 +200,15 @@ bool GroupRefinement<PERM,TRANS>::init(Partition& pi) {
 			
 			if (*thetaBorderIt - oldBorder != 1 || std::find(pi.fixPointsBegin(), pi.fixPointsEnd(), *thetaIt) == pi.fixPointsEnd()) {
 				bool hasTheta = false;
-				const uint oldCellNumber = pi.cells();
-				for (uint c = 0; c < oldCellNumber; ++c) {
+				const unsigned int oldCellNumber = pi.cells();
+				for (unsigned int c = 0; c < oldCellNumber; ++c) {
 					if (pi.cellSize(c) == 1)
 						continue;
 					
 					//std::cout << "  theta pi = " << pi << std::endl;
 					//print_iterable(thetaIt, thetaItEnd, 1, "theta prep");
 					if (pi.intersect(thetaIt, thetaItEnd, c)) {
-						DEBUG(std::cout << "prepare theta " << thetaC << "," << c << std::endl;)
+						PERMLIB_DEBUG(std::cout << "prepare theta " << thetaC << "," << c << std::endl;)
 						//print_iterable(thetaIt, thetaItEnd, 1, "theta prep");
 						if (!hasTheta) {
 							Refinement<PERM>::m_cellPairs.push_back(thetaC);

@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,10 @@ typedef boost::shared_ptr<Permutation> PermutationPtr;
 class PermutationWord {
 public:
 	/// typedef for permutation image
-	typedef std::vector<unsigned long> perm;
+	typedef Permutation::perm perm;
+	
+	/// boost shared_ptr of this class
+	typedef boost::shared_ptr<PermutationWord> ptr;
 	
 	/// constructs identity permutation acting on n elements
 	explicit PermutationWord(unsigned int n);
@@ -81,11 +84,11 @@ public:
     bool operator==(const PermutationWord &p2) const;
 
 	/// lets permutation act on val
-	inline ulong operator/(ulong val) const { return at(val); }
+	inline unsigned long operator/(unsigned long val) const { return at(val); }
 	/// lets permutation act on val
-	ulong at(ulong val) const;
+	unsigned long at(unsigned long val) const;
 	/// lets inverse permutation act on val, i.e. compute j such that (this->at(j) == val)
-	ulong operator%(ulong val) const;
+	unsigned long operator%(unsigned long val) const;
 
 	/// output
 	friend std::ostream &operator<< (std::ostream &out, const PermutationWord &p);
@@ -101,10 +104,10 @@ public:
 	//TODO: it must be the other way round: isIdentity should call flush
 	inline void flush() { isIdentity(true); }
 	/// number of points this permutation acts on
-	inline uint size() const { return m_n; }
+	inline unsigned int size() const { return m_n; }
 	
 	/// number of generators in the word generator pool
-	static ulong elementsNumber() { return ms_elements.size(); }
+	static unsigned long elementsNumber() { return ms_elements.size(); }
 	
 	/// deletes all elementary permutations from the storage. use ONLY if there is currently no PermutationWord in use anywhere
 	static void clearStorage();
@@ -199,7 +202,7 @@ inline PermutationWord& PermutationWord::operator^=(const PermutationWord &p) {
 
 inline PermutationWord& PermutationWord::invertInplace() {
 	std::vector<int> oldWord(m_word);
-	for (uint i=0; i<oldWord.size(); ++i) {
+	for (unsigned int i=0; i<oldWord.size(); ++i) {
 		m_word[i] = -oldWord[oldWord.size() - 1 - i];
 	}
 	return *this;
@@ -207,14 +210,14 @@ inline PermutationWord& PermutationWord::invertInplace() {
 
 inline PermutationWord PermutationWord::operator~() const {
 	PermutationWord inv(*this);
-	for (uint i=0; i<m_word.size(); ++i) {
+	for (unsigned int i=0; i<m_word.size(); ++i) {
 		inv.m_word[i] = -m_word[m_word.size() - 1 - i];
 	}
 	return inv;
 }
 
-inline ulong PermutationWord::at(ulong val) const {
-	ulong ret = val;
+inline unsigned long PermutationWord::at(unsigned long val) const {
+	unsigned long ret = val;
 	BOOST_FOREACH(int e, m_word) {
 		if (e > 0)
 			ret = *(ms_elements[e]) / ret;
@@ -224,8 +227,8 @@ inline ulong PermutationWord::at(ulong val) const {
 	return ret;
 }
 
-inline ulong PermutationWord::operator%(ulong val) const {
-	ulong ret = val;
+inline unsigned long PermutationWord::operator%(unsigned long val) const {
+	unsigned long ret = val;
 	for (std::vector<int>::reverse_iterator lit = m_word.rbegin(); lit != m_word.rend(); ++lit) {
 		int e = *lit;
 		if (e < 0)

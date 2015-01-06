@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -54,29 +54,29 @@ public:
 	 * @see Transversal::TrivialAction
 	 */
 	template<class Action>
-	void orbit(const PDOMAIN& beta, const PERMlist &generators, Action a);
+	void orbit(const PDOMAIN& beta, const std::list<typename PERM::ptr> &generators, Action a);
     
 	/// number of orbit elements
-	ulong size() const {return m_orbitSet.size(); }
+	unsigned long size() const {return m_orbitSet.size(); }
     
 	virtual const PDOMAIN& element() const;
 	
-	typedef typename std::set<PDOMAIN>::const_iterator OrbitIt;
+	typedef typename std::set<PDOMAIN>::const_iterator const_iterator;
 	/// begin-iterator to orbit elements
-	OrbitIt begin() const { return m_orbitSet.begin(); }
+	const_iterator begin() const { return m_orbitSet.begin(); }
 	/// end-iterator to orbit elements
-	OrbitIt end() const { return m_orbitSet.end(); }
+	const_iterator end() const { return m_orbitSet.end(); }
 protected:
 	/// orbit elements as set
 	std::set<PDOMAIN> m_orbitSet;
 	
-	virtual bool foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const PERMptr& p);
+	virtual bool foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const typename PERM::ptr& p);
 };
 
 template <class PERM,class PDOMAIN>
-inline bool OrbitSet<PERM,PDOMAIN>::foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const PERMptr& p) {
+inline bool OrbitSet<PERM,PDOMAIN>::foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const typename PERM::ptr& p) {
 	if (m_orbitSet.insert(alpha_p).second) {
-		DEBUG(std::cout << " o " << alpha_p <<  "  @ " << (*p) << std::endl;)
+		PERMLIB_DEBUG(std::cout << " o " << alpha_p <<  "  @ " << (*p) << std::endl;)
 		return true;
 	}
 	return false;
@@ -89,7 +89,7 @@ inline bool OrbitSet<PERM,PDOMAIN>::contains(const PDOMAIN& val) const {
 
 template <class PERM,class PDOMAIN>
 template<class Action>
-inline void OrbitSet<PERM,PDOMAIN>::orbit(const PDOMAIN& beta, const PERMlist &generators, Action a) {
+inline void OrbitSet<PERM,PDOMAIN>::orbit(const PDOMAIN& beta, const std::list<typename PERM::ptr> &generators, Action a) {
 	std::list<PDOMAIN> orbitList;
 	Orbit<PERM,PDOMAIN>::orbit(beta, generators, a, orbitList);
 }

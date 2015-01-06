@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -67,25 +67,25 @@ ProductReplacementGenerator<PERM>::ProductReplacementGenerator(InputIterator gen
 	: m_generators(boost::indirect_iterator<InputIterator, PERM>(generatorsBegin), 
 				   boost::indirect_iterator<InputIterator, PERM>(generatorsEnd)) 
 {
-	const uint additionalElements = 10;
-	const uint oldSize = m_generators.size();
-	const uint replacementRounds = std::max(oldSize * 10, static_cast<uint>(100));
+	const unsigned int additionalElements = 10;
+	const unsigned int oldSize = m_generators.size();
+	const unsigned int replacementRounds = std::max(oldSize * 10, static_cast<unsigned int>(100));
 	
 	m_generators.reserve(oldSize + additionalElements + 1);
-	for (uint i = 0; i < additionalElements; ++i) {
+	for (unsigned int i = 0; i < additionalElements; ++i) {
 		m_generators.push_back(m_generators[randomInt(oldSize)]);
 	}
 	m_generators.push_back(PERM(m_generators[0].size()));
 	
-	for (uint k = 0; k < replacementRounds; ++k) {
+	for (unsigned int k = 0; k < replacementRounds; ++k) {
 		next();
 	}
 }
 
 template <class PERM>
 PERM ProductReplacementGenerator<PERM>::next() {
-	uint i = randomInt(m_generators.size() - 1);
-	uint j = randomInt(m_generators.size() - 2);
+	unsigned int i = randomInt(m_generators.size() - 1);
+	unsigned int j = randomInt(m_generators.size() - 2);
 	if (j >= i) ++j;
 	switch (randomInt(4)) {
 	case 0:

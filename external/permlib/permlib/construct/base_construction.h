@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -47,28 +47,28 @@ public:
 	/**
 	 * @param n cardinality of the set the group is acting on
 	 */
-	explicit BaseConstruction(uint n);
+	explicit BaseConstruction(dom_int n);
 protected:
 	/// cardinality of the set the group is acting on
-	uint m_n;
+	dom_int m_n;
 	
 	/// initializes BSGS object
 	/**
 	 * @param generatorsBegin begin iterator of group generators of type PERM
 	 * @param generatorsEnd  end iterator of group generators of type PERM
-	 * @param prescribedBaseBegin begin iterator of prescribed base of type ulong
-	 * @param prescribedBaseEnd  end iterator of prescribed base of type ulong
+	 * @param prescribedBaseBegin begin iterator of prescribed base of type unsigned long
+	 * @param prescribedBaseEnd  end iterator of prescribed base of type unsigned long
 	 * @param bsgs  BSGS object to work on
 	 * @param S     approximation of strong generating set to fill
 	 */
 	template <class ForwardIterator, class InputIterator>
-	void setup(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd, BSGS<PERM, TRANS> &bsgs, std::vector<PERMlist> &S) const;
+	void setup(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd, BSGS<PERM, TRANS> &bsgs, std::vector<std::list<typename PERM::ptr> > &S) const;
 	
 	/// merges all strong generators in S into a single strong generating set ret.S
-	void mergeGenerators(std::vector<PERMlist>& S, BSGS<PERM,TRANS>& ret) const;
+	void mergeGenerators(std::vector<std::list<typename PERM::ptr> >& S, BSGS<PERM,TRANS>& ret) const;
 	
 	/// auxilliary element marking an empty iterator
-	static const ulong *empty;
+	static const unsigned long *empty;
 };
 
 //
@@ -76,28 +76,28 @@ protected:
 //
 
 template <class PERM, class TRANS>
-const ulong *BaseConstruction<PERM, TRANS>::empty = static_cast<ulong*>(0);
+const unsigned long *BaseConstruction<PERM, TRANS>::empty = static_cast<unsigned long*>(0);
 
 
 template <class PERM, class TRANS>
-BaseConstruction<PERM,TRANS>::BaseConstruction(uint n) 
+BaseConstruction<PERM,TRANS>::BaseConstruction(dom_int n) 
 	: m_n(n) 
 { }
 
 template <class PERM, class TRANS>
 template <class ForwardIterator, class InputIterator>
-void BaseConstruction<PERM,TRANS>::setup(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd, BSGS<PERM, TRANS> &bsgs, std::vector<PERMlist> &S) const
+void BaseConstruction<PERM,TRANS>::setup(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd, BSGS<PERM, TRANS> &bsgs, std::vector<std::list<typename PERM::ptr> > &S) const
 {
-	std::vector<ulong> &B = bsgs.B;
+	std::vector<dom_int> &B = bsgs.B;
 	std::vector<TRANS> &U = bsgs.U;
 
 	B.insert(B.begin(), prescribedBaseBegin, prescribedBaseEnd);
 
 	// extend base so that no group element fixes all base elements
-	ulong beta = m_n + 1;
+	dom_int beta = m_n + 1;
 	PointwiseStabilizerPredicate<PERM> stab_k(B.begin(), B.end());
 	for (ForwardIterator genIt = generatorsBegin ; genIt != generatorsEnd; ++genIt) {
-		const PERMptr &gen = *genIt;
+		const typename PERM::ptr &gen = *genIt;
 		if (stab_k(gen)) {
 			if (bsgs.chooseBaseElement(*gen, beta)) {
 				B.push_back(beta);
@@ -108,10 +108,10 @@ void BaseConstruction<PERM,TRANS>::setup(ForwardIterator generatorsBegin, Forwar
 	BOOST_ASSERT(!B.empty());
 
 	// pre-compute transversals and fundamental orbits for the current base
-	uint i = 0;
-	std::vector<ulong>::iterator Bit;
+	unsigned int i = 0;
+	std::vector<dom_int>::iterator Bit;
 	for (Bit = B.begin(); Bit != B.end(); ++Bit) {
-		PERMlist S_i;
+		std::list<typename PERM::ptr> S_i;
 		std::copy_if(generatorsBegin, generatorsEnd,
 				std::back_inserter(S_i), PointwiseStabilizerPredicate<PERM>(B.begin(), Bit));
 
@@ -125,13 +125,13 @@ void BaseConstruction<PERM,TRANS>::setup(ForwardIterator generatorsBegin, Forwar
 }
 
 template <class PERM, class TRANS>
-void BaseConstruction<PERM,TRANS>::mergeGenerators(std::vector<PERMlist>& S, BSGS<PERM,TRANS>& ret) const {
-	std::map<PERM*,PERMptr> generatorMap;
+void BaseConstruction<PERM,TRANS>::mergeGenerators(std::vector<std::list<typename PERM::ptr> >& S, BSGS<PERM,TRANS>& ret) const {
+	std::map<PERM*,typename PERM::ptr> generatorMap;
 	// merge all generators into one list
-	BOOST_FOREACH(PERMlist &S_j, S) {
-		BOOST_FOREACH(PERMptr &gen, S_j) {
+	BOOST_FOREACH(std::list<typename PERM::ptr> &S_j, S) {
+		BOOST_FOREACH(typename PERM::ptr &gen, S_j) {
 			bool found = false;
-			BOOST_FOREACH(const PERMptr& genS, ret.S) {
+			BOOST_FOREACH(const typename PERM::ptr& genS, ret.S) {
 				if (*genS == *gen) {
 					found = true;
 					generatorMap.insert(std::make_pair(gen.get(), genS));

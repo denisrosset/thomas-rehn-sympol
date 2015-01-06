@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -49,9 +49,9 @@ template<class PERM,class MATRIX>
 class MatrixRefinement2 : public Refinement<PERM> {
 public:
 	/// constructor
-	explicit MatrixRefinement2(ulong n, const MATRIX& matrix);
+	explicit MatrixRefinement2(unsigned long n, const MATRIX& matrix);
 	
-	virtual uint apply(Partition& pi) const;
+	virtual unsigned int apply(Partition& pi) const;
 	
 	virtual bool init(Partition& pi);
 	
@@ -61,12 +61,12 @@ private:
 	/// distribution of element frequency across a matrix row or column
 	class Fingerprint {
 		public:
-			Fingerprint(ulong k) : m_fingerprint(k) {}
+			Fingerprint(unsigned long k) : m_fingerprint(k) {}
 			
 			/// lex-min ordering
 			bool operator<(const Fingerprint& f) const {
 				BOOST_ASSERT(f.m_fingerprint.size() == m_fingerprint.size());
-				for (uint i=0; i<m_fingerprint.size(); ++i) {
+				for (unsigned int i=0; i<m_fingerprint.size(); ++i) {
 					if (m_fingerprint[i] < f.m_fingerprint[i])
 						return true;
 					if (m_fingerprint[i] > f.m_fingerprint[i])
@@ -76,43 +76,43 @@ private:
 			}
 			bool operator==(const Fingerprint& f) const {
 				BOOST_ASSERT(f.m_fingerprint.size() == m_fingerprint.size());
-				for (uint i=0; i<m_fingerprint.size(); ++i) {
+				for (unsigned int i=0; i<m_fingerprint.size(); ++i) {
 					if (m_fingerprint[i] != f.m_fingerprint[i])
 						return false;
 				}
 				return true;
 			}
-			ulong& operator[](ulong i) { 
+			unsigned long& operator[](unsigned long i) { 
 				BOOST_ASSERT(i < m_fingerprint.size());
 				return m_fingerprint[i]; 
 			}
-			const ulong& operator[](ulong i) const { 
+			const unsigned long& operator[](unsigned long i) const { 
 				BOOST_ASSERT(i < m_fingerprint.size());
 				return m_fingerprint[i]; 
 			}
 		private:
-			std::vector<ulong> m_fingerprint;
+			std::vector<unsigned long> m_fingerprint;
 	};
 	
-	uint splitCell(Partition& pi, ulong i) const;
-	void computeFingerprint(const Partition& pi, ulong i, ulong j, std::map<Fingerprint,std::list<ulong> >& map) const;
+	unsigned int splitCell(Partition& pi, unsigned long i) const;
+	void computeFingerprint(const Partition& pi, unsigned long i, unsigned long j, std::map<Fingerprint,std::list<unsigned long> >& map) const;
 };
 
 template<class PERM,class MATRIX>
-MatrixRefinement2<PERM,MATRIX>::MatrixRefinement2(ulong n, const MATRIX& matrix) 
+MatrixRefinement2<PERM,MATRIX>::MatrixRefinement2(unsigned long n, const MATRIX& matrix) 
 	: Refinement<PERM>(n, Default), m_matrix(matrix)
 {
 }
 
 template<class PERM,class MATRIX>
-uint MatrixRefinement2<PERM,MATRIX>::apply(Partition& pi) const {
+unsigned int MatrixRefinement2<PERM,MATRIX>::apply(Partition& pi) const {
 	BOOST_ASSERT( this->initialized() );
 	
-	uint ret = 0;
+	unsigned int ret = 0;
 	std::list<int>::const_iterator cellPairIt = Refinement<PERM>::m_cellPairs.begin();
 	while (cellPairIt != Refinement<PERM>::m_cellPairs.end()) {
-		ulong i = *cellPairIt++;
-		ret += splitCell(pi, static_cast<ulong>(i));
+		unsigned long i = *cellPairIt++;
+		ret += splitCell(pi, static_cast<unsigned long>(i));
 	}
 	return ret;
 }
@@ -120,7 +120,7 @@ uint MatrixRefinement2<PERM,MATRIX>::apply(Partition& pi) const {
 
 template<class PERM,class MATRIX>
 bool MatrixRefinement2<PERM,MATRIX>::init(Partition& pi) {
-	for (ulong i = 0; i < pi.cells(); ++i) {
+	for (unsigned long i = 0; i < pi.cells(); ++i) {
 		if (splitCell(pi, i))
 			Refinement<PERM>::m_cellPairs.push_back(i);
 	}
@@ -134,25 +134,25 @@ bool MatrixRefinement2<PERM,MATRIX>::init(Partition& pi) {
 }
 
 template<class PERM,class MATRIX>
-uint MatrixRefinement2<PERM,MATRIX>::splitCell(Partition& pi, ulong i) const {
-	ulong ret = 0;
+unsigned int MatrixRefinement2<PERM,MATRIX>::splitCell(Partition& pi, unsigned long i) const {
+	unsigned long ret = 0;
 	if (pi.cellSize(i) < 2)
 		return ret;
-	for (ulong j = 0; j < pi.cells(); ++j) {
-		std::map<Fingerprint,std::list<ulong> > map;
+	for (unsigned long j = 0; j < pi.cells(); ++j) {
+		std::map<Fingerprint,std::list<unsigned long> > map;
 		computeFingerprint(pi, i, j, map);
 		if (map.size() > 1) {
-			DEBUG(std::cout << "split " << i << " because of " << j << " in " << pi << std::endl;)
-			typename std::map<Fingerprint,std::list<ulong> >::const_iterator fit;
+			PERMLIB_DEBUG(std::cout << "split " << i << " because of " << j << " in " << pi << std::endl;)
+			typename std::map<Fingerprint,std::list<unsigned long> >::const_iterator fit;
 			for (fit = map.begin(); fit != map.end(); ++fit) {
-				std::pair<Fingerprint, std::list<ulong> > splitCell = *fit;
+				std::pair<Fingerprint, std::list<unsigned long> > splitCell = *fit;
 				/*std::cout << "FOO ";
-				BOOST_FOREACH(ulong a, splitCell.second) {
+				BOOST_FOREACH(unsigned long a, splitCell.second) {
 					std::cout << (a+1) << " ";
 				}
 				std::cout << std::endl;
 				std::cout << "GOO ";
-				BOOST_FOREACH(ulong a, splitCell.first.m_fingerprint) {
+				BOOST_FOREACH(unsigned long a, splitCell.first.m_fingerprint) {
 					std::cout << (a) << " ";
 				}
 				std::cout << std::endl;*/
@@ -167,15 +167,15 @@ uint MatrixRefinement2<PERM,MATRIX>::splitCell(Partition& pi, ulong i) const {
 }
 
 template<class PERM,class MATRIX>
-void MatrixRefinement2<PERM,MATRIX>::computeFingerprint(const Partition& pi, ulong i, ulong j, std::map<Fingerprint,std::list<ulong> >& map) const {
+void MatrixRefinement2<PERM,MATRIX>::computeFingerprint(const Partition& pi, unsigned long i, unsigned long j, std::map<Fingerprint,std::list<unsigned long> >& map) const {
 	for (Partition::CellIt cellI = pi.cellBegin(i); cellI != pi.cellEnd(i); ++cellI) {
 		Fingerprint f(m_matrix.k());
 		for (Partition::CellIt cellJ = pi.cellBegin(j); cellJ != pi.cellEnd(j); ++cellJ) {
 			++f[m_matrix.at(*cellI, *cellJ)];
 		}
-		std::pair<typename std::map<Fingerprint,std::list<ulong> >::iterator, bool> p = 
-			map.insert(std::pair<Fingerprint, std::list<ulong> >(f, std::list<ulong>()));
-		std::list<ulong>& l = p.first->second;
+		std::pair<typename std::map<Fingerprint,std::list<unsigned long> >::iterator, bool> p = 
+			map.insert(std::pair<Fingerprint, std::list<unsigned long> >(f, std::list<unsigned long>()));
+		std::list<unsigned long>& l = p.first->second;
 		l.push_back(*cellI);
 	}
 }

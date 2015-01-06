@@ -131,12 +131,13 @@ void QArray::normalize(ulong pivotIndex) {
 		return;
 	}
 
+	mpq_t tmp;
+	mpq_init(tmp);
+	mpq_abs(tmp, m_aq[pivotIndex]);
 	for (ulong i = 0; i < m_ulN; ++i) {
-		if (i == pivotIndex)
-			continue;
-		mpq_div(m_aq[i], m_aq[i], m_aq[pivotIndex]);
+		mpq_div(m_aq[i], m_aq[i], tmp);
 	}
-	mpq_set_ui(m_aq[pivotIndex], 1, 1);
+	mpq_clear(tmp);
 }
 
 

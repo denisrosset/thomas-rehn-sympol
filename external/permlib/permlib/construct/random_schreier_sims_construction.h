@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@ public:
 	 * @param rng a RandomGenerator generating uniformly distributed random group elements of the group that the BSGS is constructed of
 	 * @param knownOrder order of the group that the BSGS is constructed of. If non-zero upgrades algorithm to Las Vegas type and the output is guaranteed to be a BSGS.
 	 */
-	RandomSchreierSimsConstruction(uint n, RandomGenerator<PERM> *rng, ulong knownOrder = 0);
+	RandomSchreierSimsConstruction(unsigned int n, RandomGenerator<PERM> *rng, unsigned long knownOrder = 0);
 
 	/// constructs a probable BSGS for group given by generators with no base prescribed
 	/** @see construct(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd, bool& guaranteedBSGS)
@@ -70,24 +70,24 @@ public:
 	 *
 	 * @param generatorsBegin begin iterator of group generators of type PERM
 	 * @param generatorsEnd  end iterator of group generators of type PERM
-	 * @param prescribedBaseBegin begin iterator of prescribed base of type ulong
-	 * @param prescribedBaseEnd  end iterator of prescribed base of type ulong
+	 * @param prescribedBaseBegin begin iterator of prescribed base of type unsigned long
+	 * @param prescribedBaseEnd  end iterator of prescribed base of type unsigned long
 	 * @param guaranteedBSGS iff true, return object is guaranteed to be a BSGS
 	 */
 	template <class ForwardIterator, class InputIterator>
 	BSGS<PERM, TRANS> construct(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd, bool& guaranteedBSGS) const;
 
 	/// number of Schreier generators examined during the last construct call
-	mutable uint m_statRandomElementsConsidered;
+	mutable unsigned int m_statRandomElementsConsidered;
 
 	/// number of elements that have to sift through constructed BSGS consecutively that it is returned as a probable BSGS
-	static const uint minimalConsecutiveSiftingElementCount = 20;
+	static const unsigned int minimalConsecutiveSiftingElementCount = 20;
 	
 	/// factor limiting the number of maximal iterations depeding on the initial base size
-	static const uint maxIterationFactor = 10000;
+	static const unsigned int maxIterationFactor = 10000;
 private:
 	RandomGenerator<PERM> *m_rng;
-	ulong m_knownOrder;
+	unsigned long m_knownOrder;
 };
 
 //
@@ -95,7 +95,7 @@ private:
 //
 
 template <class PERM, class TRANS>
-RandomSchreierSimsConstruction<PERM,TRANS>::RandomSchreierSimsConstruction(uint n, RandomGenerator<PERM> *rng, ulong knownOrder) 
+RandomSchreierSimsConstruction<PERM,TRANS>::RandomSchreierSimsConstruction(unsigned int n, RandomGenerator<PERM> *rng, unsigned long knownOrder) 
 	: BaseConstruction<PERM, TRANS>(n), m_statRandomElementsConsidered(0), m_rng(rng), m_knownOrder(knownOrder)
 { }
 
@@ -110,36 +110,36 @@ template <class ForwardIterator, class InputIterator>
 BSGS<PERM, TRANS> RandomSchreierSimsConstruction<PERM, TRANS>
 	::construct(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd, bool& guaranteedBSGS) const
 {
-	const uint &n = BaseConstruction<PERM, TRANS>::m_n;
+	const unsigned int &n = BaseConstruction<PERM, TRANS>::m_n;
 	BSGS<PERM, TRANS> ret(n);
-	std::vector<ulong> &B = ret.B;
+	std::vector<dom_int> &B = ret.B;
 	std::vector<TRANS> &U = ret.U;
-	std::vector<PERMlist> S;
+	std::vector<std::list<typename PERM::ptr> > S;
 	setup(generatorsBegin, generatorsEnd, prescribedBaseBegin, prescribedBaseEnd, ret, S);
 	
-	uint consecutiveSiftingElementCount = minimalConsecutiveSiftingElementCount;
+	unsigned int consecutiveSiftingElementCount = minimalConsecutiveSiftingElementCount;
 	if (m_knownOrder > 0) 
 		// remove consecutive sifting limit if we have the group order as Las Vegas-abort criterion
 		consecutiveSiftingElementCount = maxIterationFactor;
-	const uint maxIterationCount = B.size() * maxIterationFactor;
-	for (uint it = 0; it < maxIterationCount; ++it) {
+	const unsigned int maxIterationCount = B.size() * maxIterationFactor;
+	for (unsigned int it = 0; it < maxIterationCount; ++it) {
 		bool isProbableBSGS = true;
-		for (uint i = 0; i < consecutiveSiftingElementCount && ret.order() != m_knownOrder; ++i) {
+		for (unsigned int i = 0; i < consecutiveSiftingElementCount && ret.order() != m_knownOrder; ++i) {
 			PERM g = m_rng->next();
 			++m_statRandomElementsConsidered;
 			PERM h(n);
-			uint j = ret.sift(g, h);
+			unsigned int j = ret.sift(g, h);
 			if (j < B.size() || !h.isIdentity()) {
 				// flush it, because we add it as a generator
 				h.flush();
 				
 				if (j == B.size()) {
-					ulong gamma = n+1;
+					dom_int gamma = n+1;
 					if (ret.chooseBaseElement(h, gamma)) {
 						B.push_back(gamma);
 					}
 					BOOST_ASSERT(j < B.size());
-					S.push_back(PERMlist());
+					S.push_back(std::list<typename PERM::ptr>());
 					U.push_back(TRANS(n));
 				}
 				

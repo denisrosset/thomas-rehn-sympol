@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -56,11 +56,11 @@ public:
 	
 	/// changes base of bsgs so that it starts with the sequence given by baseBegin to baseEnd
     template <class InputIterator>
-    uint change(BSGS<PERM,TRANS> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant = false) const;
+    unsigned int change(BSGS<PERM,TRANS> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant = false) const;
 	
 	/// changes base of symmetric group so that it starts with the sequence given by baseBegin to baseEnd
     template <class InputIterator>
-    uint change(SymmetricGroup<PERM> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant = false) const;
+    unsigned int change(SymmetricGroup<PERM> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant = false) const;
 };
 
 template<class PERM, class TRANS, class BASETRANSPOSE>
@@ -70,7 +70,7 @@ ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::ConjugatingBaseChange(const BSG
 
 template<class PERM, class TRANS, class BASETRANSPOSE>
 template<class InputIterator>
-uint ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant) const {
+unsigned int ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant) const {
     if (baseBegin == baseEnd)
         return 0;
 	
@@ -81,10 +81,10 @@ uint ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &b
 	/// true iff we multiply c with another permutation (and thus c is no longer with absolute certainty the identity)
 	bool touchedC = false;
 	
-	uint baseTargetPos = 0;
+	unsigned int baseTargetPos = 0;
     while (baseBegin != baseEnd && baseTargetPos < bsgs.B.size()) {
-        const ulong alpha = cInv.at(*baseBegin);
-		const ulong beta = bsgs.B[baseTargetPos];
+        const unsigned long alpha = cInv.at(*baseBegin);
+		const unsigned long beta = bsgs.B[baseTargetPos];
 		const bool redundant = skipRedundant && isRedundant(bsgs, baseTargetPos, alpha);
 		
         if (!redundant && beta != alpha) {
@@ -94,7 +94,7 @@ uint ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &b
 				cInv = ~c;
 				touchedC = true;
 			} else {
-				uint pos = bsgs.insertRedundantBasePoint(alpha, baseTargetPos);
+				unsigned int pos = bsgs.insertRedundantBasePoint(alpha, baseTargetPos);
 				for (; pos > baseTargetPos; --pos) {
 					trans.transpose(bsgs, pos-1);
 					++BaseChange<PERM,TRANS>::m_statTranspositions;
@@ -109,7 +109,7 @@ uint ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &b
 	
 	// insert remaining base points
 	while (!skipRedundant && baseBegin != baseEnd) {
-		const ulong alpha = cInv.at(*baseBegin);
+		const unsigned long alpha = cInv.at(*baseBegin);
 		bsgs.insertRedundantBasePoint(alpha, baseTargetPos);
 		
 		++baseBegin;
@@ -118,14 +118,14 @@ uint ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &b
 	
 	if (touchedC) {
 		// correct generators by conjugation
-		BOOST_FOREACH(PERMptr& g, bsgs.S) {
+		BOOST_FOREACH(typename PERM::ptr& g, bsgs.S) {
 			*g ^= cInv;
 			*g *= c;
 			g->flush();
 		}
 		
 		// correct base points
-		BOOST_FOREACH(ulong &beta, bsgs.B) {
+		BOOST_FOREACH(dom_int& beta, bsgs.B) {
 			beta = c.at(beta);
 		}
 	}
@@ -135,7 +135,7 @@ uint ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &b
 	BaseChange<PERM,TRANS>::m_statScheierGeneratorsConsidered += trans.m_statScheierGeneratorsConsidered;
 
 	if (touchedC) {
-		for (uint i=0; i<bsgs.B.size(); ++i) {
+		for (unsigned int i=0; i<bsgs.B.size(); ++i) {
 			//std::cout << " ~~ permute " << bsgs.B[i] << std::endl;
 			bsgs.U[i].permute(c, cInv);
 		}
@@ -148,11 +148,11 @@ uint ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &b
 
 template<class PERM, class TRANS, class BASETRANSPOSE>
 template<class InputIterator>
-uint ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(SymmetricGroup<PERM> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant) const {
-	uint basePos = 0;
+unsigned int ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(SymmetricGroup<PERM> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant) const {
+	unsigned int basePos = 0;
 	while (baseBegin != baseEnd) {
 		//std::cout << "base prefix " << *baseBegin << std::endl;
-		for (uint i = basePos; i < bsgs.B.size(); ++i) {
+		for (unsigned int i = basePos; i < bsgs.B.size(); ++i) {
 			if (bsgs.B[i] == *baseBegin) {
 				std::swap(bsgs.B[i], bsgs.B[basePos]);
 				//std::cout << "  swap " << i << " and " << basePos << std::endl;

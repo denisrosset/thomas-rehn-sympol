@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -95,11 +95,11 @@ public:
 	/// refinement family for set stabilization of given set
 	/**
 	 * @param n length of partitions to work with
-	 * @param begin begin iterator(ulong) to set which is to stabilize
-	 * @param end end iterator(ulong) to set which is to stabilize
+	 * @param begin begin iterator(unsigned long) to set which is to stabilize
+	 * @param end end iterator(unsigned long) to set which is to stabilize
 	 */
 	template<class InputIterator>
-	SetStabilizeRefinementFamily(ulong n, InputIterator begin, InputIterator end) : m_n(n), toStab(begin, end) 
+	SetStabilizeRefinementFamily(unsigned long n, InputIterator begin, InputIterator end) : m_n(n), toStab(begin, end) 
 	{}
 
 	virtual std::pair<PartitionPtr,RefinementPtr> apply(Partition& pi) const {
@@ -112,8 +112,8 @@ public:
 			return std::make_pair(PartitionPtr(), RefinementPtr());
 	}
 private:
-	ulong m_n;
-	std::vector<ulong> toStab;
+	unsigned long m_n;
+	std::vector<unsigned long> toStab;
 };
 
 ///  \f$\mathcal P\f$-refinements for set stabilization
@@ -126,13 +126,13 @@ public:
 	/// refinement family for set stabilization of given set
 	/**
 	 * @param n length of partitions to work with
-	 * @param begin iterator(ulong) begin of the set \f$\Delta\f$
-	 * @param end iterator(ulong) end of the set \f$\Delta\f$
-	 * @param beginImg iterator(ulong) begin of the set \f$\Gamma\f$
-	 * @param endImg iterator(ulong) end of the set \f$\Gamma\f$
+	 * @param begin iterator(unsigned long) begin of the set \f$\Delta\f$
+	 * @param end iterator(unsigned long) end of the set \f$\Delta\f$
+	 * @param beginImg iterator(unsigned long) begin of the set \f$\Gamma\f$
+	 * @param endImg iterator(unsigned long) end of the set \f$\Gamma\f$
 	 */
 	template<class InputIterator>
-	SetImageRefinementFamily(ulong n, InputIterator begin, InputIterator end, InputIterator beginImg, InputIterator endImg) 
+	SetImageRefinementFamily(unsigned long n, InputIterator begin, InputIterator end, InputIterator beginImg, InputIterator endImg) 
 		: m_n(n), delta(begin, end), phi(beginImg, endImg)
 	{}
     
@@ -146,9 +146,9 @@ public:
 			return std::make_pair(PartitionPtr(), RefinementPtr());
 	}
 private:
-	ulong m_n;
-	std::vector<ulong> delta;
-	std::vector<ulong> phi;
+	unsigned long m_n;
+	std::vector<unsigned long> delta;
+	std::vector<unsigned long> phi;
 };
 
 ///  \f$\mathcal P\f$-refinements for symmetric matrix automorphisms
@@ -163,7 +163,7 @@ public:
 	 * @param n length of partitions to work with
 	 * @param matrix symmetric matrix
 	 */
-	MatrixAutomorphismRefinementFamily(ulong n, const MATRIX& matrix) : m_n(n), m_matrix(matrix) 
+	MatrixAutomorphismRefinementFamily(unsigned long n, const MATRIX& matrix) : m_n(n), m_matrix(matrix) 
 	{}
 	
 	virtual std::pair<PartitionPtr,RefinementPtr> apply(Partition& pi) const {
@@ -176,7 +176,7 @@ public:
 			return std::make_pair(PartitionPtr(), RefinementPtr());
 	}
 private:
-	ulong m_n;
+	unsigned long m_n;
 	const MATRIX& m_matrix;
 };
 

@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -44,8 +44,8 @@ public:
 	/// constructor
     ExplicitTransversal(unsigned int n);
 
-    virtual PERM* at(ulong val) const;
-    virtual bool trivialByDefinition(const PERM& x, ulong to) const;
+    virtual PERM* at(unsigned long val) const;
+    virtual bool trivialByDefinition(const PERM& x, unsigned long to) const;
 	
 	virtual void permute(const PERM& g, const PERM& gInv);
 	
@@ -53,12 +53,12 @@ public:
 	/**
 	 * @param generatorChange not used by this implementation; just for API consistence
 	 */
-	ExplicitTransversal<PERM> clone(const std::map<PERM*,PERMptr>& generatorChange) const;
+	ExplicitTransversal<PERM> clone(const std::map<PERM*,typename PERM::ptr>& generatorChange) const;
 
 	/// maximal depth of "tree" structure representing the transversal; identical to 1 for explicit transversal
-    static const uint m_statMaxDepth;
+    static const unsigned int m_statMaxDepth;
 protected:
-    virtual void registerMove(ulong from, ulong to, const PERMptr &p);
+    virtual void registerMove(unsigned long from, unsigned long to, const typename PERM::ptr &p);
 };
 
 //
@@ -66,7 +66,7 @@ protected:
 //
 
 template <class PERM>
-const uint ExplicitTransversal<PERM>::m_statMaxDepth = 1;
+const unsigned int ExplicitTransversal<PERM>::m_statMaxDepth = 1;
 
 template <class PERM>
 ExplicitTransversal<PERM>::ExplicitTransversal(unsigned int n) 
@@ -74,20 +74,20 @@ ExplicitTransversal<PERM>::ExplicitTransversal(unsigned int n)
 { }
 
 template <class PERM>
-bool ExplicitTransversal<PERM>::trivialByDefinition(const PERM& x, ulong to) const {
+bool ExplicitTransversal<PERM>::trivialByDefinition(const PERM& x, unsigned long to) const {
 	// we cannot infer this information from the transversal
 	return false;
 }
 
 template <class PERM>
-PERM* ExplicitTransversal<PERM>::at(ulong val) const {
+PERM* ExplicitTransversal<PERM>::at(unsigned long val) const {
 	if (!Transversal<PERM>::m_transversal[val])
 		return 0;
 	return new PERM(*(Transversal<PERM>::m_transversal[val]));
 }
 
 template <class PERM>
-void ExplicitTransversal<PERM>::registerMove(ulong from, ulong to, const PERMptr &p) {
+void ExplicitTransversal<PERM>::registerMove(unsigned long from, unsigned long to, const typename PERM::ptr &p) {
 	Transversal<PERM>::registerMove(from, to, p);
 
 	std::vector<boost::shared_ptr<PERM> > &transversal = Transversal<PERM>::m_transversal;
@@ -103,7 +103,7 @@ void ExplicitTransversal<PERM>::registerMove(ulong from, ulong to, const PERMptr
 template <class PERM>
 void ExplicitTransversal<PERM>::permute(const PERM& g, const PERM& gInv) {
 	Transversal<PERM>::permute(g, gInv);
-	BOOST_FOREACH(PERMptr& p, Transversal<PERM>::m_transversal) {
+	BOOST_FOREACH(typename PERM::ptr& p, Transversal<PERM>::m_transversal) {
 		if (p) {
 			*p ^= gInv;
 			*p *= g;
@@ -112,9 +112,9 @@ void ExplicitTransversal<PERM>::permute(const PERM& g, const PERM& gInv) {
 }
 
 template <class PERM>
-ExplicitTransversal<PERM> ExplicitTransversal<PERM>::clone(const std::map<PERM*,PERMptr>& generatorChange) const {
+ExplicitTransversal<PERM> ExplicitTransversal<PERM>::clone(const std::map<PERM*,typename PERM::ptr>& generatorChange) const {
 	ExplicitTransversal<PERM> ret(*this);
-	BOOST_FOREACH(PERMptr& p, ret.m_transversal) {
+	BOOST_FOREACH(typename PERM::ptr& p, ret.m_transversal) {
 		if (!p)
 			continue;
 		p = boost::shared_ptr<PERM>(new PERM(*p));

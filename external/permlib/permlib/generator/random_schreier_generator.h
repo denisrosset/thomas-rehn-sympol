@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -51,11 +51,11 @@ public:
 	 * @param i stabilizer chain index for the supergroup
 	 * @param U a transversal for \f$G^{[i]}\f$ modulo \f$G^{[i]}_\alpha\f$
 	 */
-	RandomSchreierGenerator(const BSGS<PERM,TRANS> &bsgs, uint i, const TRANS &U);
+	RandomSchreierGenerator(const BSGS<PERM,TRANS> &bsgs, unsigned int i, const TRANS &U);
 	virtual PERM next();
 private:
 	const BSGS<PERM,TRANS> &m_bsgs;
-	uint m_i;
+	unsigned int m_i;
 	const TRANS &m_U;
 };
 
@@ -64,7 +64,7 @@ private:
 //
 
 template <class PERM,class TRANS>
-RandomSchreierGenerator<PERM,TRANS>::RandomSchreierGenerator(const BSGS<PERM,TRANS> &bsgs, uint i, const TRANS &U) 
+RandomSchreierGenerator<PERM,TRANS>::RandomSchreierGenerator(const BSGS<PERM,TRANS> &bsgs, unsigned int i, const TRANS &U) 
 	: m_bsgs(bsgs), m_i(i), m_U(U) 
 { }
 

@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,8 @@
 //
 // ---------------------------------------------------------------------------
 
+#include <list>
+#include <vector>
 
 #ifndef BSGSCORE_H_
 #define BSGSCORE_H_
@@ -44,17 +46,19 @@ struct BSGSCore {
 		/// transversal type used by this BSGS
 		typedef TRANS TRANStype;
 		
+		typedef std::list<typename PERM::ptr> PERMlist;
+		
 		/// empty destructor
 		virtual ~BSGSCore() {}
 		
 		/// base \f$B\f$
-		std::vector<ulong> B;
+		std::vector<dom_int> B;
 		/// strong generating set \f$S\f$
 		PERMlist S;
 		/// transversals \f$U\f$ along the stabilizer chain
 		std::vector<TRANS> U;
 		/// degree of group
-		uint n;
+		dom_int n;
 		
 		/// checks for equality by internal id only
 		/**
@@ -66,11 +70,11 @@ struct BSGSCore {
 		virtual bool isSymmetricGroup() const { return false; }
 	protected:
 		/// constructs empty data structure with given group id
-		explicit BSGSCore(uint id) : m_id(id) {}
+		explicit BSGSCore(unsigned int id) : m_id(id) {}
 		/// constructs empty data structure with given group id, group degree n and base size n
-		BSGSCore(uint id, uint n, uint bSize) : B(bSize), n(n), m_id(id) {}
+		BSGSCore(unsigned int id, dom_int n, dom_int bSize) : B(bSize), n(n), m_id(id) {}
 		/// kind of copy constructor, initializes data structure with given data
-		BSGSCore(uint id, const std::vector<ulong>& B,  const std::vector<TRANS>& U, uint n) 
+		BSGSCore(unsigned int id, const std::vector<dom_int>& B,  const std::vector<TRANS>& U, dom_int n) 
 			: B(B), U(U.size(), TRANS(n)), n(n), m_id(id) {}
 		
 		/// id of this BSGS instance

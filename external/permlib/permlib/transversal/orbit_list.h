@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -54,21 +54,21 @@ public:
 	 * @see Transversal::TrivialAction
 	 */
 	template<class Action>
-	void orbit(const PDOMAIN& beta, const PERMlist &generators, Action a);
+	void orbit(const PDOMAIN& beta, const std::list<typename PERM::ptr> &generators, Action a);
 
 	/// number of orbit elements
-	ulong size() const { return m_orbitList.size(); }
+	unsigned long size() const { return m_orbitList.size(); }
     
     virtual const PDOMAIN& element() const;
 protected:
 	/// orbit elements as set
 	std::list<PDOMAIN> m_orbitList;
 
-	virtual bool foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const PERMptr& p);
+	virtual bool foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const typename PERM::ptr& p);
 };
 
 template <class PERM,class PDOMAIN>
-inline bool OrbitList<PERM,PDOMAIN>::foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const PERMptr& p) {
+inline bool OrbitList<PERM,PDOMAIN>::foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const typename PERM::ptr& p) {
 	typename std::list<PDOMAIN>::iterator it = std::lower_bound(m_orbitList.begin(), m_orbitList.end(), alpha_p);
 	if (*it != alpha_p) {
 		m_orbitList.insert(it, alpha_p);
@@ -84,7 +84,7 @@ inline bool OrbitList<PERM,PDOMAIN>::contains(const PDOMAIN& val) const {
 
 template <class PERM,class PDOMAIN>
 template<class Action>
-inline void OrbitList<PERM,PDOMAIN>::orbit(const PDOMAIN& beta, const PERMlist &generators, Action a) {
+inline void OrbitList<PERM,PDOMAIN>::orbit(const PDOMAIN& beta, const std::list<typename PERM::ptr> &generators, Action a) {
 	// use separate list here because m_orbitList is sorted
 	std::list<PDOMAIN> orbitList;
 	Orbit<PERM,PDOMAIN>::orbit(beta, generators, a, orbitList);

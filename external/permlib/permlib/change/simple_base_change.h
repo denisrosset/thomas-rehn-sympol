@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -64,17 +64,17 @@ void SimpleBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &bsgs, 
 	if (baseBegin == baseEnd)
 		return;
 
-	const ulong origOrder __attribute__((unused)) = bsgs.order();
+	const unsigned long origOrder __attribute__((unused)) = bsgs.order();
 	BASETRANSPOSE trans;
 	
-	uint baseTargetPos = 0;
+	unsigned int baseTargetPos = 0;
     while (baseBegin != baseEnd && baseTargetPos < bsgs.B.size()) {
-		ulong alpha = *baseBegin;
-		ulong beta = bsgs.B[baseTargetPos];
+		unsigned long alpha = *baseBegin;
+		unsigned long beta = bsgs.B[baseTargetPos];
 		const bool redundant = skipRedundant && isRedundant(bsgs, baseTargetPos, alpha);
 		
 		if (!redundant && beta != alpha) {
-			uint pos = bsgs.insertRedundantBasePoint(alpha);
+			unsigned int pos = bsgs.insertRedundantBasePoint(alpha);
 			for (; pos > baseTargetPos; --pos) {
 				trans.transpose(bsgs, pos-1);
 				++BaseChange<PERM,TRANS>::m_statTranspositions;
@@ -87,7 +87,7 @@ void SimpleBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &bsgs, 
     }
 	// insert remaining base points
 	while (!skipRedundant && baseBegin != baseEnd) {
-		const ulong alpha = *baseBegin;
+		const unsigned long alpha = *baseBegin;
 		bsgs.insertRedundantBasePoint(alpha, baseTargetPos);
 		
 		++baseBegin;

@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -48,64 +48,64 @@ class BacktrackRefinement;
 class Partition {
 public:
 	/// constructs an empty partition of length n
-	explicit Partition(ulong n);
+	explicit Partition(unsigned long n);
 	
 	/// intersects the j-th cell of this partition with a given set
 	/**
 	 * @see intersects
-	 * @param begin begin iterator(ulong) to a sorted list of elements 
-	 * @param end end iterator(ulong) to a sorted list of elements 
+	 * @param begin begin iterator(unsigned long) to a sorted list of elements 
+	 * @param end end iterator(unsigned long) to a sorted list of elements 
 	 * @param j 
 	 * @return true if intersection really splits the j-th cell
 	 */
 	template<class ForwardIterator>
-	bool intersect(ForwardIterator begin, ForwardIterator end, uint j);
+	bool intersect(ForwardIterator begin, ForwardIterator end, unsigned int j);
 	/// reverts the last intersection if there is one
 	bool undoIntersection();
 
 	/// returns true iff given set actually intersects j-th cell of this partition
 	/// @see intersect
 	template<class ForwardIterator>
-	bool intersects(ForwardIterator begin, ForwardIterator end, uint j) const;
+	bool intersects(ForwardIterator begin, ForwardIterator end, unsigned int j) const;
 	
 	/// number of fix points in this partition
-	uint fixPointsSize() const;
+	unsigned int fixPointsSize() const;
 	/// iterator to the begin of fix points
-	std::vector<ulong>::const_iterator fixPointsBegin() const;
+	std::vector<unsigned long>::const_iterator fixPointsBegin() const;
 	/// iterator to the end of fix points
-	std::vector<ulong>::const_iterator fixPointsEnd() const;
+	std::vector<unsigned long>::const_iterator fixPointsEnd() const;
 	/// number of cells in this partition
-	ulong cells() const;
+	unsigned long cells() const;
 	/// size of the c-th cell
-	ulong cellSize(uint c) const;
+	unsigned long cellSize(unsigned int c) const;
 	
-	typedef std::vector<ulong>::const_iterator CellIt;
+	typedef std::vector<unsigned long>::const_iterator CellIt;
 	
-	CellIt cellBegin(ulong cell) const { 
+	CellIt cellBegin(unsigned long cell) const { 
 		BOOST_ASSERT(cell < cells());
 		return partition.begin() + partitionCellBorder[cell];
 	}
 	
-	CellIt cellEnd(ulong cell) const { 
+	CellIt cellEnd(unsigned long cell) const { 
 		BOOST_ASSERT(cell < cells());
 		return partition.begin() + partitionCellBorder[cell] + partitionCellLength[cell];
 	}
 private:
-	explicit Partition(ulong n, bool);
+	explicit Partition(unsigned long n, bool);
 	
-	std::vector<ulong> partition;
-	std::vector<uint> partitionCellBorder;
-	std::vector<uint> partitionCellLength;
-	std::vector<uint> partitionCellOf;
+	std::vector<unsigned long> partition;
+	std::vector<unsigned int> partitionCellBorder;
+	std::vector<unsigned int> partitionCellLength;
+	std::vector<unsigned int> partitionCellOf;
 	
 	/// index of last cell
-	uint cellCounter;
+	unsigned int cellCounter;
 	
 	/// fix points; to avoid frequent allocation, space is preallocated
 	/// @see fixCounter
-	std::vector<ulong> fix;
+	std::vector<unsigned long> fix;
 	/// index up to which entries in fix-array are valid
-	uint fixCounter;
+	unsigned int fixCounter;
 	
 	friend std::ostream& operator<<(std::ostream& out, const Partition& p);
 	
@@ -115,10 +115,10 @@ private:
 
 inline std::ostream& operator<<(std::ostream& out, const Partition& p) {
 	out << "[";
-	std::vector<uint>::const_iterator border = p.partitionCellBorder.begin();
-	std::vector<uint>::const_iterator length = p.partitionCellLength.begin();
-	for (uint j = 0; j < p.cellCounter; ++j) {
-		for (uint i = *border; i < *border + *length; ++i) {
+	std::vector<unsigned int>::const_iterator border = p.partitionCellBorder.begin();
+	std::vector<unsigned int>::const_iterator length = p.partitionCellLength.begin();
+	for (unsigned int j = 0; j < p.cellCounter; ++j) {
+		for (unsigned int i = *border; i < *border + *length; ++i) {
 			out << (p.partition[i] + 1) << " ";
 		}
 		out << "| ";
@@ -127,7 +127,7 @@ inline std::ostream& operator<<(std::ostream& out, const Partition& p) {
 	}	
 	out << "]|(";
 	int countFix = p.fixCounter;
-	BOOST_FOREACH(ulong alpha, p.fix) {
+	BOOST_FOREACH(unsigned long alpha, p.fix) {
 		if (--countFix < 0)
 			break;
 		out << (alpha+1) << ",";
@@ -136,10 +136,10 @@ inline std::ostream& operator<<(std::ostream& out, const Partition& p) {
 	return out;
 }
 
-inline Partition::Partition(ulong n) 
+inline Partition::Partition(unsigned long n) 
 	: partition(n), partitionCellBorder(n), partitionCellLength(n), partitionCellOf(n), cellCounter(1), fix(n), fixCounter(0)
 {
-	for (uint i=0; i<n; ++i) {
+	for (unsigned int i=0; i<n; ++i) {
 		partition[i] = i;
 		// partitionCellOf is already zero
 	}
@@ -147,29 +147,29 @@ inline Partition::Partition(ulong n)
 	partitionCellLength[0] = n;
 }
 
-inline Partition::Partition(ulong n, bool) 
+inline Partition::Partition(unsigned long n, bool) 
 	: partition(n), partitionCellBorder(n), partitionCellLength(n), partitionCellOf(n), cellCounter(0), fix(n), fixCounter(0)
 { }
 
-inline ulong Partition::cells() const {
+inline unsigned long Partition::cells() const {
 	return cellCounter;
 }
 
-inline uint Partition::fixPointsSize() const {
+inline unsigned int Partition::fixPointsSize() const {
 	return fixCounter;
 }
-inline std::vector<ulong>::const_iterator Partition::fixPointsBegin() const {
+inline std::vector<unsigned long>::const_iterator Partition::fixPointsBegin() const {
 	return fix.begin();
 }
-inline std::vector<ulong>::const_iterator Partition::fixPointsEnd() const {
+inline std::vector<unsigned long>::const_iterator Partition::fixPointsEnd() const {
 	return fix.begin() + fixCounter;
 }
-inline ulong Partition::cellSize(uint c) const {
+inline unsigned long Partition::cellSize(unsigned int c) const {
 	return partitionCellLength[c]; 
 }
 
 template<class ForwardIterator>
-inline bool Partition::intersects(ForwardIterator begin, ForwardIterator end, uint j) const {
+inline bool Partition::intersects(ForwardIterator begin, ForwardIterator end, unsigned int j) const {
 	while (begin != end) {
 		//std::cout << " B " << *begin << " < " << partitionCellOf[*begin] << " < " << j << std::endl;
 		if (partitionCellOf[*begin++] == j)
@@ -180,32 +180,32 @@ inline bool Partition::intersects(ForwardIterator begin, ForwardIterator end, ui
 
 /// ASSUME INPUT IS SORTED!!!
 template<class ForwardIterator>
-inline bool Partition::intersect(ForwardIterator otherCellBegin, ForwardIterator otherCellEnd, uint j) {
+inline bool Partition::intersect(ForwardIterator otherCellBegin, ForwardIterator otherCellEnd, unsigned int j) {
 	if (!intersects(otherCellBegin, otherCellEnd, j))
 		return false;
 	
 	//WARNING: not thread-safe
-	static std::vector<ulong> newCell(partition.size());
+	static std::vector<unsigned long> newCell(partition.size());
 	
 	ForwardIterator otherCellIt = otherCellBegin;
-	std::vector<ulong>::iterator cellIt;
-	std::vector<ulong>::reverse_iterator newCellIt;
-	std::vector<ulong>::reverse_iterator newCellBeginIt;
-	std::vector<ulong>::iterator newCell2It;
-	std::vector<uint>::iterator   borderIt;
+	std::vector<unsigned long>::iterator cellIt;
+	std::vector<unsigned long>::reverse_iterator newCellIt;
+	std::vector<unsigned long>::reverse_iterator newCellBeginIt;
+	std::vector<unsigned long>::iterator newCell2It;
+	std::vector<unsigned int>::iterator   borderIt;
 	bool createdNewCell = false;
-	const uint cellSize = partitionCellLength[j];
+	const unsigned int cellSize = partitionCellLength[j];
 	if (j >= cellCounter)
 		return false;
 	if (cellSize <= 1)
 		return false;
-	std::vector<ulong>::iterator cellBeginIt = partition.begin() + partitionCellBorder[j];
-	std::vector<ulong>::iterator cellEndIt   = partition.begin() + (partitionCellBorder[j] + partitionCellLength[j]);
+	std::vector<unsigned long>::iterator cellBeginIt = partition.begin() + partitionCellBorder[j];
+	std::vector<unsigned long>::iterator cellEndIt   = partition.begin() + (partitionCellBorder[j] + partitionCellLength[j]);
 	//print_iterable(cellBeginIt, cellEndIt, 1, " ^ cell");
 	newCellBeginIt  = newCell.rbegin() + (partition.size() - cellSize);
 	newCellIt       = newCellBeginIt;
 	newCell2It      = newCell.begin();
-	uint newCellCounter = 0;
+	unsigned int newCellCounter = 0;
 	
 	for (cellIt = cellBeginIt; cellIt != cellEndIt; ++cellIt) {
 		while (otherCellIt != otherCellEnd && *otherCellIt < *cellIt) {
@@ -233,7 +233,7 @@ inline bool Partition::intersect(ForwardIterator otherCellBegin, ForwardIterator
 		/*std::cout << "new cell[" << cellSize << "] = ";
 		print_iterable(newCell.begin(), newCell.begin() + cellSize, 1);
 		std::cout << std::endl;*/
-		std::vector<ulong>::iterator fixIt = fix.begin() + fixCounter;
+		std::vector<unsigned long>::iterator fixIt = fix.begin() + fixCounter;
 		
 		if (newCellCounter == 1) {
 			*fixIt = newCell[0];
@@ -247,7 +247,7 @@ inline bool Partition::intersect(ForwardIterator otherCellBegin, ForwardIterator
 		}
 		
 		/*
-		for (uint i = partitionCellBorder[j]; i < partitionCellBorder[j] + partitionCellLength[j]; ++i) {
+		for (unsigned int i = partitionCellBorder[j]; i < partitionCellBorder[j] + partitionCellLength[j]; ++i) {
 			std::cout << partition[i]+1 << " ";
 		}
 		std::cout << std::endl;
@@ -259,7 +259,7 @@ inline bool Partition::intersect(ForwardIterator otherCellBegin, ForwardIterator
 		//std::cout << "cellCounter " << cellCounter << std::endl;
 		partitionCellBorder[cellCounter] = partitionCellBorder[j] + newCellCounter;
 		partitionCellLength[cellCounter] = cellSize - newCellCounter;
-		for (uint i = partitionCellBorder[cellCounter]; i < partitionCellBorder[j] + cellSize; ++i) {
+		for (unsigned int i = partitionCellBorder[cellCounter]; i < partitionCellBorder[j] + cellSize; ++i) {
 			partitionCellOf[partition[i]] = cellCounter;
 		}
 		++cellCounter;
@@ -274,14 +274,14 @@ inline bool Partition::undoIntersection() {
 	if (partitionCellBorder[cellCounter-1] < 1)
 		return false;
 	--cellCounter;
-	uint splitFromCellNumber = partitionCellOf[ partition[partitionCellBorder[cellCounter] - 1] ];
+	unsigned int splitFromCellNumber = partitionCellOf[ partition[partitionCellBorder[cellCounter] - 1] ];
 	
 	BOOST_ASSERT(partitionCellBorder[splitFromCellNumber] < partitionCellBorder[cellCounter]);
 	BOOST_ASSERT(partitionCellLength[cellCounter] > 0 );
 	//std::cout << "split from " << splitFromCellNumber << std::endl;
 	//std::cout << "merge " << partitionCellBorder[splitFromCellNumber] << " " << partitionCellBorder[cellCounter] << " " << (partitionCellBorder[cellCounter] + partitionCellLength[cellCounter]) << std::endl;
 	
-	for (uint i=partitionCellBorder[cellCounter]; i<partitionCellBorder[cellCounter] + partitionCellLength[cellCounter]; ++i) {
+	for (unsigned int i=partitionCellBorder[cellCounter]; i<partitionCellBorder[cellCounter] + partitionCellLength[cellCounter]; ++i) {
 		partitionCellOf[partition[i]] = splitFromCellNumber;
 	}
 	std::inplace_merge(partition.begin() + partitionCellBorder[splitFromCellNumber],

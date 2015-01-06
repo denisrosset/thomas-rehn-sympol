@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ typedef boost::dynamic_bitset<> dset;
 /// action of a permutation on a dynamic bitset
 template<class PERM>
 struct DSetAction {
-	DSetAction(ulong size) : m_tmp(size) {}
+	DSetAction(unsigned long size) : m_tmp(size) {}
 
 	/// default action operator as also used in Transversal<PERM>::TrivialAction
 	dset operator()(const PERM &p, const dset& v) {
@@ -53,7 +53,7 @@ struct DSetAction {
 	// apply permutation in-place
 	void apply(const PERM &p, const dset& v, dset& tmp) {
 		tmp.reset();
-		for (uint i = 0; i < tmp.size(); ++i) {
+		for (unsigned int i = 0; i < tmp.size(); ++i) {
 			if (v[i])
 				tmp.set(p / i, 1);
 		}

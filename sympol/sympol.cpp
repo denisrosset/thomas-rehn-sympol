@@ -66,7 +66,7 @@ void stats(int param) {
 
 void print_group(const boost::shared_ptr<PermutationGroup>& pg) {
 	cout << pg->S.size() << endl;
-	BOOST_FOREACH( const PERMptr &p, pg->S ) {
+	BOOST_FOREACH( const Permutation::ptr &p, pg->S ) {
 		ostringstream ssPerm;
 		ssPerm << *p;
 		string sPerm(ssPerm.str());
@@ -89,7 +89,7 @@ uint correct_id(uint id, uint apexIndex) {
 }
 
 int main(int argc, char* argv[]) {
-	std::cout << "SymPol v0.1.3 and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
+	std::cout << "SymPol v0.1.4 and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
 #if HAVE_NAUTY && HAVE_NTL
 	std::cout << " and nauty and NTL";
 #endif
@@ -233,7 +233,7 @@ int main(int argc, char* argv[]) {
 			cout << endl;
 		}
 		cout << "generators for Aut(P) of order " << pg->order() << ":" << endl;
-		BOOST_FOREACH( const PERMptr &p, pg->S ) {
+		BOOST_FOREACH( const Permutation::ptr &p, pg->S ) {
 			cout << " " << *p << endl;
 		}
 		cout << "SymPol format:" << endl;

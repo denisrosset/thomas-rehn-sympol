@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ struct LinearFormAction {
 	/// action
 	LinearForm operator()(const PERM &p, const LinearForm& set) const {
 		LinearForm ret(set.size());
-		for (uint i = 0; i < ret.size(); ++i) {
+		for (unsigned int i = 0; i < ret.size(); ++i) {
 			if (set[i])
 				ret.set(p / i, 1);
 		}
@@ -78,7 +78,7 @@ public:
 	/// adds a linear form to the list
 	void add(const LinearForm& l) { m_forms.push_back(l); }
 	/// number of elements in the list (equals the polynomial degree)
-	ulong size() const { return m_forms.size(); }
+	unsigned long size() const { return m_forms.size(); }
 private:
 	std::list<LinearForm> m_forms;
 };

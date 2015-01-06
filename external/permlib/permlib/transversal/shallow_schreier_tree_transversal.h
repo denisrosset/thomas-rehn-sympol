@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -47,24 +47,24 @@ public:
 	/// constructor
     ShallowSchreierTreeTransversal(unsigned int n);
 
-    virtual void orbit(ulong beta, const PERMlist &generators);
-	virtual void orbitUpdate(ulong alpha, const PERMlist &generators, const PERMptr &g);
+    virtual void orbit(unsigned long beta, const std::list<typename PERM::ptr> &generators);
+	virtual void orbitUpdate(unsigned long alpha, const std::list<typename PERM::ptr> &generators, const typename PERM::ptr &g);
 	
-	virtual void updateGenerators(const std::map<PERM*,PERMptr>& generatorChange);
+	virtual void updateGenerators(const std::map<PERM*,typename PERM::ptr>& generatorChange);
 	/// returns a clone of this transversal
 	/**
 	 * the group generators that the clone may use are given by the transition map
 	 * @param generatorChange transition map
 	 */
-	ShallowSchreierTreeTransversal<PERM> clone(const std::map<PERM*,PERMptr>& generatorChange) const;
+	ShallowSchreierTreeTransversal<PERM> clone(const std::map<PERM*,typename PERM::ptr>& generatorChange) const;
 	
 	virtual void permute(const PERM& g, const PERM& gInv);
 protected:
 	/// ordered list of group elements that are used as cube labels
-	PERMlist m_cubeLabels;
+	std::list<typename PERM::ptr> m_cubeLabels;
 
 	/// adds a new cube label where s maps beta_prime to a point that has no transversal element yet
-	void addNewCubeLabel(ulong beta, const PERM &s, const ulong &beta_prime);
+	void addNewCubeLabel(unsigned long beta, const PERM &s, const unsigned long &beta_prime);
 };
 
 //
@@ -77,13 +77,13 @@ ShallowSchreierTreeTransversal<PERM>::ShallowSchreierTreeTransversal(unsigned in
 { }
 
 template <class PERM>
-void ShallowSchreierTreeTransversal<PERM>::orbitUpdate(ulong beta, const PERMlist &generators, const PERMptr &g) {
+void ShallowSchreierTreeTransversal<PERM>::orbitUpdate(unsigned long beta, const std::list<typename PERM::ptr> &generators, const typename PERM::ptr &g) {
     this->orbit(beta, generators);
 }
 
 template <class PERM>
-void ShallowSchreierTreeTransversal<PERM>::orbit(ulong beta, const PERMlist &generators) {
-    const ulong &n = Transversal<PERM>::m_n;
+void ShallowSchreierTreeTransversal<PERM>::orbit(unsigned long beta, const std::list<typename PERM::ptr> &generators) {
+    const unsigned long &n = Transversal<PERM>::m_n;
 	std::vector<boost::shared_ptr<PERM> > &transversal = Transversal<PERM>::m_transversal;
     
     if (Transversal<PERM>::size() == 0) {
@@ -92,13 +92,13 @@ void ShallowSchreierTreeTransversal<PERM>::orbit(ulong beta, const PERMlist &gen
         transversal[beta] = identity;
     }
         
-    typename std::list<ulong>::const_iterator it;
+    typename std::list<unsigned long>::const_iterator it;
 
     PERM g(n);
-    typename PERMlist::const_iterator genIt = generators.begin();
+    typename std::list<typename PERM::ptr>::const_iterator genIt = generators.begin();
     for (it = Transversal<PERM>::m_orbit.begin(); it != Transversal<PERM>::m_orbit.end(); ++it) {
         for (genIt = generators.begin(); genIt != generators.end(); ++genIt) {
-			const ulong &beta_prime = *it;
+			const unsigned long &beta_prime = *it;
             if (!transversal[**genIt / beta_prime]) {
 				addNewCubeLabel(beta, **genIt, beta_prime);
             }
@@ -107,7 +107,7 @@ void ShallowSchreierTreeTransversal<PERM>::orbit(ulong beta, const PERMlist &gen
 }
 
 template <class PERM>
-void ShallowSchreierTreeTransversal<PERM>::addNewCubeLabel(ulong beta, const PERM &s, const ulong &beta_prime) {
+void ShallowSchreierTreeTransversal<PERM>::addNewCubeLabel(unsigned long beta, const PERM &s, const unsigned long &beta_prime) {
 	std::vector<boost::shared_ptr<PERM> > &transversal = Transversal<PERM>::m_transversal;
 	boost::shared_ptr<PERM> gPath(SchreierTreeTransversal<PERM>::at(beta_prime));
 	*gPath *= s;
@@ -116,11 +116,11 @@ void ShallowSchreierTreeTransversal<PERM>::addNewCubeLabel(ulong beta, const PER
 	
 	// compute orbit * gPath
 	//
-	std::list<ulong> tempOrbit;
-	typename std::list<ulong>::const_iterator orbIt = Transversal<PERM>::m_orbit.begin();
+	std::list<unsigned long> tempOrbit;
+	typename std::list<unsigned long>::const_iterator orbIt = Transversal<PERM>::m_orbit.begin();
 	for (; orbIt != Transversal<PERM>::m_orbit.end(); ++orbIt) {
-		const ulong alpha = *gPath / *orbIt;
-		//DEBUG
+		const unsigned long alpha = *gPath / *orbIt;
+		//PERMLIB_DEBUG
 		//std::cout << "g_i " << alpha << std::endl;
 		if (!transversal[alpha]) {
 			transversal[alpha] = gPath;
@@ -137,22 +137,22 @@ void ShallowSchreierTreeTransversal<PERM>::addNewCubeLabel(ulong beta, const PER
 	// compute inv(gPath) * ... other generators
 	//
 
-	ulong beta1 = *gPathInv / beta;
+	unsigned long beta1 = *gPathInv / beta;
 	if (!transversal[beta1]) {
 		transversal[beta1] = gPathInv;
 		Transversal<PERM>::m_orbit.push_back(beta1);
 	}
 	
-	const ulong &n = Transversal<PERM>::m_n;
+	const unsigned long &n = Transversal<PERM>::m_n;
 	boost::dynamic_bitset<> omega(n);
 	boost::dynamic_bitset<> todo(n);
-	ulong i;
+	unsigned long i;
 	omega[beta1] = 1;
-	BOOST_FOREACH(const PERMptr& l, m_cubeLabels) {
+	BOOST_FOREACH(const typename PERM::ptr& l, m_cubeLabels) {
 		for (i = 0; i < n; ++i) {
 			if (!omega[i])
 				continue;
-			ulong alpha = *l / i;
+			unsigned long alpha = *l / i;
 			todo[alpha] = 1;
 			if (!transversal[alpha]) {
 				transversal[alpha] = l;
@@ -166,16 +166,16 @@ void ShallowSchreierTreeTransversal<PERM>::addNewCubeLabel(ulong beta, const PER
 }
 
 template <class PERM>
-void ShallowSchreierTreeTransversal<PERM>::updateGenerators(const std::map<PERM*,PERMptr>& generatorChange) {
+void ShallowSchreierTreeTransversal<PERM>::updateGenerators(const std::map<PERM*,typename PERM::ptr>& generatorChange) {
 }
 
 template <class PERM>
-ShallowSchreierTreeTransversal<PERM> ShallowSchreierTreeTransversal<PERM>::clone(const std::map<PERM*,PERMptr>& generatorChange) const {
+ShallowSchreierTreeTransversal<PERM> ShallowSchreierTreeTransversal<PERM>::clone(const std::map<PERM*,typename PERM::ptr>& generatorChange) const {
 	ShallowSchreierTreeTransversal<PERM> ret(*this);
-	std::map<PERM*,PERMptr> labelMap;
-	BOOST_FOREACH(PERMptr& p, ret.m_cubeLabels) {
+	std::map<PERM*,typename PERM::ptr> labelMap;
+	BOOST_FOREACH(typename PERM::ptr& p, ret.m_cubeLabels) {
 		PERM* gen = p.get();
-		p = PERMptr(new PERM(*p));
+		p = typename PERM::ptr(new PERM(*p));
 		labelMap.insert(std::make_pair(gen, p));
 	}
 	ret.SchreierTreeTransversal<PERM>::updateGenerators(labelMap);
@@ -185,7 +185,7 @@ ShallowSchreierTreeTransversal<PERM> ShallowSchreierTreeTransversal<PERM>::clone
 template <class PERM>
 void ShallowSchreierTreeTransversal<PERM>::permute(const PERM& g, const PERM& gInv) {
 	Transversal<PERM>::permute(g, gInv);
-	BOOST_FOREACH(PERMptr& p, m_cubeLabels) {
+	BOOST_FOREACH(typename PERM::ptr& p, m_cubeLabels) {
 		*p ^= gInv;
 		*p *= g;
 		p->flush();

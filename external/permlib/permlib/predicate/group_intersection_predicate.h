@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -52,8 +52,8 @@ public:
 	GroupIntersectionPredicate(const BSGS<PERM, TRANS> &g, const BSGS<PERM, TRANS> &h);
 
 	virtual bool operator()(const PERM &p) const;
-	virtual bool childRestriction(const PERM &h, uint i, ulong beta_i) const;
-	virtual uint limit() const;
+	virtual bool childRestriction(const PERM &h, unsigned int i, unsigned long beta_i) const;
+	virtual unsigned int limit() const;
 private:
 	const BSGS<PERM, TRANS> &m_G;
 	const BSGS<PERM, TRANS> &m_H;
@@ -77,16 +77,16 @@ bool GroupIntersectionPredicate<PERM,TRANS>::operator()(const PERM &p) const {
 }
 
 template <class PERM, class TRANS>
-bool GroupIntersectionPredicate<PERM,TRANS>::childRestriction(const PERM &h, uint i, ulong beta_i) const {
+bool GroupIntersectionPredicate<PERM,TRANS>::childRestriction(const PERM &h, unsigned int i, unsigned long beta_i) const {
 	//TODO: check \beta_l^{g h^{-1}} \in \beta_l^{H_{(beta_1 ... beta_{l-1})}} instead
 	//      cf. Handbook of Computational Group Theory, sec 4.6.6
 	PERM siftee(m_H.n);
-	const uint m = m_H.sift(h, siftee, 0, i+1);
+	const unsigned int m = m_H.sift(h, siftee, 0, i+1);
 	return i+1 == m;
 }
 
 template <class PERM, class TRANS>
-uint GroupIntersectionPredicate<PERM,TRANS>::limit() const { 
+unsigned int GroupIntersectionPredicate<PERM,TRANS>::limit() const { 
 	return m_G.B.size(); 
 }
 

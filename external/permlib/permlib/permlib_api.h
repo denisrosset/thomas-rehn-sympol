@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@
 #include <permlib/search/orbit_lex_min_search.h>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/iterator/counting_iterator.hpp>
 
 namespace permlib {
 
@@ -50,11 +51,10 @@ namespace permlib {
 // useful type definitions
 //
 
-// need this definition for the ugly PERMlist hack
-typedef Permutation PERM;
-typedef SchreierTreeTransversal<PERM> TRANSVERSAL;
-typedef BSGS<PERM,TRANSVERSAL> PermutationGroup;
-typedef OrbitSet<PERM,unsigned long> OrbitAsSet;
+typedef Permutation PERMUTATION;
+typedef SchreierTreeTransversal<PERMUTATION> TRANSVERSAL;
+typedef BSGS<PERMUTATION,TRANSVERSAL> PermutationGroup;
+typedef OrbitSet<PERMUTATION,unsigned long> OrbitAsSet;
 
 
 // ---------------------------------------------------------------------
@@ -63,7 +63,7 @@ typedef OrbitSet<PERM,unsigned long> OrbitAsSet;
 
 template<class InputIterator>
 boost::shared_ptr<PermutationGroup> construct(unsigned long n, InputIterator begin, InputIterator end) {
-	SchreierSimsConstruction<PERM, TRANSVERSAL> schreierSims(n);
+	SchreierSimsConstruction<PERMUTATION, TRANSVERSAL> schreierSims(n);
 	boost::shared_ptr<PermutationGroup> group(new PermutationGroup(schreierSims.construct(begin, end)));
 	return group;
 }
@@ -75,14 +75,14 @@ boost::shared_ptr<PermutationGroup> construct(unsigned long n, InputIterator beg
 
 template<class InputIterator>
 boost::shared_ptr<PermutationGroup> setStabilizer(const PermutationGroup& group, InputIterator begin, InputIterator end) {
-    PermutationGroup copy(group);
+	PermutationGroup copy(group);
 	// change the base so that is prefixed by the set
-	ConjugatingBaseChange<PERM,TRANSVERSAL,
-		RandomBaseTranspose<PERM,TRANSVERSAL> > baseChange(copy);
+	ConjugatingBaseChange<PERMUTATION,TRANSVERSAL,
+		RandomBaseTranspose<PERMUTATION,TRANSVERSAL> > baseChange(copy);
 	baseChange.change(copy, begin, end);
 	
 	// prepare search without DCM pruning
-	classic::SetStabilizerSearch<BSGS<PERM,TRANSVERSAL>, TRANSVERSAL> backtrackSearch(copy, 0);
+	classic::SetStabilizerSearch<BSGS<PERMUTATION,TRANSVERSAL>, TRANSVERSAL> backtrackSearch(copy, 0);
 	backtrackSearch.construct(begin, end);
 	
 	// start the search
@@ -98,14 +98,14 @@ boost::shared_ptr<PermutationGroup> setStabilizer(const PermutationGroup& group,
 
 template<class InputIterator>
 boost::shared_ptr<Permutation> setImage(const PermutationGroup& group, InputIterator begin, InputIterator end, InputIterator begin2, InputIterator end2) {
-    PermutationGroup copy(group);
+	PermutationGroup copy(group);
 	// change the base so that is prefixed by the set
-	ConjugatingBaseChange<PERM,TRANSVERSAL,
-		RandomBaseTranspose<PERM,TRANSVERSAL> > baseChange(copy);
+	ConjugatingBaseChange<PERMUTATION,TRANSVERSAL,
+		RandomBaseTranspose<PERMUTATION,TRANSVERSAL> > baseChange(copy);
 	baseChange.change(copy, begin, end);
 	
 	// prepare search without DCM pruning
-	classic::SetImageSearch<BSGS<PERM,TRANSVERSAL>, TRANSVERSAL> backtrackSearch(copy, 0);
+	classic::SetImageSearch<BSGS<PERMUTATION,TRANSVERSAL>, TRANSVERSAL> backtrackSearch(copy, 0);
 	backtrackSearch.construct(begin, end, begin2, end2);
 	
 	// start the search
@@ -117,12 +117,15 @@ boost::shared_ptr<Permutation> setImage(const PermutationGroup& group, InputIter
 // orbits
 //
 
-std::list<boost::shared_ptr<OrbitAsSet> > orbits(const PermutationGroup& group) {
-	std::list<boost::shared_ptr<OrbitAsSet> > orbitList;
+template<typename PDOMAIN,typename ACTION,typename InputIterator>
+std::list<boost::shared_ptr<OrbitSet<PERMUTATION,PDOMAIN> > > orbits(const PermutationGroup& group, InputIterator begin, InputIterator end) {
+	typedef boost::shared_ptr<OrbitSet<PERMUTATION,PDOMAIN> > ORBIT;
+	std::list<ORBIT> orbitList;
 	
-	for (ulong alpha = 0; alpha < group.n; ++alpha) {
+	for (; begin != end; ++begin) {
+		const PDOMAIN& alpha = *begin;
 		bool knownElement = false;
-		BOOST_FOREACH(const boost::shared_ptr<OrbitAsSet>& orb, orbitList) {
+		BOOST_FOREACH(const ORBIT& orb, orbitList) {
 			if (orb->contains(alpha)) {
 				knownElement = true;
 				break;
@@ -132,20 +135,23 @@ std::list<boost::shared_ptr<OrbitAsSet> > orbits(const PermutationGroup& group) 
 		if (knownElement)
 			continue;
 		
-		boost::shared_ptr<OrbitAsSet> orbit(new OrbitAsSet());
-		orbit->orbit(alpha, group.S, Transversal<PERM>::TrivialAction());
+		ORBIT orbit(new OrbitSet<PERMUTATION,PDOMAIN>());
+		orbit->orbit(alpha, group.S, ACTION());
 		orbitList.push_back(orbit);
 	}
 
 	return orbitList;
 }
 
+inline std::list<boost::shared_ptr<OrbitAsSet> > orbits(const PermutationGroup& group) {
+	return orbits<unsigned long, Transversal<PERMUTATION>::TrivialAction>(group, boost::counting_iterator<unsigned long>(0), boost::counting_iterator<unsigned long>(group.n));
+}
 
 // ---------------------------------------------------------------------
 // smallest orbit element
 //
 
-dset smallestSetImage(const PermutationGroup& group, const dset& set) {
+inline dset smallestSetImage(const PermutationGroup& group, const dset& set) {
 	OrbitLexMinSearch<PermutationGroup>  orbLexMin(group);
 	return orbLexMin.lexMin(set);
 }

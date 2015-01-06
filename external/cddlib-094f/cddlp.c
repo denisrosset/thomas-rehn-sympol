@@ -3765,7 +3765,7 @@ void dd_BasisStatusMinimize(dd_rowrange m_size,dd_colrange d_size,
      LPS,optvalue,sol,dsol,posset,nbindex,re,se,nse,pivots,found,LPScorrect);
    dd_neg(*optvalue,*optvalue);
    for (j=1; j<=d_size; j++){
-	if (LPS!=dd_Inconsistent) {
+	if (LPS!=ddf_Inconsistent) {
 	   /* Inconsistent certificate stays valid for minimization, 0.94e */
        dd_neg(dsol[j-1],dsol[j-1]);
 	 }

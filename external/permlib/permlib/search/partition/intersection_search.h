@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ public:
 	 * @param bsgs BSGS of first group
 	 * @param pruningLevelDCM level up to which expensive double coset minimality pruning is performed; zero to disable
 	 */
-	IntersectionSearch(const BSGSIN& bsgs, uint pruningLevelDCM);
+	IntersectionSearch(const BSGSIN& bsgs, unsigned int pruningLevelDCM);
 	
 	/// initializes search
 	/**
@@ -63,7 +63,7 @@ public:
 };
 
 template<class BSGSIN,class TRANSRET>
-IntersectionSearch<BSGSIN,TRANSRET>::IntersectionSearch(const BSGSIN& bsgs, uint pruningLevelDCM) 
+IntersectionSearch<BSGSIN,TRANSRET>::IntersectionSearch(const BSGSIN& bsgs, unsigned int pruningLevelDCM) 
 	: RBase<BSGSIN,TRANSRET>(bsgs, pruningLevelDCM)
 { }
 

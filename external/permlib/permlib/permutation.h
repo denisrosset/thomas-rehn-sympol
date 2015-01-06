@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -50,16 +50,22 @@ namespace permlib {
 class Permutation {
 public:
 	/// typedef for permutation image
-	typedef std::vector<unsigned long> perm;
+	typedef std::vector<dom_int> perm;
+	
+	/// boost shared_ptr of this class
+	typedef boost::shared_ptr<Permutation> ptr;
 	
 	/// constructs identity permutation acting on n elements
-    explicit Permutation(unsigned int n);
+    explicit Permutation(dom_int n);
 	/// constructs permutation acting on n elements, given by string in cycle form
-    Permutation(unsigned int n, const std::string &cycles);
+    Permutation(dom_int n, const std::string &cycles);
 	/// sort of copy constructor
     explicit Permutation(const perm &p);
 	/// copy constructor
     Permutation(const Permutation &p) : m_perm(p.m_perm), m_isIdentity(p.m_isIdentity) {};
+	/// construct from dom_int-iterator  
+	template<class InputIterator>
+	Permutation(InputIterator begin, InputIterator end) : m_perm(begin, end) {}
 
 	/// permutation multiplication from the right
     Permutation operator*(const Permutation &p) const;
@@ -81,12 +87,12 @@ public:
     bool operator==(const Permutation &p2) const { return m_perm == p2.m_perm; };
 
 	/// lets permutation act on val
-    inline ulong operator/(ulong val) const { return at(val); }
+    inline dom_int operator/(dom_int val) const { return at(val); }
 	/// lets permutation act on val
-    inline ulong at(ulong val) const { return m_perm[val]; }
+    inline dom_int at(dom_int val) const { return m_perm[val]; }
 
 	/// lets inverse permutation act on val, i.e. compute j such that (this->at(j) == val)
-    ulong operator%(ulong val) const;
+    dom_int operator%(dom_int val) const;
 
 	/// output in cycle form
     friend std::ostream &operator<< (std::ostream &out, const Permutation &p);
@@ -99,10 +105,10 @@ public:
 	/// dummy stub for interface compatability with PermutationWord
     inline void flush() {};
 	/// number of points this permutation acts on
-	inline uint size() const { return m_perm.size(); }
+	inline dom_int size() const { return m_perm.size(); }
 	
 	///updates this permutation such that pos is mapped onto val and val onto pos
-	void setTransposition(uint pos, uint val);
+	void setTransposition(dom_int pos, dom_int val);
 protected:
 	/// defintion of permutation behavior
 	perm m_perm;
@@ -111,7 +117,7 @@ protected:
 	bool m_isIdentity;
 
 	/// INTERNAL ONLY: constructs an "empty" permutation, i.e. without element mapping
-	Permutation(unsigned int n, bool) : m_perm(n), m_isIdentity(false) {}
+	Permutation(dom_int n, bool) : m_perm(n), m_isIdentity(false) {}
 };
 
 
@@ -119,27 +125,27 @@ protected:
 //     ----       IMPLEMENTATION
 //
 
-inline Permutation::Permutation(unsigned int n) 
+inline Permutation::Permutation(dom_int n) 
 	: m_perm(n), m_isIdentity(true) 
 {
-    for (unsigned int i=0; i<n; ++i)
+    for (dom_int i=0; i<n; ++i)
         m_perm[i] = i;
 }
 
-inline Permutation::Permutation(unsigned int n, const std::string & cycles) 
+inline Permutation::Permutation(dom_int n, const std::string & cycles) 
 	: m_perm(n), m_isIdentity(false) 
 {
 	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 	boost::char_separator<char> sepCycles(",");
 	tokenizer tokens(cycles, sepCycles);
 
-	for (unsigned int i=0; i<n; ++i)
+	for (dom_int i=0; i<n; ++i)
 		m_perm[i] = i;
 
 	for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
 		std::stringstream ss(*tok_iter);
 
-		ulong first, last, temp;
+		unsigned int first, last, temp;
 		ss >> first;
 		last = first;
 
@@ -161,7 +167,7 @@ inline Permutation Permutation::operator*(const Permutation &p) const {
 	BOOST_ASSERT(p.m_perm.size() == m_perm.size());
 
 	Permutation res(m_perm.size(), true);
-    for (unsigned int i=0; i<m_perm.size(); ++i) {
+    for (dom_int i=0; i<m_perm.size(); ++i) {
         res.m_perm[i] = p.m_perm[m_perm[i]];
     }
     return res;
@@ -171,7 +177,7 @@ inline Permutation& Permutation::operator*=(const Permutation &p) {
 	BOOST_ASSERT(p.m_perm.size() == m_perm.size());
 	m_isIdentity = false;
 	
-    for (unsigned int i=0; i<m_perm.size(); ++i) {
+    for (dom_int i=0; i<m_perm.size(); ++i) {
         m_perm[i] = p.m_perm[m_perm[i]];
     }
     return *this;
@@ -182,7 +188,7 @@ inline Permutation& Permutation::operator^=(const Permutation &p) {
 	m_isIdentity = false;
 	perm tmp(m_perm);
 
-    for (unsigned int i=0; i<m_perm.size(); ++i) {
+    for (dom_int i=0; i<m_perm.size(); ++i) {
         m_perm[i] = tmp[p.m_perm[i]];
     }
     return *this;
@@ -190,7 +196,7 @@ inline Permutation& Permutation::operator^=(const Permutation &p) {
 
 inline Permutation Permutation::operator~() const {
     Permutation res(m_perm.size(), true);
-    for (unsigned int i=0; i<m_perm.size(); ++i) {
+    for (dom_int i=0; i<m_perm.size(); ++i) {
         res.m_perm[m_perm[i]] = i;
     }
     return res;
@@ -198,14 +204,14 @@ inline Permutation Permutation::operator~() const {
 
 inline Permutation& Permutation::invertInplace() {
 	perm tmp(m_perm);
-	for (unsigned int i=0; i<m_perm.size(); ++i) {
+	for (dom_int i=0; i<m_perm.size(); ++i) {
 		m_perm[tmp[i]] = i;
 	}
 	return *this;
 }
 
-inline ulong Permutation::operator%(ulong val) const {
-	for (uint i = 0; i < m_perm.size(); ++i) {
+inline dom_int Permutation::operator%(dom_int val) const {
+	for (dom_int i = 0; i < m_perm.size(); ++i) {
 		if (m_perm[i] == val)
 			return i;
 	}
@@ -217,13 +223,13 @@ inline ulong Permutation::operator%(ulong val) const {
 inline bool Permutation::isIdentity() const {
 	if (m_isIdentity)
 		return true;
-	for (unsigned int i=0; i<m_perm.size(); ++i)
+	for (dom_int i=0; i<m_perm.size(); ++i)
 		if (at(i) != i)
 			return false;
 	return true;
 }
 
-inline void Permutation::setTransposition(uint pos, uint val) {
+inline void Permutation::setTransposition(dom_int pos, dom_int val) {
 	BOOST_ASSERT(pos < m_perm.size());
 	BOOST_ASSERT(val < m_perm.size());
 	
@@ -232,10 +238,10 @@ inline void Permutation::setTransposition(uint pos, uint val) {
 }
 
 inline std::ostream& operator<<(std::ostream& out, const Permutation& p) {
-    std::set<ulong> worked;
+    std::set<dom_int> worked;
     bool output = false;
-    for (ulong x=0; x<p.m_perm.size(); ++x) {
-        unsigned long px, startX;
+    for (dom_int x=0; x<p.m_perm.size(); ++x) {
+        dom_int px, startX;
         startX = x;
         px = p.m_perm[x];
         if (worked.count(x) || x == px) {

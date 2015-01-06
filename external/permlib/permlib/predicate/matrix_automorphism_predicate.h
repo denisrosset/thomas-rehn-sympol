@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -48,8 +48,8 @@ public:
 	MatrixAutomorphismPredicate(const MATRIX& matrix);
 
 	virtual bool operator()(const PERM &p) const;
-	virtual bool childRestriction(const PERM &h, uint i, ulong beta_i) const;
-	virtual uint limit() const;
+	virtual bool childRestriction(const PERM &h, unsigned int i, unsigned long beta_i) const;
+	virtual unsigned int limit() const;
 private:
 	const MATRIX& m_matrix;
 };
@@ -65,9 +65,9 @@ MatrixAutomorphismPredicate<PERM,MATRIX>::MatrixAutomorphismPredicate(const MATR
 
 template <class PERM,class MATRIX>
 bool MatrixAutomorphismPredicate<PERM,MATRIX>::operator()(const PERM &p) const {
-	const ulong n = m_matrix.dimension();
-	for (ulong i = 0; i < n; ++i) {
-		for (ulong j = i; j < n; ++j) {
+	const unsigned long n = m_matrix.dimension();
+	for (unsigned long i = 0; i < n; ++i) {
+		for (unsigned long j = i; j < n; ++j) {
 			if (m_matrix.at(i, j) != m_matrix.at(p / i, p / j))
 				return false;
 		}
@@ -76,13 +76,13 @@ bool MatrixAutomorphismPredicate<PERM,MATRIX>::operator()(const PERM &p) const {
 }
 
 template <class PERM,class MATRIX>
-bool MatrixAutomorphismPredicate<PERM,MATRIX>::childRestriction(const PERM &h, uint i, ulong beta_i) const {
+bool MatrixAutomorphismPredicate<PERM,MATRIX>::childRestriction(const PERM &h, unsigned int i, unsigned long beta_i) const {
 	// we can't easily restrict child nodes in general, so we don't restrict at all
 	return true;
 }
 
 template <class PERM,class MATRIX>
-uint MatrixAutomorphismPredicate<PERM,MATRIX>::limit() const {
+unsigned int MatrixAutomorphismPredicate<PERM,MATRIX>::limit() const {
 	// we can't easily limit the search depth, so return maximal depth
 	return m_matrix.dimension();
 }

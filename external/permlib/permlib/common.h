@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 #include <cstdlib>
 #include <vector>
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 namespace std {
 	/// copies elements of (begin to end) to destBegin if they match the given predicate
 	/**
@@ -54,13 +55,14 @@ namespace std {
 		return destBegin;
 	}
 }
+#endif
 
 namespace permlib {
-	//typedef unsigned int uint;
-	//typedef unsigned long ulong;
+	typedef unsigned short int dom_int;
+	//typedef unsigned char dom_int;
 	
 	/// returns random integer 0 <= x < upperBound 
-	inline uint randomInt(uint upperBound) {
+	inline unsigned int randomInt(unsigned int upperBound) {
 		return std::rand() % upperBound;
 	}
 
@@ -79,13 +81,10 @@ namespace permlib {
 	  void operator()(T *ptr){ delete ptr; }
 	};
 
-#define PERMptr boost::shared_ptr<PERM>
-#define PERMlist std::list<boost::shared_ptr<PERM> >
-
-#ifdef DEBUG_OUTPUT
-#define DEBUG(X) X
+#ifdef PERMLIB_DEBUG_OUTPUT
+#define PERMLIB_DEBUG(X) X
 #else
-#define DEBUG(X)
+#define PERMLIB_DEBUG(X)
 #endif
 
 }

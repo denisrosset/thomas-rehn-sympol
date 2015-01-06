@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -97,9 +97,9 @@ private:
 	ConjugatingBaseChange<PERM, typename BSGSIN::TRANStype, RandomBaseTranspose<PERM, typename BSGSIN::TRANStype> > m_cbc;
 	DSetAction<PERM> m_dsetAction;
 
-	bool lexMin(uint i, uint k, const BSGSIN* stabilizer, const std::list<CandidatePtr>& candidates, std::list<CandidatePtr>& candidatesNext, dset& M_i, std::list<ulong>& base, PERMvec& S_i);
+	bool lexMin(unsigned int i, unsigned int k, const BSGSIN* stabilizer, const std::list<CandidatePtr>& candidates, std::list<CandidatePtr>& candidatesNext, dset& M_i, std::list<unsigned long>& base, PERMvec& S_i);
 	/// finds the least element of an orbit of one number
-	ulong orbMin(ulong element, const PERMvec& generators);
+	unsigned long orbMin(unsigned long element, const PERMvec& generators);
 
 	/// given a set of elements, finds orbit representatives
 	/**
@@ -107,12 +107,12 @@ private:
 	 * @param generators group generators for the orbit
 	 * @return a set that contains one orbit representative for each orbit in $(element)
 	 */
-	dset* orbRepresentatives(dset element, const PERMlist& generators);
+	dset* orbRepresentatives(dset element, const std::list<typename PERM::ptr>& generators);
 
 	// temporary variables for the orbMin calculation
 	dset m_orb;
-	std::vector<ulong> m_orbVector;
-	uint m_orbVectorIndex;
+	std::vector<unsigned long> m_orbVector;
+	unsigned int m_orbVectorIndex;
 };
 
 
@@ -130,11 +130,11 @@ inline dset OrbitLexMinSearch<BSGSIN>::lexMin(const dset& element, const BSGSIN*
 
 	cand0->push_back(c0);
 	dset M_i(element.size());
-	std::list<ulong> base;
+	std::list<unsigned long> base;
 	PERMvec S_i;
 	S_i.reserve(m_bsgs.S.size());
 
-	for (uint i = 0; i < element.count(); ++i) {
+	for (unsigned int i = 0; i < element.count(); ++i) {
 		if (lexMin(i, element.count(), stabilizer, *cand0, *cand1, M_i, base, S_i))
 			break;
 		std::swap(cand0, cand1);
@@ -146,13 +146,13 @@ inline dset OrbitLexMinSearch<BSGSIN>::lexMin(const dset& element, const BSGSIN*
 }
 
 template<class BSGSIN>
-inline bool OrbitLexMinSearch<BSGSIN>::lexMin(uint i, uint k, const BSGSIN* stabilizer, const std::list<CandidatePtr>& candidates, std::list<CandidatePtr>& candidatesNext, dset& M_i, std::list<ulong>& base, PERMvec& S_i) {
-	DEBUG(std::cout << "### START " << i << " with #" << candidates.size() << std::endl;)
+inline bool OrbitLexMinSearch<BSGSIN>::lexMin(unsigned int i, unsigned int k, const BSGSIN* stabilizer, const std::list<CandidatePtr>& candidates, std::list<CandidatePtr>& candidatesNext, dset& M_i, std::list<unsigned long>& base, PERMvec& S_i) {
+	PERMLIB_DEBUG(std::cout << "### START " << i << " with #" << candidates.size() << std::endl;)
 
 	// if current stabilizer in the stabilizer chain is trivial we may
 	// choose the minimal candidate and abort the search
 	bool allOne = true;
-	for (uint j = i; j < m_bsgs.B.size(); ++j) {
+	for (unsigned int j = i; j < m_bsgs.B.size(); ++j) {
 		if (m_bsgs.U[j].size() > 1) {
 			allOne = false;
 			break;
@@ -168,21 +168,21 @@ inline bool OrbitLexMinSearch<BSGSIN>::lexMin(uint i, uint k, const BSGSIN* stab
 		return true;
 	}
 
-	uint m = m_bsgs.n + 1;
+	unsigned int m = m_bsgs.n + 1;
 	S_i.clear();
 	PointwiseStabilizerPredicate<PERM> stab_i(m_bsgs.B.begin(), m_bsgs.B.begin() + i);
 	std::copy_if(m_bsgs.S.begin(), m_bsgs.S.end(), std::back_inserter(S_i), stab_i);
-	const ulong UNDEFINED_ORBIT = std::numeric_limits<ulong>::max();
-	std::vector<ulong> orbitCache(m_bsgs.n, UNDEFINED_ORBIT);
+	const unsigned long UNDEFINED_ORBIT = std::numeric_limits<unsigned long>::max();
+	std::vector<unsigned long> orbitCache(m_bsgs.n, UNDEFINED_ORBIT);
 	std::list<CandidatePtr> pass;
 
 	BOOST_FOREACH(const CandidatePtr& R, candidates) {
-		ulong m_R = m;
-		for (ulong j = 0; j < R->D.size(); ++j) {
+		unsigned long m_R = m;
+		for (unsigned long j = 0; j < R->D.size(); ++j) {
 			if (R->J[j] || !R->D[j])
 				continue;
 
-			ulong val = orbitCache[j];
+			unsigned long val = orbitCache[j];
 			if (val == UNDEFINED_ORBIT) {
 				val = orbMin(j, S_i);
 				orbitCache[j] = val;
@@ -200,7 +200,7 @@ inline bool OrbitLexMinSearch<BSGSIN>::lexMin(uint i, uint k, const BSGSIN* stab
 		}
 	}
 
-	DEBUG(std::cout << " found m = " << m << std::endl;)
+	PERMLIB_DEBUG(std::cout << " found m = " << m << std::endl;)
 	M_i.set(m, 1);
 	if (i == k-1)
 		return true;
@@ -217,7 +217,7 @@ inline bool OrbitLexMinSearch<BSGSIN>::lexMin(uint i, uint k, const BSGSIN* stab
 		p = UNDEFINED_TRANSVERSAL;
 	}
 	BOOST_FOREACH(const CandidatePtr& R, pass) {
-		for (ulong j = 0; j < R->D.size(); ++j) {
+		for (unsigned long j = 0; j < R->D.size(); ++j) {
 			if (!R->D[j])
 				continue;
 
@@ -248,20 +248,20 @@ inline bool OrbitLexMinSearch<BSGSIN>::lexMin(uint i, uint k, const BSGSIN* stab
 }
 
 template<class BSGSIN>
-inline ulong OrbitLexMinSearch<BSGSIN>::orbMin(ulong element, const PERMvec& generators) {
+inline unsigned long OrbitLexMinSearch<BSGSIN>::orbMin(unsigned long element, const PERMvec& generators) {
 	if (element == 0)
 		return 0;
 
-	ulong minElement = element;
+	unsigned long minElement = element;
 	m_orb.reset();
 	m_orb.set(element, 1);
 	m_orbVectorIndex = 0;
 	m_orbVector[m_orbVectorIndex++] = element;
 
-	for (uint i = 0; i < m_orbVectorIndex; ++i) {
-		const ulong &alpha = m_orbVector[i];
-		BOOST_FOREACH(const PERMptr& p, generators) {
-			ulong alpha_p = *p / alpha;
+	for (unsigned int i = 0; i < m_orbVectorIndex; ++i) {
+		const unsigned long &alpha = m_orbVector[i];
+		BOOST_FOREACH(const typename PERM::ptr& p, generators) {
+			unsigned long alpha_p = *p / alpha;
 			if (alpha_p == 0)
 				return 0;
 			if (!m_orb[alpha_p]) {
@@ -278,10 +278,10 @@ inline ulong OrbitLexMinSearch<BSGSIN>::orbMin(ulong element, const PERMvec& gen
 
 
 template<class BSGSIN>
-inline dset* OrbitLexMinSearch<BSGSIN>::orbRepresentatives(dset element, const PERMlist& generators) {
+inline dset* OrbitLexMinSearch<BSGSIN>::orbRepresentatives(dset element, const std::list<typename PERM::ptr>& generators) {
 	dset* ret = new dset(element.size());
 
-	for (uint j = 0; j < element.size(); ++j) {
+	for (unsigned int j = 0; j < element.size(); ++j) {
 		if (!element[j])
 			continue;
 
@@ -289,10 +289,10 @@ inline dset* OrbitLexMinSearch<BSGSIN>::orbRepresentatives(dset element, const P
 		m_orb.set(j, 0);
 		m_orbVectorIndex = 0;
 		m_orbVector[m_orbVectorIndex++] = j;
-		for (uint i = 0; i < m_orbVectorIndex; ++i) {
-			const ulong &alpha = m_orbVector[i];
-			BOOST_FOREACH(const PERMptr& p, generators) {
-				ulong alpha_p = *p / alpha;
+		for (unsigned int i = 0; i < m_orbVectorIndex; ++i) {
+			const unsigned long &alpha = m_orbVector[i];
+			BOOST_FOREACH(const typename PERM::ptr& p, generators) {
+				unsigned long alpha_p = *p / alpha;
 				if (m_orb[alpha_p]) {
 					m_orbVector[m_orbVectorIndex++] = alpha_p;
 					m_orb.reset(alpha_p);

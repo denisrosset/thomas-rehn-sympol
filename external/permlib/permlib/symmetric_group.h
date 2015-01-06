@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,8 @@
 #include <permlib/bsgs_core.h>
 #include <permlib/transversal/symmetric_group_transversal.h>
 
+#include <boost/shared_ptr.hpp>
+
 namespace permlib {
 
 /// representation of a symmetric group
@@ -49,7 +51,7 @@ namespace permlib {
 template<class PERM>
 struct SymmetricGroup : public BSGSCore<PERM, SymmetricGroupTransversal<PERM> > {
 	/// constructs a symmetric group of degree n
-	explicit SymmetricGroup(uint n);
+	explicit SymmetricGroup(unsigned int n);
 	/// copy constructor
 	SymmetricGroup(const SymmetricGroup<PERM>& symGroup);
 	/// assignment operator
@@ -64,11 +66,11 @@ private:
 };
 
 template<class PERM>
-inline SymmetricGroup<PERM>::SymmetricGroup(uint n)
+inline SymmetricGroup<PERM>::SymmetricGroup(unsigned int n)
 	: BSGSCore<PERM,TRANS>(-n, n, n)
 {
 	BSGSCore<PERM,TRANS>::U.reserve(n);
-	for (uint i = 0; i < n; ++i) {
+	for (unsigned int i = 0; i < n; ++i) {
 		BSGSCore<PERM,TRANS>::B[i] = n-1-i;
 		BSGSCore<PERM,TRANS>::U.push_back(SymmetricGroupTransversal<PERM>(this, i));
 		if (i < n-1) {
@@ -82,9 +84,9 @@ inline SymmetricGroup<PERM>::SymmetricGroup(uint n)
 template<class PERM>
 inline void SymmetricGroup<PERM>::copy(const SymmetricGroup<PERM>& symGroup) 
 {
-	const ulong& n = symGroup.n;
+	const unsigned long& n = symGroup.n;
 	BSGSCore<PERM,TRANS>::U.reserve(n);
-	for (uint i = 0; i < n; ++i) {
+	for (unsigned int i = 0; i < n; ++i) {
 		BSGSCore<PERM,TRANS>::B[i] = symGroup.B[i];
 		BSGSCore<PERM,TRANS>::U.push_back(SymmetricGroupTransversal<PERM>(this, i));
 		if (i < n-1) {

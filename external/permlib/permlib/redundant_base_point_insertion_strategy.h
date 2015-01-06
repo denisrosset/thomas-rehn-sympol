@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -48,8 +48,8 @@ public:
 	 */
 	RedundantBasePointInsertionStrategy(const BSGS<PERM,TRANS> &bsgs) : m_bsgs(bsgs) {}
 
-    // virtual destructor
-    virtual ~RedundantBasePointInsertionStrategy() {}
+	// virtual destructor
+	virtual ~RedundantBasePointInsertionStrategy() {}
 	
 	/// finds possible insertion point for base point
 	/**
@@ -57,7 +57,7 @@ public:
 	 * @param S_i generators for i-th fundamental orbit where i is the insert position found
 	 * @return insert position; if negative then beta is already base point at position -$retVal-1
 	 */
-	virtual int findInsertionPoint(uint beta, PERMlist &S_i) const = 0;
+	virtual int findInsertionPoint(dom_int beta, std::list<typename PERM::ptr> &S_i) const = 0;
 protected:
 	/// BSGS to work on
 	const BSGS<PERM,TRANS> &m_bsgs;
@@ -70,10 +70,10 @@ public:
 	/// constructor
 	TrivialRedundantBasePointInsertionStrategy(const BSGS<PERM,TRANS> &bsgs) : RedundantBasePointInsertionStrategy<PERM,TRANS>(bsgs) {}
 	
-	virtual int findInsertionPoint(uint beta, PERMlist &S_i) const {
-		const std::vector<ulong> &B = RedundantBasePointInsertionStrategy<PERM,TRANS>::m_bsgs.B;
+	virtual int findInsertionPoint(dom_int beta, std::list<typename PERM::ptr> &S_i) const {
+		const std::vector<dom_int> &B = RedundantBasePointInsertionStrategy<PERM,TRANS>::m_bsgs.B;
 		const std::vector<TRANS> &U = RedundantBasePointInsertionStrategy<PERM,TRANS>::m_bsgs.U;
-		for (uint i=0; i<B.size(); ++i) {
+		for (unsigned int i=0; i<B.size(); ++i) {
 			if (beta == B[i])
 				return -i-1;
 		}
@@ -91,12 +91,12 @@ public:
 	/// constructor
 	FirstRedundantBasePointInsertionStrategy(const BSGS<PERM,TRANS> &bsgs) : RedundantBasePointInsertionStrategy<PERM,TRANS>(bsgs) {}
 	
-	virtual int findInsertionPoint(uint beta, PERMlist &S_i) const {
-		const std::vector<ulong> &B = RedundantBasePointInsertionStrategy<PERM,TRANS>::m_bsgs.B;
-		const PERMlist &S = RedundantBasePointInsertionStrategy<PERM,TRANS>::m_bsgs.S;
-		typename std::vector<ulong>::const_iterator bIt = B.begin();
+	virtual int findInsertionPoint(dom_int beta, std::list<typename PERM::ptr> &S_i) const {
+		const std::vector<dom_int> &B = RedundantBasePointInsertionStrategy<PERM,TRANS>::m_bsgs.B;
+		const std::list<typename PERM::ptr> &S = RedundantBasePointInsertionStrategy<PERM,TRANS>::m_bsgs.S;
+		typename std::vector<dom_int>::const_iterator bIt = B.begin();
 		int pos = B.size();
-		for (uint i=0; i<B.size(); ++i) {
+		for (unsigned int i=0; i<B.size(); ++i) {
 			if (beta == B[i])
 				return -i-1;
 			

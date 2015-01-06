@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -58,13 +58,15 @@ public:
 	 * @param bsgs the BSGS that the transposition is performed on
 	 * @param i exchanges i-th and (i+1)-st base point
 	 */
-    void transpose(BSGS<PERM,TRANS> &bsgs, uint i) const;
+    void transpose(BSGS<PERM,TRANS> &bsgs, unsigned int i) const;
 
 	/// number of Schreier generators that have been considered during the last transpose call
-    mutable uint m_statScheierGeneratorsConsidered;
+    mutable unsigned int m_statScheierGeneratorsConsidered;
 	/// number of new strong generators that have been added during the last transpose call
-    mutable uint m_statNewGenerators;
+    mutable unsigned int m_statNewGenerators;
 protected:
+	typedef std::list<typename PERM::ptr> PERMlist;
+	
 	/// initializes the specific Schreier Generator that is used for the BaseTranpose implementation
 	/** 
 	 * @param bsgs the BSGS that the generator is contructed for
@@ -72,7 +74,7 @@ protected:
 	 * @param S_i group generators for Schreier generator
 	 * @param U_i transversal for Schreier generator
 	 */
-    virtual Generator<PERM>* setupGenerator(BSGS<PERM,TRANS> &bsgs, uint i, const PERMlist &S_i, const TRANS &U_i) const = 0;
+    virtual Generator<PERM>* setupGenerator(BSGS<PERM,TRANS> &bsgs, unsigned int i, const PERMlist &S_i, const TRANS &U_i) const = 0;
 };
 
 //
@@ -85,8 +87,8 @@ BaseTranspose<PERM,TRANS>::BaseTranspose()
 { }
 
 template<class PERM, class TRANS>
-void BaseTranspose<PERM,TRANS>::transpose(BSGS<PERM,TRANS> &bsgs, uint i) const {
-	std::vector<ulong> &B = bsgs.B;
+void BaseTranspose<PERM,TRANS>::transpose(BSGS<PERM,TRANS> &bsgs, unsigned int i) const {
+	std::vector<dom_int> &B = bsgs.B;
 	std::vector<TRANS> &U = bsgs.U;
 
 	if (i+1 >= B.size())
@@ -101,7 +103,7 @@ void BaseTranspose<PERM,TRANS>::transpose(BSGS<PERM,TRANS> &bsgs, uint i) const 
 	PERMlist S_i1;
 	std::copy_if(bsgs.S.begin(), bsgs.S.end(), std::back_inserter(S_i1), PointwiseStabilizerPredicate<PERM>(B.begin(), B.begin() + (i+1)));
 
-	uint targetTransversalSize = U[i+1].size() * U[i].size();
+	unsigned int targetTransversalSize = U[i+1].size() * U[i].size();
 
 	// new transversal
 	TRANS U_i(U[i].n());
@@ -116,30 +118,30 @@ void BaseTranspose<PERM,TRANS>::transpose(BSGS<PERM,TRANS> &bsgs, uint i) const 
     BOOST_ASSERT(generator != 0);
     
 	while (U_i1.size() < targetTransversalSize) {
-        bool newGeneratorFound = false;
-        while (generator->hasNext()) {
-            PERM g = generator->next();
-            ++m_statScheierGeneratorsConsidered;
+		bool newGeneratorFound = false;
+		while (generator->hasNext()) {
+			PERM g = generator->next();
+			++m_statScheierGeneratorsConsidered;
 			boost::indirect_iterator<typename PERMlist::iterator> sBegin(S_i1.begin()), sEnd(S_i1.end());
-            if (!U_i1.contains(g / B[i+1]) && std::find(sBegin, sEnd, g) == sEnd) {
-                g.flush();
+			if (!U_i1.contains(g / B[i+1]) && std::find(sBegin, sEnd, g) == sEnd) {
+				g.flush();
 				boost::shared_ptr<PERM> gen(new PERM(g));
-                S_i1.push_front(gen);
-                ++m_statNewGenerators;
+				S_i1.push_front(gen);
+				++m_statNewGenerators;
 				U_i1.orbitUpdate(B[i+1], S_i1, gen);
-                newGeneratorFound = true;
-                break;
-            }
-        }
-        if (!newGeneratorFound)
-            // we have exhausted all available generators, and we won't find any new ones in the loop
-            break;
+				newGeneratorFound = true;
+				break;
+			}
+		}
+		if (!newGeneratorFound)
+			// we have exhausted all available generators, and we won't find any new ones in the loop
+			break;
 	}
-    BOOST_ASSERT(U_i1.size() >= targetTransversalSize);
+	BOOST_ASSERT(U_i1.size() >= targetTransversalSize);
 
 	bsgs.S.insert(bsgs.S.end(), S_i1.begin(), boost::next(S_i1.begin(), m_statNewGenerators));
-    U[i] = U_i;
-    U[i+1] = U_i1;
+	U[i] = U_i;
+	U[i+1] = U_i1;
 }
 
 }

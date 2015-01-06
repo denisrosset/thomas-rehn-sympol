@@ -23,7 +23,7 @@ SET (Boost_USE_MULTITHREADED TRUE)
 find_package(Boost 1.34.1 COMPONENTS program_options REQUIRED)
 
 include_directories(../external/boost ../external/permlib ../external/lrslib-042c ../external/cddlib-094f ${CMAKE_CURRENT_BINARY_DIR})
-add_definitions(-Woverloaded-virtual -ansi -pedantic)
+add_definitions(-Woverloaded-virtual)
 # lrs flags
 add_definitions(-DGMP)
 # cdd flags

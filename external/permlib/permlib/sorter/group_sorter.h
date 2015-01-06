@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -48,13 +48,13 @@ public:
 	 * @param end   end   iterator for partial sequence that induces the ordering
 	 */
 	template <class InputIterator>
-	GroupSorter(uint size, InputIterator begin, InputIterator end) :
+	GroupSorter(unsigned int size, InputIterator begin, InputIterator end) :
 		// initialize m_size elements with value m_size
 		m_order(size, size),
 		m_base(begin, end)
 	{
 		InputIterator it;
-		uint i = 0;
+		unsigned int i = 0;
 		// base elements first
 		for (it = begin; it != end; ++it) {
 			m_order[*it] = ++i;
@@ -63,15 +63,15 @@ public:
 
 	/// true iff a < b
 	bool operator() (PERM a, PERM b) const {
-		BOOST_FOREACH(ulong beta, m_base) {
+		BOOST_FOREACH(unsigned long beta, m_base) {
 			if (m_order[a / beta] < m_order[b / beta])
 				return true;
 		}
 		return false;
 	}
 private:
-	std::vector<ulong> m_order;
-	std::vector<ulong> m_base;
+	std::vector<unsigned long> m_order;
+	std::vector<unsigned long> m_base;
 };
 
 }

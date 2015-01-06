@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -44,22 +44,22 @@ public:
 	/// constructor
 	SchreierTreeTransversal(unsigned int n);
 
-    virtual bool trivialByDefinition(const PERM& x, ulong to) const;
-    virtual PERM* at(ulong val) const;
+    virtual bool trivialByDefinition(const PERM& x, unsigned long to) const;
+    virtual PERM* at(unsigned long val) const;
 	
-	virtual void updateGenerators(const std::map<PERM*,PERMptr>& generatorChange);
+	virtual void updateGenerators(const std::map<PERM*,typename PERM::ptr>& generatorChange);
 	
 	/// returns a clone of this transversal
 	/**
 	 * the group generators that the clone may use are given by the transition map
 	 * @param generatorChange transition map
 	 */
-	SchreierTreeTransversal<PERM> clone(const std::map<PERM*,PERMptr>& generatorChange) const;
+	SchreierTreeTransversal<PERM> clone(const std::map<PERM*,typename PERM::ptr>& generatorChange) const;
 	
 	/// maximal depth of tree structure representing the transversal
-    mutable uint m_statMaxDepth;
+    mutable unsigned int m_statMaxDepth;
 protected:
-    virtual void registerMove(ulong from, ulong to, const PERMptr &p);
+    virtual void registerMove(unsigned long from, unsigned long to, const typename PERM::ptr &p);
 };
 
 //
@@ -72,30 +72,30 @@ SchreierTreeTransversal<PERM>::SchreierTreeTransversal(unsigned int n)
 { }
 
 template <class PERM>
-bool SchreierTreeTransversal<PERM>::trivialByDefinition(const PERM& x, ulong to) const {
+bool SchreierTreeTransversal<PERM>::trivialByDefinition(const PERM& x, unsigned long to) const {
 	return *Transversal<PERM>::m_transversal[to] == x; 
 }
 
 template <class PERM>
-void SchreierTreeTransversal<PERM>::registerMove(ulong from, ulong to, const PERMptr &p) {
+void SchreierTreeTransversal<PERM>::registerMove(unsigned long from, unsigned long to, const typename PERM::ptr &p) {
 	Transversal<PERM>::registerMove(from, to, p);
 	Transversal<PERM>::m_transversal[to] = p;
 }
 
 
 template <class PERM>
-PERM* SchreierTreeTransversal<PERM>::at(ulong val) const {
+PERM* SchreierTreeTransversal<PERM>::at(unsigned long val) const {
 	const std::vector<boost::shared_ptr<PERM> > &transversal = Transversal<PERM>::m_transversal;
 
 	if (transversal[val] == 0) {
 		return 0;
 	}
 
-	uint depth = 1;
+	unsigned int depth = 1;
 	PERM *res = new PERM(*transversal[val]);
 	const PERM* inv = 0;
 	//std::cout << "Schreier " << *res << std::endl;
-	ulong pred = *res % val;
+	unsigned long pred = *res % val;
 	//TODO: reserve space for PermutationWord-res beforehand (we know how long the m_word vector will be)
 	while (pred != val) {
 		inv = transversal[pred].get();
@@ -111,13 +111,13 @@ PERM* SchreierTreeTransversal<PERM>::at(ulong val) const {
 }
 
 template <class PERM>
-void SchreierTreeTransversal<PERM>::updateGenerators(const std::map<PERM*,PERMptr>& generatorChange) {
-	uint missedCount = 0;
-	BOOST_FOREACH(PERMptr& p, this->m_transversal) {
+void SchreierTreeTransversal<PERM>::updateGenerators(const std::map<PERM*,typename PERM::ptr>& generatorChange) {
+	unsigned int missedCount = 0;
+	BOOST_FOREACH(typename PERM::ptr& p, this->m_transversal) {
 		if (!p)
 			continue;
 		//std::cout << "require " << p.get() << std::endl;
-		typename std::map<PERM*,PERMptr>::const_iterator pIt = generatorChange.find(p.get());
+		typename std::map<PERM*,typename PERM::ptr>::const_iterator pIt = generatorChange.find(p.get());
 		//BOOST_ASSERT( pIt != generatorChange.end() );
 		if (pIt != generatorChange.end()) {
 			p = (*pIt).second;
@@ -131,7 +131,7 @@ void SchreierTreeTransversal<PERM>::updateGenerators(const std::map<PERM*,PERMpt
 }
 
 template <class PERM>
-SchreierTreeTransversal<PERM> SchreierTreeTransversal<PERM>::clone(const std::map<PERM*,PERMptr>& generatorChange) const {
+SchreierTreeTransversal<PERM> SchreierTreeTransversal<PERM>::clone(const std::map<PERM*,typename PERM::ptr>& generatorChange) const {
 	SchreierTreeTransversal<PERM> ret(*this);
 	ret.updateGenerators(generatorChange);
 	return ret;

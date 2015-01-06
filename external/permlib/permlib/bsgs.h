@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -58,18 +58,18 @@ struct BSGS;
 template <class PERM, class TRANS>
 std::ostream &operator<< (std::ostream &out, const BSGS<PERM,TRANS> &bsgs) {
 	out << "BASE[" << bsgs.B.size() << "]" << std::endl;
-	BOOST_FOREACH(ulong beta, bsgs.B) {
-		out << (beta+1) << ",";
+	BOOST_FOREACH(unsigned long beta, bsgs.B) {
+		out << static_cast<unsigned int>(beta+1) << ",";
 	}
 	out << std::endl;
 	out << "SGS[" << bsgs.S.size() << "]" << std::endl;
-	BOOST_FOREACH(const boost::shared_ptr<PERM> &g, bsgs.S) {
+	BOOST_FOREACH(const typename PERM::ptr &g, bsgs.S) {
 		out << *g << ",";
 	}
 	out << std::endl;
 	out << "U" << std::endl;
 	BOOST_FOREACH(const TRANS &U, bsgs.U) {
-		for (uint i=0; i<bsgs.n; ++i)
+		for (unsigned int i=0; i<bsgs.n; ++i)
 			// trigger transversal depth reload
 			boost::scoped_ptr<PERM> dummy(U.at(i));
 		out << U.size() << "{" << U.m_statMaxDepth << "}" << ",";
@@ -84,8 +84,10 @@ std::ostream &operator<< (std::ostream &out, const BSGS<PERM,TRANS> &bsgs) {
 /// Represents a base and strong generating set (BSGS)
 template <class PERM, class TRANS>
 struct BSGS : public BSGSCore<PERM,TRANS> {
+	typedef typename BSGSCore<PERM,TRANS>::PERMlist PERMlist;
+	
 	/// constructs an empty group of degree n
-	explicit BSGS(uint n);
+	explicit BSGS(dom_int n);
 	/// copy constructor
 	/**
 	 * creates a deep copy of generator list and transversals,
@@ -112,7 +114,7 @@ struct BSGS : public BSGSCore<PERM,TRANS> {
 	 * @param siftee 
 	 * @param j lowest transversal index to sift; i.e. sift through transversal U[j], U[j+1], ...
 	 */
-	uint sift(const PERM& g, PERM& siftee, uint j = 0) const;
+	unsigned int sift(const PERM& g, PERM& siftee, unsigned int j = 0) const;
 	/// sifts an element through the specified transversal range
 	/**
 	 * @param g permutation to sift
@@ -120,7 +122,7 @@ struct BSGS : public BSGSCore<PERM,TRANS> {
 	 * @param j lowest transversal index to sift
 	 * @param k highest transversal index to sift plus one
 	 */
-	uint sift(const PERM& g, PERM& siftee, uint j, uint k) const;
+	unsigned int sift(const PERM& g, PERM& siftee, unsigned int j, unsigned int k) const;
 	/// true iff g sifts through transversal system
 	bool sifts(const PERM& g) const;
 
@@ -131,14 +133,14 @@ struct BSGS : public BSGSCore<PERM,TRANS> {
 	 * @param beta element moved by h
 	 * @return true iff an element h could be found
 	 */
-	bool chooseBaseElement(const PERM &h, ulong &beta) const;
+	bool chooseBaseElement(const PERM &h, dom_int &beta) const;
 	/// inserts a redundant base beta
 	/**
 	 * @param beta
 	 * @param minPos insert point not before the minPos-th base element
 	 * @return insertion position
 	 */
-	uint insertRedundantBasePoint(uint beta, uint minPos = 0);
+	unsigned int insertRedundantBasePoint(unsigned int beta, unsigned int minPos = 0);
 	/// strips redundant base points from the end to the minPos-th base element
 	void stripRedundantBasePoints(int minPos = 0);
 	
@@ -146,12 +148,12 @@ struct BSGS : public BSGSCore<PERM,TRANS> {
 	/**
 	 * @see Transversal<PERM>::orbit
 	 */
-	void orbit(uint j, const PERMlist &generators);
+	void orbit(unsigned int j, const PERMlist &generators);
 	/// updates the j-th fundamental orbit with the given orbit generators and a new generator g
 	/**
 	 * @see Transversal<PERM>::orbitUpdate
 	 */
-	void orbitUpdate(uint j, const PERMlist &generators, const PERMptr &g);
+	void orbitUpdate(unsigned int j, const PERMlist &generators, const typename PERM::ptr &g);
 	
 	/// adds a new group generator
 	/**
@@ -159,7 +161,7 @@ struct BSGS : public BSGSCore<PERM,TRANS> {
 	 * @param updateOrbit true iff transversals/orbits should be updates
 	 * @return index up to which transversals/orbits need update
 	 */
-	int insertGenerator(const PERMptr& g, bool updateOrbit);
+	int insertGenerator(const typename PERM::ptr& g, bool updateOrbit);
 	/// updates transversals/orbits
 	/**
 	 * @param pos index up to which transversals should be updated
@@ -178,7 +180,7 @@ struct BSGS : public BSGSCore<PERM,TRANS> {
 private:
 	/// sifts an element through the specified transversal range
 	template <class BaseIterator, class TransversalIterator>
-	uint sift(const PERM& g, PERM& siftee, BaseIterator begin, BaseIterator end, TransversalIterator beginT, TransversalIterator endT) const;
+	unsigned int sift(const PERM& g, PERM& siftee, BaseIterator begin, BaseIterator end, TransversalIterator beginT, TransversalIterator endT) const;
 
 	/// internal cache for group order
 	mutable boost::uint64_t m_order;
@@ -198,7 +200,7 @@ template <class PERM, class TRANS>
 int BSGS<PERM,TRANS>::ms_bsgsId = 0;
 
 template <class PERM, class TRANS>
-BSGS<PERM,TRANS>::BSGS(uint n) 
+BSGS<PERM,TRANS>::BSGS(dom_int n) 
 	: BSGSCore<PERM,TRANS>(++ms_bsgsId, n, 0), 
 	  m_order(1)
 {}
@@ -227,13 +229,13 @@ BSGS<PERM,TRANS>& BSGS<PERM,TRANS>::operator=(const BSGS<PERM,TRANS>& bsgs) {
 
 template <class PERM, class TRANS>
 template <class BaseIterator, class TransversalIterator>
-uint BSGS<PERM, TRANS>::sift(const PERM& g, PERM& siftee, BaseIterator begin, BaseIterator end, TransversalIterator beginT, TransversalIterator endT) const{
-	uint k = 0;
+unsigned int BSGS<PERM, TRANS>::sift(const PERM& g, PERM& siftee, BaseIterator begin, BaseIterator end, TransversalIterator beginT, TransversalIterator endT) const{
+	unsigned int k = 0;
 	siftee = g;
 	BaseIterator baseIt;
 	TransversalIterator transIt;
 	for (baseIt = begin, transIt = beginT; baseIt != end && transIt != endT; ++baseIt, ++transIt) {
-		ulong b = *baseIt;
+		unsigned long b = *baseIt;
 		const TRANS& U_i = *transIt;
 		//std::cout << " ~~~ sift " << siftee << " b" << b << std::endl;
 		boost::scoped_ptr<PERM> u_b(U_i.at(siftee / b));
@@ -247,24 +249,24 @@ uint BSGS<PERM, TRANS>::sift(const PERM& g, PERM& siftee, BaseIterator begin, Ba
 }
 
 template <class PERM, class TRANS>
-uint BSGS<PERM, TRANS>::sift(const PERM& g, PERM& siftee, uint j) const {
+unsigned int BSGS<PERM, TRANS>::sift(const PERM& g, PERM& siftee, unsigned int j) const {
 	return sift(g, siftee, this->B.begin() + j, this->B.end(), this->U.begin() + j, this->U.end());
 }
 
 template <class PERM, class TRANS>
-uint BSGS<PERM, TRANS>::sift(const PERM& g, PERM& siftee, uint j, uint k) const {
+unsigned int BSGS<PERM, TRANS>::sift(const PERM& g, PERM& siftee, unsigned int j, unsigned int k) const {
 	return sift(g, siftee, this->B.begin() + j, this->B.begin() + k, this->U.begin() + j, this->U.begin() + k);
 }
 
 template <class PERM, class TRANS>
 bool BSGS<PERM, TRANS>::sifts(const PERM& g) const {
 	PERM siftee(this->n);
-	uint m = sift(g, siftee);
+	unsigned int m = sift(g, siftee);
 	return this->B.size() == m && siftee.isIdentity();
 }
 
 template <class PERM, class TRANS>
-bool BSGS<PERM, TRANS>::chooseBaseElement(const PERM &h, ulong &beta) const {
+bool BSGS<PERM, TRANS>::chooseBaseElement(const PERM &h, dom_int &beta) const {
 	for (beta = 0; beta < this->n; ++beta) {
 		if (std::find(this->B.begin(), this->B.end(), beta) != this->B.end())
 			continue;
@@ -275,14 +277,14 @@ bool BSGS<PERM, TRANS>::chooseBaseElement(const PERM &h, ulong &beta) const {
 }
 
 template <class PERM, class TRANS>
-void BSGS<PERM, TRANS>::orbit(uint j, const PERMlist &generators) {
+void BSGS<PERM, TRANS>::orbit(unsigned int j, const PERMlist &generators) {
 	this->U[j].orbit(this->B[j], generators);
 	// mark order as tainted
 	m_order = 0;
 }
 	
 template <class PERM, class TRANS>
-void BSGS<PERM, TRANS>::orbitUpdate(uint j, const PERMlist &generators, const PERMptr &g) {
+void BSGS<PERM, TRANS>::orbitUpdate(unsigned int j, const PERMlist &generators, const typename PERM::ptr &g) {
 	this->U[j].orbitUpdate(this->B[j], generators, g);
 	// mark order as tainted
 	m_order = 0;
@@ -294,7 +296,7 @@ PERM BSGS<PERM, TRANS>::random(const int i) const {
     PERM g(this->n);
     for (int l = this->U.size()-1; l>=i ; --l) {
 		//std::cout << l << " : " << U[l] << " : " << U[l].size() << std::endl;
-        ulong beta = *(boost::next(this->U[l].begin(), randomInt(this->U[l].size())));
+        unsigned long beta = *(boost::next(this->U[l].begin(), randomInt(this->U[l].size())));
         boost::scoped_ptr<PERM> u_beta(this->U[l].at(beta));
         g *= *u_beta;
     }
@@ -302,15 +304,15 @@ PERM BSGS<PERM, TRANS>::random(const int i) const {
 }
 
 template <class PERM, class TRANS>
-int BSGS<PERM, TRANS>::insertGenerator(const PERMptr& g, bool updateOrbit) {
+int BSGS<PERM, TRANS>::insertGenerator(const typename PERM::ptr& g, bool updateOrbit) {
 	int pos = 0;
-	for (; static_cast<uint>(pos) < this->B.size(); ++pos) {
+	for (; static_cast<unsigned int>(pos) < this->B.size(); ++pos) {
 		if (*g / this->B[pos] != this->B[pos])
 			break;
 	}
 	
-	if (static_cast<uint>(pos) == this->B.size()) {
-		ulong beta;
+	if (static_cast<unsigned int>(pos) == this->B.size()) {
+		dom_int beta;
 		bool newBaseElement __attribute__((unused)) = chooseBaseElement(*g, beta);
 		BOOST_ASSERT( newBaseElement );
 		this->B.push_back(beta);
@@ -367,13 +369,13 @@ boost::uint64_t BSGS<PERM, TRANS>::order() const {
 
 
 template <class PERM, class TRANS>
-uint BSGS<PERM, TRANS>::insertRedundantBasePoint(uint beta, uint minPos) {
+unsigned int BSGS<PERM, TRANS>::insertRedundantBasePoint(unsigned int beta, unsigned int minPos) {
 	PERMlist S_i;
 	TrivialRedundantBasePointInsertionStrategy<PERM,TRANS> is(*this);
 	int pos = is.findInsertionPoint(beta, S_i);
 	if (pos < 0)
 		return -(pos+1);
-    pos = std::max(static_cast<uint>(pos), minPos);
+    pos = std::max(static_cast<unsigned int>(pos), minPos);
 	
 	this->B.insert(this->B.begin() + pos, beta);
 	this->U.insert(this->U.begin() + pos, TRANS(this->n));
@@ -398,14 +400,14 @@ void BSGS<PERM, TRANS>::stripRedundantBasePoints(int minPos) {
 
 template <class PERM, class TRANS>
 void BSGS<PERM,TRANS>::copyTransversals(const BSGS<PERM,TRANS>& bsgs) {
-	std::map<PERM*,PERMptr> genMap;
-	BOOST_FOREACH(const PERMptr& p, bsgs.S) {
-		boost::shared_ptr<PERM> deepcopy(new PERM(*p));
+	std::map<PERM*,typename PERM::ptr> genMap;
+	BOOST_FOREACH(const typename PERM::ptr& p, bsgs.S) {
+		typename PERM::ptr deepcopy(new PERM(*p));
 		//std::cout << "found " << p.get() << " = " << *p << std::endl;
 		genMap.insert(std::make_pair(p.get(), deepcopy));
 		this->S.push_back(deepcopy);
 	}
-	for (uint i=0; i<this->B.size(); ++i) {
+	for (unsigned int i=0; i<this->B.size(); ++i) {
 		this->U[i] = bsgs.U[i].clone(genMap);
 	}
 }

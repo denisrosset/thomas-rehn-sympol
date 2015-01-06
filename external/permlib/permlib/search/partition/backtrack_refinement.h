@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -45,25 +45,25 @@ template<class PERM>
 class BacktrackRefinement : public Refinement<PERM> {
 public:
 	/// constructor
-	explicit BacktrackRefinement(ulong n);
+	explicit BacktrackRefinement(unsigned long n);
 	/// constructor
 	/**
 	 * @param n
 	 * @param alpha prefered alpha to choose for backtracking
 	 */
-	BacktrackRefinement(ulong n, ulong alpha);
+	BacktrackRefinement(unsigned long n, unsigned long alpha);
 	
-	virtual uint apply(Partition& pi) const;
+	virtual unsigned int apply(Partition& pi) const;
 	
 	/// alpha point chosen for backtracking
-	ulong alpha() const;
+	unsigned long alpha() const;
 	virtual void sort(const BaseSorterByReference& sorter, const Partition* pi);
 protected:
 	virtual bool init(Partition& pi);
 private:
-	ulong m_alpha;
-	uint m_cellElementIndex;
-	uint m_cellIndex;
+	unsigned long m_alpha;
+	unsigned int m_cellElementIndex;
+	unsigned int m_cellIndex;
 	
 	typedef typename Refinement<PERM>::RefinementPtr RefinementPtr;
 	
@@ -83,31 +83,31 @@ private:
 		const Partition* m_pi;
 	};
 	
-	static const uint overrideAlphaChoiceCellSizeRatio = 8;
+	static const unsigned int overrideAlphaChoiceCellSizeRatio = 8;
 };
 
 template<class PERM>
-BacktrackRefinement<PERM>::BacktrackRefinement(ulong n) 
+BacktrackRefinement<PERM>::BacktrackRefinement(unsigned long n) 
 	: Refinement<PERM>(n, Backtrack), m_alpha(-1), m_cellElementIndex(-1), m_cellIndex(-1)
 { }
 
 template<class PERM>
-BacktrackRefinement<PERM>::BacktrackRefinement(ulong n, ulong alpha) 
+BacktrackRefinement<PERM>::BacktrackRefinement(unsigned long n, unsigned long alpha) 
 	: Refinement<PERM>(n, Backtrack), m_alpha(alpha), m_cellElementIndex(-1), m_cellIndex(-1)
 { }
 
 template<class PERM>
-uint BacktrackRefinement<PERM>::apply(Partition& pi) const {
-	ulong singleCell[1];
+unsigned int BacktrackRefinement<PERM>::apply(Partition& pi) const {
+	unsigned long singleCell[1];
 	singleCell[0] = pi.partition[m_cellElementIndex];  
 	//singleCell[0] = t / m_alpha;
 	//print_iterable(pi.partition.begin(), pi.partition.end(), 0, " partition pi");
-	DEBUG(std::cout << " apply bt ref   alpha =" << m_alpha << ", single cell = " << singleCell[0] << " @ " << m_cellIndex << "," << m_cellElementIndex << std::endl;)
+	PERMLIB_DEBUG(std::cout << " apply bt ref   alpha =" << m_alpha << ", single cell = " << singleCell[0] << " @ " << m_cellIndex << "," << m_cellElementIndex << std::endl;)
 	return pi.intersect(singleCell, singleCell+1, m_cellIndex);
 }
 
 template<class PERM>
-ulong BacktrackRefinement<PERM>::alpha() const {
+unsigned long BacktrackRefinement<PERM>::alpha() const {
 	return m_alpha;
 }
 
@@ -118,28 +118,28 @@ void BacktrackRefinement<PERM>::sort(const BaseSorterByReference& sorter, const 
 
 template<class PERM>
 bool BacktrackRefinement<PERM>::init(Partition& pi) {
-	uint minCellSize = pi.partition.size();
-	uint minCell = 0;
+	unsigned int minCellSize = pi.partition.size();
+	unsigned int minCell = 0;
 	//std::cout << "m_alpha " << m_alpha << std::endl;
 	
-	std::vector<uint>::const_iterator length = pi.partitionCellLength.begin();
-	for (uint j = 0; j < pi.cellCounter; ++j) {
+	std::vector<unsigned int>::const_iterator length = pi.partitionCellLength.begin();
+	for (unsigned int j = 0; j < pi.cellCounter; ++j) {
 		if (1 < *length && *length < minCellSize) {
 			minCellSize = *length;
 			minCell = j;
 		}
 		++length;
 	}
-	if (m_alpha == static_cast<ulong>(-1)) {
+	if (m_alpha == static_cast<unsigned long>(-1)) {
 		this->m_cellElementIndex = pi.partitionCellBorder[minCell];
 		this->m_alpha = pi.partition[pi.partitionCellBorder[minCell]];
 	} else {
-		const uint givenMinCell = pi.partitionCellOf[m_alpha];
-		const uint givenMinCellSize = pi.partitionCellLength[givenMinCell];
+		const unsigned int givenMinCell = pi.partitionCellOf[m_alpha];
+		const unsigned int givenMinCellSize = pi.partitionCellLength[givenMinCell];
 		if (1 < givenMinCellSize && givenMinCellSize <= overrideAlphaChoiceCellSizeRatio * minCellSize) {
 			minCell = givenMinCell;
 			minCellSize = givenMinCellSize;
-			for (uint j = pi.partitionCellBorder[minCell]; j < pi.partitionCellBorder[minCell] + pi.partitionCellLength[minCell]; ++j) {
+			for (unsigned int j = pi.partitionCellBorder[minCell]; j < pi.partitionCellBorder[minCell] + pi.partitionCellLength[minCell]; ++j) {
 				if (pi.partition[j] == m_alpha) {
 					this->m_cellElementIndex = j;
 					break;
@@ -150,23 +150,23 @@ bool BacktrackRefinement<PERM>::init(Partition& pi) {
 			this->m_alpha = pi.partition[pi.partitionCellBorder[minCell]];
 		}
 	}
-	DEBUG(std::cout << "minCellSize = " << minCellSize << std::endl;)
+	PERMLIB_DEBUG(std::cout << "minCellSize = " << minCellSize << std::endl;)
 
 	this->m_cellIndex = minCell;
 		
 	Refinement<PERM>::m_backtrackRefinements.reserve(minCellSize);
-	for (uint i = pi.partitionCellBorder[minCell]; i < pi.partitionCellBorder[minCell] + minCellSize; ++i) {
+	for (unsigned int i = pi.partitionCellBorder[minCell]; i < pi.partitionCellBorder[minCell] + minCellSize; ++i) {
 		BacktrackRefinement<PERM>* br = new BacktrackRefinement<PERM>(Refinement<PERM>::m_n);
 		br->m_cellElementIndex = i;
 		br->m_cellIndex = minCell;
 		br->m_alpha = pi.partition[i];
 		//print_iterable(pi.partition.begin(), pi.partition.end(), 0, " partition pi");
-		DEBUG(std::cout << "PREP bt alpha " << br->m_alpha << " @ " << br->m_cellIndex << " // " << br->m_cellElementIndex << std::endl;)
+		PERMLIB_DEBUG(std::cout << "PREP bt alpha " << br->m_alpha << " @ " << br->m_cellIndex << " // " << br->m_cellElementIndex << std::endl;)
 		typename Refinement<PERM>::RefinementPtr ref(br);
 		Refinement<PERM>::m_backtrackRefinements.push_back(ref);
 	}
 	
-	ulong singleCell[1];
+	unsigned long singleCell[1];
 	singleCell[0] = this->m_alpha;
 	//TODO: write special case function to handle singleCell intersection
 	const bool inter __attribute__((unused)) = pi.intersect(singleCell, singleCell+1, m_cellIndex);

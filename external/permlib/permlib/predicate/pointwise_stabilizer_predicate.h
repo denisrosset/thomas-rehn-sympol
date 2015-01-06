@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -39,12 +39,12 @@ namespace permlib {
 
 /// predicate matching a permutation if it stabilizes a given list of points pointwise
 template <class PERM>
-class PointwiseStabilizerPredicate : public std::unary_function<PERMptr, bool> {
+class PointwiseStabilizerPredicate : public std::unary_function<typename PERM::ptr, bool> {
 public:
 	/// constructor
 	/**
-	 * @param begin begin iterator of points (ulong) that the permutation is checked against
-	 * @param end   end   iterator of points (ulong) that the permutation is checked against
+	 * @param begin begin iterator of points (unsigned long) that the permutation is checked against
+	 * @param end   end   iterator of points (unsigned long) that the permutation is checked against
 	 */
 	template<class InputIterator>
 	PointwiseStabilizerPredicate(InputIterator begin, InputIterator end) 
@@ -52,15 +52,15 @@ public:
 	{ }
 
 	/// evaluate predicate
-	bool operator()(const PERMptr &p) const {
-		BOOST_FOREACH(ulong beta, m_toStabilize) {
+	bool operator()(const typename PERM::ptr &p) const {
+		BOOST_FOREACH(unsigned long beta, m_toStabilize) {
 			if (*p / beta != beta)
 				return false;
 		}
 		return true;
 	};
 private:
-	std::vector<ulong> m_toStabilize;
+	std::vector<dom_int> m_toStabilize;
 };
 
 }

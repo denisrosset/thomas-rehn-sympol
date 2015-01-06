@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -54,9 +54,9 @@ template <class PERM, class TRANS>
 class SchreierGenerator : public Generator<PERM> {
 public:
 	/// const iterator to a list of PERMutations
-	typedef typename PERMlist::const_iterator PERMlistIt;
-	/// const iterator to a list of points (ulong)
-	typedef typename std::list<ulong>::const_iterator TRANSlistIt;
+	typedef typename std::list<typename PERM::ptr>::const_iterator PERMlistIt;
+	/// const iterator to a list of points (unsigned long)
+	typedef typename std::list<unsigned long>::const_iterator TRANSlistIt;
 	
 	/// constructor
 	/**
@@ -84,7 +84,7 @@ public:
 	 * Before returning to the current state, all Schreier generators from S[j], S[j+1], &c. and the already
 	 * visited transversals are next
 	 */
-	void update(uint j);
+	void update(unsigned int j);
 private:
 	PERMlistIt m_Sbegin;
 	PERMlistIt m_Scurrent;
@@ -93,15 +93,15 @@ private:
 	TRANSlistIt m_Ubegin;
 	TRANSlistIt m_Ucurrent;
 	TRANSlistIt m_Uend;
-	uint m_posS;
-	uint m_posSlimit;
-	uint m_posU;
-	uint m_posUlimit;
+	unsigned int m_posS;
+	unsigned int m_posSlimit;
+	unsigned int m_posU;
+	unsigned int m_posUlimit;
 
 	PERM* m_u_beta;
-	ulong m_beta;
+	unsigned long m_beta;
 
-	std::stack<boost::tuple<uint, uint, uint, uint> > m_stackTodo;
+	std::stack<boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> > m_stackTodo;
 
 	/// advance iterators so that they point to a new pair in the U \cross S loop
 	bool advance();
@@ -149,7 +149,7 @@ bool SchreierGenerator<PERM, TRANS>::hasNext() {
 	}
 
 	if (!m_stackTodo.empty()) {
-		boost::tuple<uint, uint, uint, uint> lastTuple = m_stackTodo.top();
+		boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> lastTuple = m_stackTodo.top();
 		m_stackTodo.pop();
 
 		m_posS = boost::get<0>(lastTuple);
@@ -185,7 +185,7 @@ PERM SchreierGenerator<PERM, TRANS>::next() {
 	BOOST_ASSERT(m_Scurrent != m_Send);
 	BOOST_ASSERT(m_Ucurrent != m_Uend);
 
-	DEBUG(std::cout << "s = " << m_posS << "; u = " << m_posU << std::endl;)
+	PERMLIB_DEBUG(std::cout << "s = " << m_posS << "; u = " << m_posU << std::endl;)
 	const PERM &x = **m_Scurrent;
 
 	PERM g = *m_u_beta * x;
@@ -224,7 +224,7 @@ void SchreierGenerator<PERM, TRANS>:: update(TRANS *U, PERMlistIt S_begin, PERMl
 }
 
 template <class PERM, class TRANS>
-void SchreierGenerator<PERM, TRANS>:: update(uint j) {
+void SchreierGenerator<PERM, TRANS>:: update(unsigned int j) {
 	m_stackTodo.push(boost::make_tuple(m_posS, m_posSlimit, m_posU, m_posUlimit));
 	m_posUlimit = m_posU;
 	m_posS = j;

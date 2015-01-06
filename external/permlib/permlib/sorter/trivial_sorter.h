@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -36,10 +36,10 @@
 namespace permlib {
 
 /// A sorter that sorts a sequence in natural numerical order (1 < 2 < 3 < ...)
-class TrivialSorter : public std::binary_function<ulong, ulong, bool>{
+class TrivialSorter : public std::binary_function<unsigned long, unsigned long, bool>{
 public:
 	/// true iff a < b
-	bool operator() (ulong a, ulong b) const {
+	bool operator() (unsigned long a, unsigned long b) const {
 		return a < b;
 	}
 };

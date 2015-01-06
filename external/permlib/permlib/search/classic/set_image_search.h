@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -53,21 +53,21 @@ public:
 	 * @param bsgs BSGS of group
 	 * @param pruningLevelDCM level up to which expensive double coset minimality pruning is performed; zero to disable
 	 */
-	SetImageSearch(const BSGSIN& bsgs, uint pruningLevelDCM);
+	SetImageSearch(const BSGSIN& bsgs, unsigned int pruningLevelDCM);
 	
 	/// initializes search
 	/**
-	 * @param begin iterator(ulong) begin of the set \f$\Delta\f$
-	 * @param end iterator(ulong) end of the set \f$\Delta\f$
-	 * @param beginImg iterator(ulong) begin of the set \f$\Gamma\f$
-	 * @param endImg iterator(ulong) end of the set \f$\Gamma\f$
+	 * @param begin iterator(unsigned long) begin of the set \f$\Delta\f$
+	 * @param end iterator(unsigned long) end of the set \f$\Delta\f$
+	 * @param beginImg iterator(unsigned long) begin of the set \f$\Gamma\f$
+	 * @param endImg iterator(unsigned long) end of the set \f$\Gamma\f$
 	 */
 	template<class InputIterator>
 	void construct(InputIterator begin, InputIterator end, InputIterator beginImg, InputIterator endImg);
 };
 
 template<class BSGSIN,class TRANSRET>
-SetImageSearch<BSGSIN,TRANSRET>::SetImageSearch(const BSGSIN& bsgs, uint pruningLevelDCM) 
+SetImageSearch<BSGSIN,TRANSRET>::SetImageSearch(const BSGSIN& bsgs, unsigned int pruningLevelDCM) 
 	: BacktrackSearch<BSGSIN,TRANSRET>(bsgs, pruningLevelDCM, false, true)
 { }
 

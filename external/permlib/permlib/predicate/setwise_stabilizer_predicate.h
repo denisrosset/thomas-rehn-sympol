@@ -2,7 +2,7 @@
 //
 //  This file is part of PermLib.
 //
-// Copyright (c) 2009-2010 Thomas Rehn <thomas@carmen76.de>
+// Copyright (c) 2009-2011 Thomas Rehn <thomas@carmen76.de>
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -47,18 +47,18 @@ class SetwiseStabilizerPredicate : public SubgroupPredicate<PERM> {
 public:
 	/// constructor
 	/**
-	 * @param begin begin iterator for list of points (ulong) to be stabilized
-	 * @param end   end   iterator for list of points (ulong) to be stabilized
+	 * @param begin begin iterator for list of points (unsigned long) to be stabilized
+	 * @param end   end   iterator for list of points (unsigned long) to be stabilized
 	 */
 	template<class InputIterator>
 	SetwiseStabilizerPredicate(InputIterator begin, InputIterator end);
 
 	virtual bool operator()(const PERM &p) const;
-	virtual bool childRestriction(const PERM &h, uint i, ulong beta_i) const;
-	virtual uint limit() const;
+	virtual bool childRestriction(const PERM &h, unsigned int i, unsigned long beta_i) const;
+	virtual unsigned int limit() const;
 private:
 	//TODO: perhaps use std::set here?
-	std::vector<ulong> m_delta;
+	std::vector<unsigned long> m_delta;
 };
 
 //
@@ -73,7 +73,7 @@ SetwiseStabilizerPredicate<PERM>::SetwiseStabilizerPredicate(InputIterator begin
 
 template <class PERM>
 bool SetwiseStabilizerPredicate<PERM>::operator()(const PERM &p) const {
-	BOOST_FOREACH(ulong delta_i, m_delta) {
+	BOOST_FOREACH(unsigned long delta_i, m_delta) {
 		if (std::find(m_delta.begin(), m_delta.end(), p / delta_i) == m_delta.end())
 			return false;
 	}
@@ -81,14 +81,14 @@ bool SetwiseStabilizerPredicate<PERM>::operator()(const PERM &p) const {
 }
 
 template <class PERM>
-bool SetwiseStabilizerPredicate<PERM>::childRestriction(const PERM &h, uint i, ulong beta_i) const {
+bool SetwiseStabilizerPredicate<PERM>::childRestriction(const PERM &h, unsigned int i, unsigned long beta_i) const {
 	if (std::find(m_delta.begin(), m_delta.end(), h / beta_i) == m_delta.end())
 		return false;
 	return true;
 }
 
 template <class PERM>
-uint SetwiseStabilizerPredicate<PERM>::limit() const {
+unsigned int SetwiseStabilizerPredicate<PERM>::limit() const {
 	return m_delta.size();
 }
 
