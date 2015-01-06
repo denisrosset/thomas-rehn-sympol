@@ -54,9 +54,12 @@ public:
 	/// constructor
 	/**
 	 * @param bsgs the group to build the orbit from
+	 * @param abortSearchIfSmallerFound If true, the lexMin search is aborted if a lex-smaller element is found.
+	 *                                  In this case the search does not necessarily find the minimal element.
 	 */
-	OrbitLexMinSearch(const BSGSIN& bsgs)
-		: m_bsgs(bsgs), m_cbc(bsgs), m_dsetAction(bsgs.n), m_orb(m_bsgs.n), m_orbVector(m_bsgs.n, 0), m_orbVectorIndex(0) {}
+	OrbitLexMinSearch(const BSGSIN& bsgs, bool abortSearchIfSmallerFound = false)
+		: m_bsgs(bsgs), m_cbc(bsgs), m_dsetAction(bsgs.n), m_orb(m_bsgs.n), m_orbVector(m_bsgs.n, 0),
+		  m_orbVectorIndex(0), m_abortSearchIfSmallerFound(abortSearchIfSmallerFound) {}
 
 	/// searches the lexicographically minimal element of an orbit
 	/**
@@ -97,7 +100,7 @@ private:
 	ConjugatingBaseChange<PERM, typename BSGSIN::TRANStype, RandomBaseTranspose<PERM, typename BSGSIN::TRANStype> > m_cbc;
 	DSetAction<PERM> m_dsetAction;
 
-	bool lexMin(unsigned int i, unsigned int k, const BSGSIN* stabilizer, const std::list<CandidatePtr>& candidates, std::list<CandidatePtr>& candidatesNext, dset& M_i, std::list<unsigned long>& base, PERMvec& S_i);
+	bool lexMin(unsigned int i, unsigned int k, const dset& element, const BSGSIN* stabilizer, const std::list<CandidatePtr>& candidates, std::list<CandidatePtr>& candidatesNext, dset& M_i, std::list<unsigned long>& base, PERMvec& S_i);
 	/// finds the least element of an orbit of one number
 	unsigned long orbMin(unsigned long element, const PERMvec& generators);
 
@@ -113,6 +116,7 @@ private:
 	dset m_orb;
 	std::vector<unsigned long> m_orbVector;
 	unsigned int m_orbVectorIndex;
+	const bool m_abortSearchIfSmallerFound;
 };
 
 
@@ -135,7 +139,7 @@ inline dset OrbitLexMinSearch<BSGSIN>::lexMin(const dset& element, const BSGSIN*
 	S_i.reserve(m_bsgs.S.size());
 
 	for (unsigned int i = 0; i < element.count(); ++i) {
-		if (lexMin(i, element.count(), stabilizer, *cand0, *cand1, M_i, base, S_i))
+		if (lexMin(i, element.count(), element, stabilizer, *cand0, *cand1, M_i, base, S_i))
 			break;
 		std::swap(cand0, cand1);
 	}
@@ -146,7 +150,7 @@ inline dset OrbitLexMinSearch<BSGSIN>::lexMin(const dset& element, const BSGSIN*
 }
 
 template<class BSGSIN>
-inline bool OrbitLexMinSearch<BSGSIN>::lexMin(unsigned int i, unsigned int k, const BSGSIN* stabilizer, const std::list<CandidatePtr>& candidates, std::list<CandidatePtr>& candidatesNext, dset& M_i, std::list<unsigned long>& base, PERMvec& S_i) {
+inline bool OrbitLexMinSearch<BSGSIN>::lexMin(unsigned int i, unsigned int k, const dset& element, const BSGSIN* stabilizer, const std::list<CandidatePtr>& candidates, std::list<CandidatePtr>& candidatesNext, dset& M_i, std::list<unsigned long>& base, PERMvec& S_i) {
 	PERMLIB_DEBUG(std::cout << "### START " << i << " with #" << candidates.size() << std::endl;)
 
 	// if current stabilizer in the stabilizer chain is trivial we may
@@ -178,6 +182,11 @@ inline bool OrbitLexMinSearch<BSGSIN>::lexMin(unsigned int i, unsigned int k, co
 
 	BOOST_FOREACH(const CandidatePtr& R, candidates) {
 		unsigned long m_R = m;
+		if (m_abortSearchIfSmallerFound && isLexSmaller(R->D, element)) {
+			BOOST_ASSERT(R->D.count() == element.count());
+			M_i = R->D;
+			return true;
+		}
 		for (unsigned long j = 0; j < R->D.size(); ++j) {
 			if (R->J[j] || !R->D[j])
 				continue;

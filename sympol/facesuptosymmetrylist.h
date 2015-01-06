@@ -30,7 +30,6 @@
 
 #include <list>
 #include <permlib/transversal/orbit_set.h>
-#include <permlib/invariant/linear_form_list.h>
 
 namespace sympol {
 
@@ -73,7 +72,6 @@ private:
 	bool m_withAdjacencies;
 	std::list<FaceWithDataPtr> m_inequivalentFaces;
 	const PermutationGroup& m_group;
-	std::list<permlib::LinearFormList> m_invariants;
 
 	typedef FaceWithData::FingerprintPtr FingerprintPtr;
 	std::set<FingerprintPtr,FaceWithData::CompareFingerprint> m_fingerprints;

@@ -108,7 +108,7 @@ unsigned int GroupRefinement<PERM,TRANS>::apply2(Partition& pi, const PERM* t) c
 		
 		if (t) {
 			for (thetaIt = thetaBeginIt, thetaOrbitIt =  thetaOrbit.begin() + borderLo;
-					 thetaIt != thetaEndIt,  thetaOrbitIt != thetaOrbit.begin() + thetaBorder[thetaC];
+					 thetaIt != thetaEndIt && thetaOrbitIt != thetaOrbit.begin() + thetaBorder[thetaC];
 					 ++thetaIt, ++thetaOrbitIt) 
 			{
 				*thetaIt = *t / *thetaOrbitIt;

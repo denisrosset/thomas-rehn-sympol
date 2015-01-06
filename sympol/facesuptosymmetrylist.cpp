@@ -29,7 +29,6 @@
 #include <permlib/change/conjugating_base_change.h>
 #include <permlib/search/classic/set_stabilizer_search.h>
 #include <permlib/search/classic/set_image_search.h>
-#include <permlib/invariant/dade_invariants.h>
 #include <permlib/search/orbit_lex_min_search.h>
 
 #include <ctime>
@@ -46,28 +45,14 @@ uint FacesUpToSymmetryList::ms_lastMem = 0;
 
 FacesUpToSymmetryList::FacesUpToSymmetryList(const PermutationGroup& group, bool sorted, bool withAdjacencies)
 	: m_sorted(sorted), m_withAdjacencies(withAdjacencies), m_group(group),
-	  m_computeInvariants(Configuration::getInstance().computeInvariants),
 	  m_computeOrbits(Configuration::getInstance().computeOrbitLimit),
 	  m_computeCanonicalRepresentative(Configuration::getInstance().computeCanonicalRepresentatives),
 	  totalOrbitSize(0)
 {
-	if (m_computeInvariants)
-		computeInvariants();
 }
 
 bool FacesUpToSymmetryList::equivalentToKnown(FaceWithData& f, FaceWithDataPtr* equiv) const {
 	const Face& f2 = f.face;
-
-	if (m_computeInvariants) {
-		FingerprintPtr fp2(new FaceWithData::Fingerprint());
-		evaluateInvariants(f2, fp2);
-		//print_iterable(fp2->begin(), fp2->end(), 0, "fp2");
-		if (m_fingerprints.find(fp2) == m_fingerprints.end()) {
-			f.fingerprint = fp2;
-			YALLOG_DEBUG2(logger, "face accepted by invariant fingerprint");
-			return false;
-		}
-	}
 
 	if (m_computeCanonicalRepresentative) {
 		OrbitLexMinSearch<PermutationGroup> orbitLexMinSearch(m_group);
@@ -177,10 +162,6 @@ void FacesUpToSymmetryList::forceAdd(FaceWithDataPtr& fd) {
 		fd->stabilizer.reset(new PermutationGroup(SymmetryComputation::stabilizer(m_group, fd->face)));
 		fd->orbitSize = m_group.order() / fd->stabilizer->order();
 	}
-	if (m_computeInvariants) {
-		// fd.fingerprint was computed by equivalentToKnown
-		m_fingerprints.insert(fd->fingerprint);
-	}
 	if (m_computeCanonicalRepresentative) {
 		OrbitLexMinSearch<PermutationGroup> orbitLexMinSearch(m_group);
 		YALLOG_DEBUG2(logger, "compute canonical repr " << fd->face);
@@ -213,26 +194,6 @@ bool FacesUpToSymmetryList::add(FaceWithDataPtr& f, FaceWithDataPtr& adjacentFac
 			adjacentFace->adjacencies.insert(equiv);
 	}
 	return !knownFace;
-}
-
-void FacesUpToSymmetryList::computeInvariants() {
-	DadeInvariants<PermutationGroup> dinv(m_group);
-	dinv.invariants(m_invariants, m_computeInvariants);
-	YALLOG_DEBUG(logger, "computed " << m_invariants.size() << " invariants");
-	BOOST_FOREACH(const LinearFormList& invariant, m_invariants) {
-		YALLOG_DEBUG2(logger, " invariant with degree " << invariant.size());
-	}
-	m_computeInvariants = !m_invariants.empty();
-}
-
-void FacesUpToSymmetryList::evaluateInvariants(const Face& face, FingerprintPtr& fingerprint) const {
-	BOOST_ASSERT( fingerprint );
-	fingerprint->resize(m_invariants.size());
-	uint i = 0;
-	BOOST_FOREACH(const LinearFormList& invariant, m_invariants) {
-		(*fingerprint)[i] = invariant.evaluate<boost::uint64_t>(static_cast<permlib::LinearForm>(face), true);
-		++i;
-	}
 }
 
 FaceWithDataPtr FacesUpToSymmetryList::shift() {

@@ -228,39 +228,35 @@ unsigned int BaseSearch<BSGSIN,TRANSRET>::processLeaf(const PERM& t, unsigned in
 	PERMLIB_DEBUG(std::cout << "XXX level " << level << "  bLevel " << backtrackLevel << std::endl;)
 	PERMLIB_DEBUG(std::cout << "XXX limitLevel " << m_limitLevel << "  limitBase " << m_limitBase << std::endl;)
 	typedef typename PERM::ptr PERMptr;
-	if ((*m_pred)(t)) {
-		if (m_stopAfterFirstElement) {
-			m_lastElement = typename PERM::ptr(new PERM(t));
-			return 0;
-		}
-		const bool isIdentity = t.isIdentity();
-		int posK = 0, posL = 0;
-		if (m_limitInitialized && level == m_limitLevel && isIdentity) {
-			PointwiseStabilizerPredicate<PERM> stabPred(m_bsgs.B.begin(), m_bsgs.B.begin() + m_limitBase);
-			BOOST_FOREACH(const PERMptr &s, m_bsgs.S) {
-				if (stabPred(s)) {
-					PERMLIB_DEBUG(std::cout << *s << " extended gen\n";)
-					BOOST_ASSERT((*m_pred)(*s));
-					PERMptr sK(new PERM(*s));
-					PERMptr sL(new PERM(*s));
-					posK = std::max(posK, groupK.insertGenerator(sK, false));
-					posL = std::max(posL, groupL.insertGenerator(sL, false));
-				}
-			}
-			//return completed;
-		}
-		if (!isIdentity) {
-			PERMptr genK(new PERM(t));
-			posK = std::max(posK, groupK.insertGenerator(genK, false));
-			PERMptr genL(new PERM(t));
-			posL = std::max(posL, groupL.insertGenerator(genL, false));
-			PERMLIB_DEBUG(std::cout << "-- accepted" << std::endl;)
-		}
-		groupK.updateOrbits(posK);
-		groupL.updateOrbits(posL);
-		return completed;
+	
+	if ( ! (*m_pred)(t) )
+		return level;
+	
+	if (m_stopAfterFirstElement) {
+		m_lastElement = typename PERM::ptr(new PERM(t));
+		return 0;
 	}
-	return level;
+	const bool isIdentity = t.isIdentity();
+	if (m_limitInitialized && level == m_limitLevel && isIdentity) {
+		PointwiseStabilizerPredicate<PERM> stabPred(m_bsgs.B.begin(), m_bsgs.B.begin() + m_limitBase);
+		BOOST_FOREACH(const PERMptr &s, m_bsgs.S) {
+			if (stabPred(s)) {
+				PERMLIB_DEBUG(std::cout << *s << " extended gen\n";)
+				BOOST_ASSERT((*m_pred)(*s));
+				PERMptr sK(new PERM(*s));
+				PERMptr sL(new PERM(*s));
+				groupK.insertGenerator(sK, true);
+				groupL.insertGenerator(sL, true);
+			}
+		}
+	} else if (!isIdentity) {
+		PERMptr genK(new PERM(t));
+		PERMptr genL(new PERM(t));
+		groupK.insertGenerator(genK, true);
+		groupL.insertGenerator(genL, true);
+		PERMLIB_DEBUG(std::cout << "-- accepted" << std::endl;)
+	}
+	return completed;
 }
 
 template<class BSGSIN,class TRANSRET>

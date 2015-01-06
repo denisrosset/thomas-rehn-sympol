@@ -57,7 +57,7 @@ public:
 	void orbit(const PDOMAIN& beta, const std::list<typename PERM::ptr> &generators, Action a);
 
 	/// number of orbit elements
-	unsigned long size() const { return m_orbitList.size(); }
+	size_t size() const { return m_orbitList.size(); }
     
     virtual const PDOMAIN& element() const;
 protected:

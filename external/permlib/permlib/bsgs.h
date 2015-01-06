@@ -45,6 +45,8 @@
 
 #include <permlib/bsgs_core.h>
 
+#include <permlib/transversal/orbit_set.h>
+#include <permlib/transversal/transversal.h>
 #include <permlib/predicate/pointwise_stabilizer_predicate.h>
 #include <permlib/predicate/stabilizes_point_predicate.h>
 
@@ -150,6 +152,16 @@ struct BSGS : public BSGSCore<PERM,TRANS> {
 	unsigned int insertRedundantBasePoint(unsigned int beta, unsigned int minPos = 0);
 	/// strips redundant base points from the end to the minPos-th base element
 	void stripRedundantBasePoints(int minPos = 0);
+	
+	/// removes redundant generators
+	/**
+	 * The remaining set S is still a strong generating set. Its size will be at most log |G|.
+	 *
+	 * Note that applying this method may result in a difference between transversals and 
+	 * strong generating set. If you use a SchreierTree, then the transversal will no longer 
+	 * automatically return elements from the strong generating set.
+	 */
+	void stripRedundantStrongGenerators();
 	
 	/// re-computes the j-th fundamental orbit with the given orbit generators
 	/**
@@ -433,6 +445,78 @@ void BSGS<PERM, TRANS>::stripRedundantBasePoints(int minPos) {
 			}
 		}
 	}
+}
+
+
+/// Class that can be used to sort a strong generating set.
+/**
+ * The goal is to sort a list of strong generators so that generators for the stabilizers in the
+ * stabilizer chain are next to each other.
+ */
+template <class PERM>
+class StrongGeneratingSetSorter : public std::binary_function<typename PERM::ptr, typename PERM::ptr, bool> {
+public:
+	/**
+	 * @param baseBegin begin-iterator(dom_int) to the base relative to which the strong generating set is to be sorted
+	 * @param baseEnd   end-iterator(dom_int) to the base relative to which the strong generating set is to be sorted
+	 */
+	template<class InputIterator>
+	StrongGeneratingSetSorter(InputIterator baseBegin, InputIterator baseEnd) : m_base(baseBegin, baseEnd) { }
+	
+	/// true iff p1 stabilizes more base points (in increasing order) than p2
+	bool operator()(const typename PERM::ptr& p1, const typename PERM::ptr& p2) const {
+		BOOST_FOREACH(const dom_int b, m_base) {
+			if ( p1->at(b) == b  &&  p2->at(b) != b )
+				return true;
+			if ( p1->at(b) != b )
+				return false;
+		}
+		return false;
+	}
+private:
+	std::vector<dom_int> m_base;
+};
+
+template <class PERM, class TRANS>
+void BSGS<PERM, TRANS>::stripRedundantStrongGenerators() {
+	PERMlist sortedSGS(this->S);
+	sortedSGS.sort(StrongGeneratingSetSorter<PERM>(this->B.begin(), this->B.end()));
+	
+	PERMlist filteredSGS;
+	OrbitSet<PERM, dom_int>* oldOrbit = new OrbitSet<PERM, dom_int>();
+	dom_int oldBaseElement = static_cast<dom_int>(-1);
+	BOOST_FOREACH(const typename PERM::ptr& gen, sortedSGS) {
+		if (gen->isIdentity())
+			continue;
+		filteredSGS.push_back(gen);
+	
+		// Compute to which base element this strong generator belongs.
+		// That is, gen stabilizes all base points up to baseElement.
+		// No generator can stabilize all base elements because we excluded
+		//  identity permutations before.
+		dom_int baseElement = this->B.front();
+		BOOST_FOREACH(const dom_int b, this->B) {
+			baseElement = b;
+			if (*gen / b != b)
+				break;
+		}
+		PERMLIB_DEBUG(std::cout << "gen " << *gen << "   @ " << baseElement << std::endl;)
+
+		OrbitSet<PERM, dom_int>* newOrbit = new OrbitSet<PERM, dom_int>();
+		newOrbit->orbit(baseElement, filteredSGS, typename Transversal<PERM>::TrivialAction());
+		if (oldBaseElement == baseElement && newOrbit->size() == oldOrbit->size()) {
+			delete newOrbit;
+			PERMLIB_DEBUG(std::cout << "  removed\n";)
+			filteredSGS.pop_back();
+		} else {
+			delete oldOrbit;
+			oldOrbit = newOrbit;
+		}
+		oldBaseElement = baseElement;
+	}
+	delete oldOrbit;
+	
+	this->S = filteredSGS;
 }
 
 template <class PERM, class TRANS>

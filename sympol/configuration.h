@@ -39,7 +39,6 @@ public:
 
 	uint lrsEstimates;
 	uint lrsEstimateMaxDepth;
-	uint computeInvariants;
 	uint computeOrbitLimit;
 	bool computeCanonicalRepresentatives;
 	std::string intermediatePolyFilePrefix;

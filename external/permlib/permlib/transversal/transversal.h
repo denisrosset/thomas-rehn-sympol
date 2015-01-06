@@ -92,7 +92,7 @@ public:
 	}
 
 	/// size of basic orbit / transversal
-    unsigned int size() const { return this->m_orbit.size(); }
+	size_t size() const { return this->m_orbit.size(); }
 	
 	/// size of the set the group is working on
     inline unsigned int n() const { return m_n; }

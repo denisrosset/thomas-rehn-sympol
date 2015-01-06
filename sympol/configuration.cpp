@@ -27,7 +27,6 @@ namespace sympol {
 Configuration::Configuration() 
 	: lrsEstimates(8),
 		lrsEstimateMaxDepth(3),
-		computeInvariants(0),
 		computeOrbitLimit(1024),
 		computeCanonicalRepresentatives(false)
 { }
