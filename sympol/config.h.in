@@ -1,0 +1,9 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#cmakedefine HAVE_SYSCONF_PROTO 1
+#cmakedefine HAVE_GETRUSAGE_PROTO 1
+#cmakedefine HAVE_NAUTY 1
+#cmakedefine HAVE_NTL 1
+
+#endif //CONFIG_H

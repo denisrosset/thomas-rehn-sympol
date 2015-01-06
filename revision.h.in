@@ -1,0 +1,4 @@
+#ifndef __REVISION_H
+#define __REVISION_H
+#define SVN_REVISION "${SUBVERSION_REVISION}"
+#endif
