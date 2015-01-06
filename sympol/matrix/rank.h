@@ -145,7 +145,7 @@ inline void Rank<Matrix>::rowReducedEchelonForm(bool rankOnly, InsertIterator fr
 		for (uint i = k+1; i < m; ++i) {
 			at(i,r) /= at(k,r);
 			for (uint j = r+1; j < n; ++j) {
-				at(i,j) -= at(i,k) * at(k,j);
+				at(i,j) -= at(i,r) * at(k,j);
 			}
 			at(i,r) = 0;
 		}

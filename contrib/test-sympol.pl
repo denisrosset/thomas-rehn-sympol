@@ -82,4 +82,9 @@ $success &= test_polyhedron('--idm-adm-level 0 1', 'voronoi_cones/e6.ine', 12);
 $success &= test_polyhedron('--cdd --idm-adm-level 0 1', 'voronoi_cones/e6.ine', 12);
 $success &= test_polyhedron('--idm-adm-level 1 2', 'voronoi_cones/e6.ine', 12);
 
+$success &= test_polyhedron('-d', 'permutation_polytopes/cross-polytope4.ext', 61);
+$success &= test_polyhedron('-a', 'permutation_polytopes/cross-polytope4.ext', 61);
+$success &= test_polyhedron('-d', 'permutation_polytopes/cyclic-2-3-5.ext', 17);
+$success &= test_polyhedron('-a', 'permutation_polytopes/cyclic-2-3-5.ext', 17);
+
 exit 1 unless $success;
