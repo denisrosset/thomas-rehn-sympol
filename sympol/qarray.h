@@ -47,7 +47,7 @@ class QArray {
 
 		void scalarProduct(const QArray& q, mpq_class & result, mpq_class & temp) const;
 
-		void normalize(ulong pivotIndex = 0);
+		void normalizeArray(ulong pivotIndex = 0);
 
 		ulong index() const { return m_rowIndex; }
 

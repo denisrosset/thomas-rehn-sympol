@@ -59,6 +59,8 @@ public:
     virtual double estimate(const Polyhedron & data, std::list<FaceWithData> & rays) const { return 0.0; }
 
     virtual bool determineRedundantColumns(const Polyhedron & data, std::set<ulong> & redundantColumns) const { return false; }
+    
+    virtual bool getLinearities(const Polyhedron & data, std::list<QArrayPtr>& linearities) const { return false; }
 };
 }
 

@@ -66,6 +66,7 @@ SetStabilizeRefinement<PERM>::SetStabilizeRefinement(unsigned long n, InputItera
 	: Refinement<PERM>(n, Default), toStab(begin, end)
 {
 	std::sort(toStab.begin(), toStab.end());
+	PERMLIB_DEBUG(print_iterable(toStab.begin(), toStab.end(), 0, "to stab");)
 }
 
 template<class PERM>

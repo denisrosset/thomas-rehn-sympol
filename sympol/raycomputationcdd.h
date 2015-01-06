@@ -44,7 +44,8 @@ class RayComputationCDD : public RayComputation {
 		bool firstVertex(const Polyhedron & data, Face & f, QArray & q, bool requireRay = true) const;
 		bool determineRedundancies(Polyhedron & data, std::list<FaceWithData> & myRays) const;
 		double estimate(const Polyhedron & data, std::list<FaceWithData> & rays) const;
-
+		bool getLinearities(const Polyhedron & data, std::list<QArrayPtr>& linearities) const;
+		
 		const char* name() const { return RayComputationCDD::ms_chName; }    
 	private:
 		static bool ms_bInitialized;

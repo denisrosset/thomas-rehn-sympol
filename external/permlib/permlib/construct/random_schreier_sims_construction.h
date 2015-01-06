@@ -37,6 +37,7 @@
 #include <permlib/generator/random_generator.h>
 #include <permlib/bsgs.h>
 
+#include <boost/cstdint.hpp>
 #include <boost/foreach.hpp>
 
 namespace permlib {
@@ -46,7 +47,7 @@ namespace permlib {
  * Randomized algorithm for BSGS construction. If order is known it is Las Vegas type, otherwise Monte Carlo 
  * (it may return an incomplete BSGS).
  */
-template <class PERM, class TRANS>
+template <class PERM, class TRANS, typename Integer = boost::uint64_t>
 class RandomSchreierSimsConstruction : public BaseConstruction<PERM, TRANS> {
 public:
 	/// constructor
@@ -54,8 +55,11 @@ public:
 	 * @param n cardinality of the set the group is acting on
 	 * @param rng a RandomGenerator generating uniformly distributed random group elements of the group that the BSGS is constructed of
 	 * @param knownOrder order of the group that the BSGS is constructed of. If non-zero upgrades algorithm to Las Vegas type and the output is guaranteed to be a BSGS.
+	 * @param minimalConsecutiveSiftingElementCount number of elements that have to sift through constructed BSGS consecutively that it is returned as a probable BSGS
+	 * @param maxIterationFactor factor limiting the number of maximal iterations depeding on the initial base size
 	 */
-	RandomSchreierSimsConstruction(unsigned int n, RandomGenerator<PERM> *rng, unsigned long knownOrder = 0);
+	RandomSchreierSimsConstruction(unsigned int n, RandomGenerator<PERM> *rng, Integer knownOrder = 0, 
+																 unsigned int minimalConsecutiveSiftingElementCount = 20, unsigned int maxIterationFactor = 10000);
 
 	/// constructs a probable BSGS for group given by generators with no base prescribed
 	/** @see construct(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd, bool& guaranteedBSGS)
@@ -81,47 +85,50 @@ public:
 	mutable unsigned int m_statRandomElementsConsidered;
 
 	/// number of elements that have to sift through constructed BSGS consecutively that it is returned as a probable BSGS
-	static const unsigned int minimalConsecutiveSiftingElementCount = 20;
+	const unsigned int m_minimalConsecutiveSiftingElementCount;
 	
 	/// factor limiting the number of maximal iterations depeding on the initial base size
-	static const unsigned int maxIterationFactor = 10000;
+	const unsigned int m_maxIterationFactor;
 private:
 	RandomGenerator<PERM> *m_rng;
-	unsigned long m_knownOrder;
+	Integer m_knownOrder;
 };
 
 //
 //     ----       IMPLEMENTATION
 //
 
-template <class PERM, class TRANS>
-RandomSchreierSimsConstruction<PERM,TRANS>::RandomSchreierSimsConstruction(unsigned int n, RandomGenerator<PERM> *rng, unsigned long knownOrder) 
-	: BaseConstruction<PERM, TRANS>(n), m_statRandomElementsConsidered(0), m_rng(rng), m_knownOrder(knownOrder)
+template <class PERM, class TRANS, typename Integer>
+RandomSchreierSimsConstruction<PERM,TRANS,Integer>::RandomSchreierSimsConstruction(unsigned int n, RandomGenerator<PERM> *rng, Integer knownOrder, 
+																																									 unsigned int minimalConsecutiveSiftingElementCount, unsigned int maxIterationFactor) 
+	: BaseConstruction<PERM, TRANS>(n), m_statRandomElementsConsidered(0), m_minimalConsecutiveSiftingElementCount(minimalConsecutiveSiftingElementCount),
+		m_maxIterationFactor(maxIterationFactor), m_rng(rng), m_knownOrder(knownOrder)
 { }
 
-template <class PERM, class TRANS>
+template <class PERM, class TRANS, typename Integer>
 template <class ForwardIterator>
-inline BSGS<PERM, TRANS> RandomSchreierSimsConstruction<PERM,TRANS>::construct(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, bool& guaranteedBSGS) const {
+inline BSGS<PERM, TRANS> RandomSchreierSimsConstruction<PERM,TRANS,Integer>::construct(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, bool& guaranteedBSGS) const {
 	return construct(generatorsBegin, generatorsEnd, BaseConstruction<PERM,TRANS>::empty, BaseConstruction<PERM,TRANS>::empty, guaranteedBSGS);
 }
 
-template <class PERM, class TRANS>
+template <class PERM, class TRANS, typename Integer>
 template <class ForwardIterator, class InputIterator>
-BSGS<PERM, TRANS> RandomSchreierSimsConstruction<PERM, TRANS>
+BSGS<PERM, TRANS> RandomSchreierSimsConstruction<PERM, TRANS, Integer>
 	::construct(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd, bool& guaranteedBSGS) const
 {
-	const unsigned int &n = BaseConstruction<PERM, TRANS>::m_n;
+	const unsigned int &n = this->m_n;
 	BSGS<PERM, TRANS> ret(n);
 	std::vector<dom_int> &B = ret.B;
 	std::vector<TRANS> &U = ret.U;
 	std::vector<std::list<typename PERM::ptr> > S;
 	setup(generatorsBegin, generatorsEnd, prescribedBaseBegin, prescribedBaseEnd, ret, S);
 	
-	unsigned int consecutiveSiftingElementCount = minimalConsecutiveSiftingElementCount;
-	if (m_knownOrder > 0) 
+	unsigned int consecutiveSiftingElementCount = m_minimalConsecutiveSiftingElementCount;
+	if (m_knownOrder > 0) {
 		// remove consecutive sifting limit if we have the group order as Las Vegas-abort criterion
-		consecutiveSiftingElementCount = maxIterationFactor;
-	const unsigned int maxIterationCount = B.size() * maxIterationFactor;
+		consecutiveSiftingElementCount = m_maxIterationFactor;
+	}
+	const unsigned int maxIterationCount = B.size() * m_maxIterationFactor;
 	for (unsigned int it = 0; it < maxIterationCount; ++it) {
 		bool isProbableBSGS = true;
 		for (unsigned int i = 0; i < consecutiveSiftingElementCount && ret.order() != m_knownOrder; ++i) {
@@ -157,8 +164,8 @@ BSGS<PERM, TRANS> RandomSchreierSimsConstruction<PERM, TRANS>
 	
 	mergeGenerators(S, ret);
 	
-	// convinience check of group order
-	guaranteedBSGS = ret.order() == m_knownOrder;
+	// convenience check of group order
+	guaranteedBSGS = ret.template order<Integer>() == m_knownOrder;
 	
 	return ret;
 }

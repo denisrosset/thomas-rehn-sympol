@@ -74,8 +74,10 @@ namespace yal {
         }
         
         void logUsageStats() {
+#if HAVE_SYSCONF_PROTO && HAVE_GETRUSAGE_PROTO
             std::cout << "USAGE:     " << UsageStats::processTimeUser() << "s  @ " 
                 << UsageStats::processSize() / 1024 << "K" << std::endl;
+#endif
         }
         
         void flush() { 

@@ -32,6 +32,6 @@
 #ifndef PERMLIBVERSION_H_
 #define PERMLIBVERSION_H_
 
-#define PERMLIB_VERSION "0.2.3"
+#define PERMLIB_VERSION "0.2.5"
 
 #endif // PERMLIBVERSION_H_

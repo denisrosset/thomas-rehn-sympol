@@ -52,8 +52,8 @@ PolyhedronDataStorage * PolyhedronDataStorage::createStorage(const PolyhedronDat
 
 void PolyhedronDataStorage::cleanupStorage() {
     std::list<PolyhedronDataStorage*>::iterator it;
-    
     for (it = ms_storages.begin(); it != ms_storages.end(); ++it) {
         delete *it;
     }
+    ms_storages.clear();
 }

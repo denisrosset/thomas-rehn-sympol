@@ -34,8 +34,6 @@
 #define SETWISESTABILIZERPREDICATE_H_
 
 #include <permlib/predicate/subgroup_predicate.h>
-#include <permlib/search/partition/set_stabilize_refinement.h>
-#include <permlib/search/partition/refinement_family.h>
 
 #include <boost/foreach.hpp>
 

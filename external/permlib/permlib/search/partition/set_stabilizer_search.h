@@ -35,6 +35,8 @@
 
 #include <permlib/search/partition/r_base.h>
 #include <permlib/predicate/setwise_stabilizer_predicate.h>
+#include <permlib/search/partition/set_stabilize_refinement.h>
+#include <permlib/search/partition/refinement_family.h>
 
 namespace permlib {
 namespace partition {

@@ -57,7 +57,8 @@ Polyhedron* sympol::PolyhedronIO::read (std::istream& is, std::list<boost::share
   
   std::set<ulong> setLinearities;
   std::set<ulong> setRedundancies;
-	ulong expectedInequalities = 0;
+  ulong expectedInequalities = 0;
+  ulong dimension = 0;
   std::list<std::string> inequalityRows;
 	std::list<std::string> generatorRows;
 	Polyhedron::Representation representation = Polyhedron::H;
@@ -119,17 +120,8 @@ Polyhedron* sympol::PolyhedronIO::read (std::istream& is, std::list<boost::share
     if (inputMode == 'D') {
       std::stringstream ss(line);
       
-      ulong dimension;
       ss >> expectedInequalities;
       ss >> dimension;
-      
-      if (representation == Polyhedron::V)
-      	++dimension;
-
-      BOOST_ASSERT(poly == 0);
-      poly = new Polyhedron(PolyhedronDataStorage::createStorage(dimension, expectedInequalities), 
-                            representation,
-                            setLinearities, setRedundancies);
       
       ulQOffset = 0;
       
@@ -187,12 +179,14 @@ Polyhedron* sympol::PolyhedronIO::read (std::istream& is, std::list<boost::share
 
   } while (line.length() > 0);
   
-  if (!poly)
+  if (!dimension) {
+    YALLOG_WARNING(logger, "no information about problem dimension found");
     return 0;
+  }
   
-	if (inequalityRows.size() != expectedInequalities)
-		YALLOG_WARNING(logger, "input file specified " << expectedInequalities << " inequalities/rays/vertices but " << inequalityRows.size() << " were found");
-	
+  if (inequalityRows.size() != expectedInequalities)
+    YALLOG_WARNING(logger, "input file specified " << expectedInequalities << " inequalities/rays/vertices but " << inequalityRows.size() << " were found");
+  
   bool homogeneous = true;
   BOOST_FOREACH(const std::string& row, inequalityRows) {
     if (row.at(0) != '0') {
@@ -201,49 +195,60 @@ Polyhedron* sympol::PolyhedronIO::read (std::istream& is, std::list<boost::share
     }
   }
   
+  if (!homogeneous)
+    ++dimension;
+  
+  BOOST_ASSERT(poly == 0);
+  poly = new Polyhedron(PolyhedronDataStorage::createStorage(dimension, expectedInequalities), 
+                        representation,
+                        setLinearities, setRedundancies);
+      
+  
   BOOST_FOREACH(const std::string& row, inequalityRows) {
     std::stringstream ss(row);
     // don't read directly into p.m_aQIneq[ulQOffset]
     // because STL-vector seems to get confused
-    QArray dummy(poly->dimension(), ulQOffset, representation == Polyhedron::V);
+    QArray dummy(poly->dimension(), ulQOffset, !homogeneous);
     ss >> dummy;
     poly->addRow(dummy);
     ++ulQOffset;
-	}
-	
-	if (homogeneous || representation == Polyhedron::V) {
-		poly->setHomogeneous();
-	}
+  }
+  
+  if (!homogeneous)
+    poly->setHomogenized();
   
   
   BOOST_FOREACH(const std::string& row, generatorRows) {
-		boost::shared_ptr<PERM> gen(new PERM(poly->realRowNumber(), row));
-		groupGenerators.push_back(gen);
-	}
+    boost::shared_ptr<PERM> gen(new PERM(poly->realRowNumber(), row));
+    groupGenerators.push_back(gen);
+  }
   
   return poly;
 }
 
 void sympol::PolyhedronIO::write(const FacesUpToSymmetryList& rays, bool homogenized, std::ostream& os) {
+	BOOST_FOREACH(const FaceWithDataPtr& r, std::make_pair(rays.begin(), rays.end())) {
+		write(r->ray, homogenized, os);
+	}
+}
+
+void sympol::PolyhedronIO::write(const QArrayPtr& row, bool homogenized, std::ostream& os) {
 	if (!homogenized) {
-    BOOST_FOREACH(const FaceWithDataPtr& r, std::make_pair(rays.begin(), rays.end())) {
-      QArray copy(*r->ray);
-      copy.normalize(0);
-      os << " " << copy << std::endl;
-    }
+		QArray copy(*row);
+		copy.normalizeArray(0);
+		os << " " << copy << std::endl;
   } else {
-  	BOOST_FOREACH(const FaceWithDataPtr& r, std::make_pair(rays.begin(), rays.end())) {
-      if (mpq_sgn((*r->ray)[0]) != 0)
-        // skip the origin (apex of the homogenized polyhedral cone)
-        continue;
-      QArray copy(*r->ray);
-      // compute intersection with hyperplane {x_1 = 1}
-      copy.normalize(1);
-      for (uint i = 1; i < copy.size(); ++i)
-        os << " " << copy[i];
-      os << std::endl;
-    }
-  }
+		if (mpq_sgn((*row)[0]) != 0)
+			// skip the origin (apex of the homogenized polyhedral cone)
+			return;
+		
+		QArray copy(*row);
+		// compute intersection with hyperplane {x_1 = 1}
+		copy.normalizeArray(1);
+		for (uint i = 1; i < copy.size(); ++i)
+			os << " " << copy[i];
+		os << std::endl;
+	}
 }
 
 void sympol::PolyhedronIO::write(const sympol::Polyhedron& poly, std::ostream& os) {

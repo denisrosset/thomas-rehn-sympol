@@ -366,8 +366,7 @@ lrs_mp_init (long dec_digits, FILE * fpin, FILE * fpout)
 
   lrs_alloc_mp(temp1); lrs_alloc_mp(temp2); lrs_alloc_mp(temp3);
 #ifndef LRS_QUIET
-  //CHANGE Thomas Rehn 2010-05-03
-  //printf(" gmp v.%d.%d",__GNU_MP_VERSION,__GNU_MP_VERSION_MINOR);
+  printf(" gmp v.%d.%d",__GNU_MP_VERSION,__GNU_MP_VERSION_MINOR);
 #endif
   return TRUE;
 }

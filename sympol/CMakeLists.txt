@@ -25,7 +25,7 @@ find_package(Boost 1.34.1 COMPONENTS program_options REQUIRED)
 include_directories(../external/boost ../external/permlib ../external/lrslib-042c ../external/cddlib-094f ${CMAKE_CURRENT_BINARY_DIR})
 add_definitions(-Woverloaded-virtual)
 # lrs flags
-add_definitions(-DGMP)
+add_definitions(-DGMP -DLRS_QUIET)
 # cdd flags
 add_definitions(-DGMPRATIONAL)
 

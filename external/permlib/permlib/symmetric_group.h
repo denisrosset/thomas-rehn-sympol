@@ -66,15 +66,16 @@ private:
 };
 
 template<class PERM>
-inline SymmetricGroup<PERM>::SymmetricGroup(unsigned int n)
-	: BSGSCore<PERM,TRANS>(-n, n, n)
+inline SymmetricGroup<PERM>::SymmetricGroup(unsigned int n_)
+	: BSGSCore<PERM,TRANS>(-n_, n_, n_)
 {
-	BSGSCore<PERM,TRANS>::U.reserve(n);
-	for (unsigned int i = 0; i < n; ++i) {
-		BSGSCore<PERM,TRANS>::B[i] = n-1-i;
+	BOOST_ASSERT(this->n > 0);
+	BSGSCore<PERM,TRANS>::U.reserve(this->n);
+	for (unsigned int i = 0; i < this->n; ++i) {
+		BSGSCore<PERM,TRANS>::B[i] = this->n-1-i;
 		BSGSCore<PERM,TRANS>::U.push_back(SymmetricGroupTransversal<PERM>(this, i));
-		if (i < n-1) {
-			boost::shared_ptr<PERM> gen(new PERM(n));
+		if (i < static_cast<unsigned int>(this->n-1)) {
+			boost::shared_ptr<PERM> gen(new PERM(this->n));
 			gen->setTransposition(i, i+1);
 			BSGSCore<PERM,TRANS>::S.push_back(gen);
 		}
@@ -84,13 +85,13 @@ inline SymmetricGroup<PERM>::SymmetricGroup(unsigned int n)
 template<class PERM>
 inline void SymmetricGroup<PERM>::copy(const SymmetricGroup<PERM>& symGroup) 
 {
-	const unsigned long& n = symGroup.n;
-	BSGSCore<PERM,TRANS>::U.reserve(n);
-	for (unsigned int i = 0; i < n; ++i) {
+	const unsigned long& n2 = symGroup.n;
+	BSGSCore<PERM,TRANS>::U.reserve(n2);
+	for (unsigned int i = 0; i < n2; ++i) {
 		BSGSCore<PERM,TRANS>::B[i] = symGroup.B[i];
 		BSGSCore<PERM,TRANS>::U.push_back(SymmetricGroupTransversal<PERM>(this, i));
-		if (i < n-1) {
-			boost::shared_ptr<PERM> gen(new PERM(n));
+		if (i < n2-1) {
+			boost::shared_ptr<PERM> gen(new PERM(n2));
 			gen->setTransposition(i, i+1);
 			BSGSCore<PERM,TRANS>::S.push_back(gen);
 		}

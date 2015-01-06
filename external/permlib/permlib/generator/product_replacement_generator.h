@@ -50,11 +50,12 @@ public:
 	 * @param generatorsEnd   end   iterator of PERM
 	 */
 	template <class InputIterator>
-	ProductReplacementGenerator(InputIterator generatorsBegin, InputIterator generatorsEnd);
+	ProductReplacementGenerator(const unsigned int n, InputIterator generatorsBegin, InputIterator generatorsEnd);
 	
 	virtual PERM next();
 private:
 	std::vector<PERM> m_generators;
+	const unsigned int m_n;
 };
 
 //
@@ -63,13 +64,16 @@ private:
 
 template <class PERM>
 template <class InputIterator>
-ProductReplacementGenerator<PERM>::ProductReplacementGenerator(InputIterator generatorsBegin, InputIterator generatorsEnd) 
+ProductReplacementGenerator<PERM>::ProductReplacementGenerator(const unsigned int n, InputIterator generatorsBegin, InputIterator generatorsEnd) 
 	: m_generators(boost::indirect_iterator<InputIterator, PERM>(generatorsBegin), 
-				   boost::indirect_iterator<InputIterator, PERM>(generatorsEnd)) 
+				   boost::indirect_iterator<InputIterator, PERM>(generatorsEnd)),
+		m_n(n)
 {
 	const unsigned int additionalElements = 10;
 	const unsigned int oldSize = m_generators.size();
 	const unsigned int replacementRounds = std::max(oldSize * 10, static_cast<unsigned int>(100));
+	if (oldSize == 0)
+		return;
 	
 	m_generators.reserve(oldSize + additionalElements + 1);
 	for (unsigned int i = 0; i < additionalElements; ++i) {
@@ -84,6 +88,10 @@ ProductReplacementGenerator<PERM>::ProductReplacementGenerator(InputIterator gen
 
 template <class PERM>
 PERM ProductReplacementGenerator<PERM>::next() {
+	if (m_generators.size() == 0) {
+		return PERM(m_n);
+	}
+	
 	unsigned int i = randomInt(m_generators.size() - 1);
 	unsigned int j = randomInt(m_generators.size() - 2);
 	if (j >= i) ++j;

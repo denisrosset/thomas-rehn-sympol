@@ -143,6 +143,7 @@ bool FacesUpToSymmetryList::computeOrbits() {
 	if (!m_computeOrbits)
 		return false;
 
+#if HAVE_GETRUSAGE_PROTO
 	const time_t now = time(NULL);
 	// perform memory check every 30 seconds
 	if (now - ms_lastMemCheck > 30) {
@@ -152,6 +153,9 @@ bool FacesUpToSymmetryList::computeOrbits() {
 		YALLOG_DEBUG2(logger, "perform memcheck " << ms_lastMem << " <? " << m_computeOrbits);
 	}
 	return m_computeOrbits > ms_lastMem;
+#else
+    return true;
+#endif
 }
 
 bool FacesUpToSymmetryList::add(FaceWithDataPtr& fd) {
@@ -205,7 +209,7 @@ bool FacesUpToSymmetryList::add(FaceWithDataPtr& f, FaceWithDataPtr& adjacentFac
 	if (m_withAdjacencies) {
 		YALLOG_DEBUG(logger, "add adjacency " << equiv->face << "(" << equiv->id << ") -- " << adjacentFace->face << "(" << adjacentFace->id << ")");
 		// store edge only once
-		if (equiv->adjacencies.count(adjacentFace) == 0)
+		if (equiv->adjacencies.count(adjacentFace) == 0 && equiv->id != adjacentFace->id)
 			adjacentFace->adjacencies.insert(equiv);
 	}
 	return !knownFace;

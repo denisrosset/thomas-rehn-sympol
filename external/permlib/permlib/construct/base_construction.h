@@ -92,7 +92,6 @@ void BaseConstruction<PERM,TRANS>::setup(ForwardIterator generatorsBegin, Forwar
 	std::vector<TRANS> &U = bsgs.U;
 
 	B.insert(B.begin(), prescribedBaseBegin, prescribedBaseEnd);
-
 	// extend base so that no group element fixes all base elements
 	dom_int beta = m_n + 1;
 	PointwiseStabilizerPredicate<PERM> stab_k(B.begin(), B.end());
@@ -105,8 +104,18 @@ void BaseConstruction<PERM,TRANS>::setup(ForwardIterator generatorsBegin, Forwar
 			}
 		}
 	}
-	BOOST_ASSERT(!B.empty());
-
+	
+	if (B.empty()) {
+		B.push_back(0);
+		U.push_back(TRANS(m_n));
+		// the trivial group has an empty generator list
+		std::list<typename PERM::ptr> S_0;
+		S.push_back(S_0);
+		U[0].orbit(B[0], S_0);
+		return;
+	}
+	S.reserve(B.size());
+	
 	// pre-compute transversals and fundamental orbits for the current base
 	unsigned int i = 0;
 	std::vector<dom_int>::iterator Bit;
@@ -144,6 +153,7 @@ void BaseConstruction<PERM,TRANS>::mergeGenerators(std::vector<std::list<typenam
 			}
 		}
 	}
+
 	BOOST_FOREACH(TRANS& U_i, ret.U) {
 		U_i.updateGenerators(generatorMap);
 	}

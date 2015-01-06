@@ -114,8 +114,8 @@ private:
 };
 
 template<class PERM>
-Refinement<PERM>::Refinement(unsigned long n, RefinementType type) 
-	: m_n(n), m_initialized(false), m_type(type)
+Refinement<PERM>::Refinement(unsigned long n_, RefinementType type_) 
+	: m_n(n_), m_initialized(false), m_type(type_)
 { }
 
 template<class PERM>

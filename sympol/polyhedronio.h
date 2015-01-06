@@ -32,11 +32,13 @@ namespace sympol {
 
 class Polyhedron;
 class FacesUpToSymmetryList;
+class QArray;
   
 class PolyhedronIO {
 	public:
 		static Polyhedron* read (std::istream& is, std::list<boost::shared_ptr<PERM> >& groupGenerators, std::vector<ulong>& groupBase);
 		static void write(const FacesUpToSymmetryList& rays, bool homogenized, std::ostream& os);
+		static void write(const boost::shared_ptr<QArray>& row, bool homogenized, std::ostream& os);
 		/**
 		 * writes a polyhedron to the given output stream, all redundancies are printed and marked as such
 		 */

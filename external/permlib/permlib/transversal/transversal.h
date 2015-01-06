@@ -85,7 +85,11 @@ public:
 	/// begin iterator of basic orbit
 	std::list<unsigned long>::const_iterator begin() const { return this->m_orbit.begin(); };
 	/// end iterator of basic orbit
-    std::list<unsigned long>::const_iterator end() const { return this->m_orbit.end(); };
+	std::list<unsigned long>::const_iterator end() const { return this->m_orbit.end(); };
+	/// pair of begin, end iterator
+	std::pair<std::list<unsigned long>::const_iterator,std::list<unsigned long>::const_iterator> pairIt() const {
+		return std::make_pair(begin(), end());
+	}
 
 	/// size of basic orbit / transversal
     unsigned int size() const { return this->m_orbit.size(); }
@@ -166,8 +170,8 @@ protected:
 //
 
 template <class PERM>
-Transversal<PERM>::Transversal(unsigned int n) 
-	: m_n(n), m_transversal(n), m_sorted(false) 
+Transversal<PERM>::Transversal(unsigned int n_) 
+	: m_n(n_), m_transversal(n_), m_sorted(false) 
 { }
 
 template <class PERM>
@@ -182,6 +186,7 @@ void Transversal<PERM>::orbitUpdate(unsigned long beta, const std::list<typename
 
 template <class PERM>
 bool Transversal<PERM>::foundOrbitElement(const unsigned long& alpha, const unsigned long& alpha_p, const typename PERM::ptr& p) {
+	BOOST_ASSERT( alpha_p < m_transversal.size() );
 	if (!m_transversal[alpha_p]) {
 		if (!p) {
 			typename PERM::ptr identity(new PERM(m_n));

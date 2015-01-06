@@ -32,14 +32,17 @@
 #ifndef PERMLIB_API_H
 #define PERMLIB_API_H
 
+#include <permlib/common.h>
 #include <permlib/permutation.h>
 #include <permlib/bsgs.h>
 #include <permlib/transversal/schreier_tree_transversal.h>
 #include <permlib/transversal/orbit_set.h>
 #include <permlib/construct/schreier_sims_construction.h>
 #include <permlib/change/conjugating_base_change.h>
+#include <permlib/search/partition/vector_stabilizer_search.h>
 #include <permlib/search/classic/set_stabilizer_search.h>
 #include <permlib/search/classic/set_image_search.h>
+#include <permlib/search/classic/lex_smaller_image_search.h>
 #include <permlib/search/orbit_lex_min_search.h>
 
 #include <boost/shared_ptr.hpp>
@@ -68,6 +71,14 @@ boost::shared_ptr<PermutationGroup> construct(unsigned long n, InputIterator beg
 	return group;
 }
 
+template<class InputIteratorGen, class InputIteratorBase>
+boost::shared_ptr<PermutationGroup> construct(unsigned long n, InputIteratorGen beginGen, InputIteratorGen endGen,
+            InputIteratorBase beginBase, InputIteratorBase endBase) {
+	SchreierSimsConstruction<PERMUTATION, TRANSVERSAL> schreierSims(n);
+	boost::shared_ptr<PermutationGroup> group(new PermutationGroup(schreierSims.construct(beginGen, endGen, beginBase, endBase)));
+	return group;
+}
+
 
 // ---------------------------------------------------------------------
 // setwise stabilizer
@@ -75,6 +86,9 @@ boost::shared_ptr<PermutationGroup> construct(unsigned long n, InputIterator beg
 
 template<class InputIterator>
 boost::shared_ptr<PermutationGroup> setStabilizer(const PermutationGroup& group, InputIterator begin, InputIterator end) {
+	if (begin == end)
+		return boost::shared_ptr<PermutationGroup>(new PermutationGroup(group));
+	
 	PermutationGroup copy(group);
 	// change the base so that is prefixed by the set
 	ConjugatingBaseChange<PERMUTATION,TRANSVERSAL,
@@ -110,6 +124,47 @@ boost::shared_ptr<Permutation> setImage(const PermutationGroup& group, InputIter
 	
 	// start the search
 	return backtrackSearch.searchCosetRepresentative();
+}
+
+
+// ---------------------------------------------------------------------
+// vector stabilizer
+//
+
+template<class InputIterator>
+boost::shared_ptr<PermutationGroup> vectorStabilizer(const PermutationGroup& group, InputIterator begin, InputIterator end, unsigned int maxEntry = 0) {
+	std::vector<unsigned int> vector(begin, end);
+	if (maxEntry == 0) {
+		BOOST_FOREACH(const unsigned int& v, vector) {
+			if (v > maxEntry)
+				maxEntry = v;
+		}
+	}
+	BOOST_ASSERT( maxEntry );
+	++maxEntry;
+	
+	std::list<unsigned int> nonMaxEntries;
+	unsigned int i = 0;
+	BOOST_FOREACH(const unsigned int& v, vector) {
+		if (v < maxEntry-1)
+			nonMaxEntries.push_back(i);
+		++i;
+	}
+	
+	PermutationGroup copy(group);
+	// change the base so that is prefixed by the set
+	ConjugatingBaseChange<PERMUTATION,TRANSVERSAL,
+		RandomBaseTranspose<PERMUTATION,TRANSVERSAL> > baseChange(copy);
+	baseChange.change(copy, nonMaxEntries.begin(), nonMaxEntries.end());
+	
+	// prepare search without DCM pruning
+	partition::VectorStabilizerSearch<BSGS<PERMUTATION,TRANSVERSAL>, TRANSVERSAL> backtrackSearch(copy, 0);
+	backtrackSearch.construct(vector.begin(), vector.end(), maxEntry);
+	
+	// start the search
+	boost::shared_ptr<PermutationGroup> stabilizer(new PermutationGroup(copy.n));
+	backtrackSearch.search(*stabilizer);
+	return stabilizer;
 }
 
 
@@ -154,6 +209,41 @@ inline std::list<boost::shared_ptr<OrbitAsSet> > orbits(const PermutationGroup& 
 inline dset smallestSetImage(const PermutationGroup& group, const dset& set) {
 	OrbitLexMinSearch<PermutationGroup>  orbLexMin(group);
 	return orbLexMin.lexMin(set);
+}
+
+
+template<class InputIteratorB, class InputIteratorZ, class InputIteratorO>
+inline bool isNotLexMinSet(PermutationGroup& group,
+		InputIteratorB baseBegin,  InputIteratorB baseEnd,
+		InputIteratorZ zerosBegin, InputIteratorZ zerosEnd,
+		InputIteratorO onesBegin,  InputIteratorO onesEnd
+		)
+{
+	// change the base so that is prefixed by the set
+	ConjugatingBaseChange<PERMUTATION,TRANSVERSAL,
+		RandomBaseTranspose<PERMUTATION,TRANSVERSAL> > baseChange(group);
+	baseChange.change(group, baseBegin, baseEnd);
+
+	classic::LexSmallerImageSearch<PermutationGroup, TRANSVERSAL> backtrackSearch(group, 0);
+	backtrackSearch.construct(zerosBegin, zerosEnd, onesBegin, onesEnd);
+
+	// start the search
+	typename PERMUTATION::ptr g = backtrackSearch.searchCosetRepresentative();
+	if (g) {
+		return true;
+	}
+	return false;
+}
+
+template<class InputIteratorB, class InputIteratorZ, class InputIteratorO>
+inline bool isNotLexMinSet(const PermutationGroup& group,
+		InputIteratorB baseBegin,  InputIteratorB baseEnd,
+		InputIteratorZ zerosBegin, InputIteratorZ zerosEnd,
+		InputIteratorO onesBegin,  InputIteratorO onesEnd
+		)
+{
+	PermutationGroup copy(group);
+	return isNotLexMinSet(copy, baseBegin, baseEnd, zerosBegin, zerosEnd, onesBegin, onesEnd);
 }
 
 

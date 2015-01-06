@@ -69,8 +69,8 @@ template <class PERM>
 const unsigned int ExplicitTransversal<PERM>::m_statMaxDepth = 1;
 
 template <class PERM>
-ExplicitTransversal<PERM>::ExplicitTransversal(unsigned int n) 
-	: Transversal<PERM>(n) 
+ExplicitTransversal<PERM>::ExplicitTransversal(unsigned int n_) 
+	: Transversal<PERM>(n_) 
 { }
 
 template <class PERM>

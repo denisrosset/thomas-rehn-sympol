@@ -145,18 +145,18 @@ unsigned int MatrixRefinement2<PERM,MATRIX>::splitCell(Partition& pi, unsigned l
 			PERMLIB_DEBUG(std::cout << "split " << i << " because of " << j << " in " << pi << std::endl;)
 			typename std::map<Fingerprint,std::list<unsigned long> >::const_iterator fit;
 			for (fit = map.begin(); fit != map.end(); ++fit) {
-				std::pair<Fingerprint, std::list<unsigned long> > splitCell = *fit;
+				std::pair<Fingerprint, std::list<unsigned long> > splitCellPair = *fit;
 				/*std::cout << "FOO ";
-				BOOST_FOREACH(unsigned long a, splitCell.second) {
+				BOOST_FOREACH(unsigned long a, splitCellPair.second) {
 					std::cout << (a+1) << " ";
 				}
 				std::cout << std::endl;
 				std::cout << "GOO ";
-				BOOST_FOREACH(unsigned long a, splitCell.first.m_fingerprint) {
+				BOOST_FOREACH(unsigned long a, splitCellPair.first.m_fingerprint) {
 					std::cout << (a) << " ";
 				}
 				std::cout << std::endl;*/
-				if (pi.intersect(splitCell.second.begin(), splitCell.second.end(), i)) {
+				if (pi.intersect(splitCellPair.second.begin(), splitCellPair.second.end(), i)) {
 					++ret;
 				}
 			}

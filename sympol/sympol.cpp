@@ -89,7 +89,7 @@ uint correct_id(uint id, uint apexIndex) {
 }
 
 int main(int argc, char* argv[]) {
-	std::cout << "SymPol v0.1.4 and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
+	std::cout << "SymPol v0.1.5a and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
 #if HAVE_NAUTY && HAVE_NTL
 	std::cout << " and nauty and NTL";
 #endif
@@ -122,14 +122,16 @@ int main(int argc, char* argv[]) {
 #endif
 		("estimation-only,e", "compute only LRS estimation and then exit")
 		("direct,d", "compute dual description directly")
+		("adm,a", "use one level of adjacency decomposition, solve sub-problems directly")
 		// removed defunct lattice code in rev.1207; needs to be rewritten
 		//("lattice,l", "compute face lattice")
-		("adm,a", po::value<double>(), "use adjacency decomposition method up to given estimate threshold")
+		("idm-adm-level", po::value<vector<uint> >()->multitoken(), "combined IDM,ADM strategy, expects two parameters: levelIDM levelADM")
+		("adm-idm-level", po::value<vector<uint> >()->multitoken(), "combined ADM,IDM strategy, expects two parameters: levelADM levelIDM")
+		("adm-estimate", po::value<double>(), "use adjacency decomposition method up to given estimate threshold")
 		("adm-dim", po::value<uint>(), "use adjacency decomposition method up to given dimension threshold")
 		("adm-incidence", po::value<uint>(), "use adjacency decomposition method up to given incidence number threshold")
 		("idm-adm", po::value<vector<double> >()->multitoken(), "combined IDM,ADM strategy, expects two parameters: thresholdIDM thresholdADM")
-		("idm-adm-level", po::value<vector<uint> >()->multitoken(), "combined IDM,ADM strategy, expects two parameters: levelIDM levelADM")
-		("adm-idm-level", po::value<vector<uint> >()->multitoken(), "combined ADM,IDM strategy, expects two parameters: levelADM levelIDM")
+
 		("cdd", "use cdd for core dual description conversion (EXPERIMENTAL)")
 		("adjacencies", "records facet adjacencies (requires ADM method at level 0)")
 
@@ -250,7 +252,7 @@ int main(int argc, char* argv[]) {
 			rs = new RecursionStrategyDirect();
 			if (withAdjacencies)
 				YALLOG_WARNING(logger, "Option --adjacencies requires ADM. Use one of the adm options instead of direct computation.")
-		}	else if (vm.count("adm")) {
+		}	else if (vm.count("adm-estimate")) {
 			rs = new RecursionStrategyADM(vm["adm"].as<double>());
 		}	else if (vm.count("adm-dim")) {
 			rs = new RecursionStrategyADMDimension(vm["adm-dim"].as<uint>());
@@ -268,6 +270,8 @@ int main(int argc, char* argv[]) {
 			const vector<uint>& levels = vm["adm-idm-level"].as<vector<uint> >();
 			BOOST_ASSERT( levels.size() >= 2 );
 			rs = new RecursionStrategyADMIDMLevel(levels[1], levels[0]);
+		} else if (vm.count("adm")) {
+			rs = new RecursionStrategyADMIDMLevel(1,1);
 		}
 		
 		if (rs) {
@@ -294,24 +298,38 @@ int main(int argc, char* argv[]) {
 					cout << "H-representation" << endl;
 
 				ulong dimension = poly->dimension();
-				bool homogenized = false;
 				ulong size = rd.size();
+				std::list<QArrayPtr> lin;
 				// if polyhedron is V-representation, it is homogenized
-				if (poly->representation() == Polyhedron::V) {
-					homogenized = true;
+				if (poly->homogenized()) {
 					// homogenized dimension
 					--dimension;
-					// print skips cone apex
-					--size;
+          // check if face list contains a vertex (the apex)
+					if (rd.firstVertexIndex() >= 0)
+						// print skips cone apex
+						--size;
 				}
-				cout << "* UP TO SYMMETRY" << endl << "begin" << endl << size << " " << dimension << " rational" << endl;
-				PolyhedronIO::write(rd, homogenized, cout);
+				rayComp->getLinearities(*poly, lin);
+				size += lin.size();
+                
+				cout << "* UP TO SYMMETRY" << endl;
+				if (lin.size()) {
+					cout << "linearity " << lin.size();
+					for (unsigned int i = 0; i < lin.size(); ++i)
+						cout << " " << (i+1);
+					cout << endl;
+				}
+				cout << "begin" << endl << size << " " << dimension << " rational" << endl;
+				BOOST_FOREACH(const QArrayPtr& row, lin) {
+					PolyhedronIO::write(row, poly->homogenized(), cout);
+				}
+				PolyhedronIO::write(rd, poly->homogenized(), cout);
 				cout << "end" << endl << "permutation group" << endl << "* order " << pg->order() << endl << "* w.r.t. to the original inequalities/vertices" << endl;
 				print_group(pg);
 
 				if (withAdjacencies) {
 					ulong apexIndex = 0xffffffff;
-					if (homogenized)
+					if (poly->homogenized())
 						apexIndex = static_cast<ulong>(rd.firstVertexIndex());
 
 					cout << endl << "graph adjacencies {" << endl;

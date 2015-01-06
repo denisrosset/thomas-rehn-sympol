@@ -72,8 +72,8 @@ protected:
 //
 
 template <class PERM>
-ShallowSchreierTreeTransversal<PERM>::ShallowSchreierTreeTransversal(unsigned int n)
-	: SchreierTreeTransversal<PERM>(n)
+ShallowSchreierTreeTransversal<PERM>::ShallowSchreierTreeTransversal(unsigned int n_)
+	: SchreierTreeTransversal<PERM>(n_)
 { }
 
 template <class PERM>

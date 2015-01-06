@@ -154,11 +154,20 @@ void RBase<BSGSIN,TRANSRET>::construct(SubgroupPredicate<PERM>* pred, Refinement
 		PERMLIB_DEBUG(std::cout << std::endl << "PI1 = " << pi << std::endl;)
 		
 		if (pi.cells() < this->m_bsgs.n) {
-			unsigned long alpha = -1;
+			unsigned int alpha = -1;
 			//print_iterable(pi.fixPointsBegin(), pi.fixPointsEnd(), 1, "  fix0");
 			//print_iterable(this->m_bsgs.B.begin(), this->m_bsgs.B.end(), 1, "bsgs0");
 			if (pi.fixPointsSize() < this->m_bsgs.B.size())
 				alpha = this->m_bsgs.B[pi.fixPointsSize()];
+			if (alpha >= this->m_bsgs.n) {
+				for (unsigned int i = 0; i < this->m_bsgs.n; ++i) {
+					if (std::find(pi.fixPointsBegin(), pi.fixPointsEnd(), i) == pi.fixPointsEnd()) {
+						alpha = i;
+						break;
+					}
+				}
+			}
+			BOOST_ASSERT( alpha < this->m_bsgs.n );
 			PERMLIB_DEBUG(std::cout << "choose alpha = " << alpha << std::endl;)
 			RefinementPtr br(new BacktrackRefinement<PERM>(this->m_bsgs.n, alpha));
 			BacktrackRefinement<PERM>* ref = dynamic_cast<BacktrackRefinement<PERM> *>(br.get());
@@ -335,9 +344,9 @@ unsigned int RBase<BSGSIN,TRANSRET>::search(PartitionIt pIt, Partition &pi, cons
 
 template<class BSGSIN,class TRANSRET>
 bool RBase<BSGSIN,TRANSRET>::updateMappingPermutation(const BSGSIN& bsgs, const Partition& sigma, const Partition& pi, PERM& t2) const {
-	typedef std::vector<unsigned long>::const_iterator FixIt;
+	typedef std::vector<unsigned int>::const_iterator FixIt;
 	std::vector<dom_int>::const_iterator bIt;
-	unsigned long i = 0;
+	unsigned int i = 0;
 	FixIt fixSigmaIt = sigma.fixPointsBegin();
 	const FixIt fixSigmaEndIt = sigma.fixPointsEnd();
 	FixIt fixPiIt = pi.fixPointsBegin();
@@ -354,8 +363,8 @@ bool RBase<BSGSIN,TRANSRET>::updateMappingPermutation(const BSGSIN& bsgs, const 
 			PERMLIB_DEBUG(std::cout << "  no more fix point found for " << (*bIt)+1 << std::endl;)
 			return true;
 		}
-		const unsigned long alpha = *fixSigmaIt;
-		const unsigned long beta = *fixPiIt;
+		const unsigned int alpha = *fixSigmaIt;
+		const unsigned int beta = *fixPiIt;
 		if (t2 / alpha != beta) {
 			boost::scoped_ptr<PERM> u_beta(bsgs.U[i].at(t2 % beta));
 			if (u_beta) {

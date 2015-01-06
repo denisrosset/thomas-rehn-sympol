@@ -92,8 +92,8 @@ BacktrackRefinement<PERM>::BacktrackRefinement(unsigned long n)
 { }
 
 template<class PERM>
-BacktrackRefinement<PERM>::BacktrackRefinement(unsigned long n, unsigned long alpha) 
-	: Refinement<PERM>(n, Backtrack), m_alpha(alpha), m_cellElementIndex(-1), m_cellIndex(-1)
+BacktrackRefinement<PERM>::BacktrackRefinement(unsigned long n, unsigned long alpha_) 
+	: Refinement<PERM>(n, Backtrack), m_alpha(alpha_), m_cellElementIndex(-1), m_cellIndex(-1)
 { }
 
 template<class PERM>

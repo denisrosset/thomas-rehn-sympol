@@ -352,7 +352,7 @@ boost::shared_ptr< PermutationGroup > AutomorphismComputation::computeRestricted
  */
 static void setAutomorphisms(int count, permutation* perm, int* orbits, int numorbits, int stabvertex, int n) {
     // transform vertex-weighted graph back into edge-weighted
-    std::vector<ulong> filteredPerm(permN);
+    Permutation::perm filteredPerm(permN);
     // k is the number in each vertex-equivalence class
     int k = n / permN;
     for (int i=0; i<n; i+=k) {

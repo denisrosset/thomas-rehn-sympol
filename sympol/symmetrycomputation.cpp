@@ -33,7 +33,7 @@ using namespace sympol;
 using namespace yal;
 
 // empty set we can use as a reference
-const SymmetryComputation::FaceOrbit2 SymmetryComputation::ms_setEmpty;
+const SymmetryComputation::FaceOrbit2 SymmetryComputation::ms_setEmpty = SymmetryComputation::FaceOrbit2();
 LoggerPtr SymmetryComputation::logger(Logger::getLogger("SymComp   "));
 
 SymmetryComputation::SymmetryComputation(SymmetryComputationMethod method, RecursionStrategy* const recursionStrategy, const RayComputation* rayCompDefault,

@@ -64,17 +64,15 @@ bool SymmetryComputationADM::enumerateRaysUpToSymmetry() {
 		return false;
 	}
 
-	if (m_data.homogeneous()) {
-		// if polyhedron is a cone with apex 0, we won't find the apex later, so add
-		// it here manually
-		QArrayPtr row(new QArray(m_data.dimension()));
-		mpq_set_ui((*row)[0], 1, 1);
-		Face face(m_data.faceDescription(*row));
-		if (face.count() == m_data.rows()) {
-			FaceWithDataPtr fdPtr(new FaceWithData(face, row));
-			m_rays.add(fdPtr);
-		}
-	}
+  // our polyhedron is a (possibly homogenized) cone with apex 0.
+  // we won't find the apex later, so add it here manually
+  QArrayPtr row(new QArray(m_data.dimension()));
+  mpq_set_ui((*row)[0], 1, 1);
+  Face face(m_data.faceDescription(*row));
+  if (face.count() == m_data.rows()) {
+    FaceWithDataPtr fdPtr(new FaceWithData(face, row));
+    m_rays.add(fdPtr);
+  }
 
 	const ulong workingDimension = m_data.workingDimension();
 	YALLOG_DEBUG(logger, "working dimension = " << workingDimension);
@@ -172,7 +170,7 @@ bool SymmetryComputationADM::prepareStart(FacesUpToSymmetryList& rays) {
 	m_todoList.clear();
 
 	for (FacesUpToSymmetryList::FaceIt rit = rays.begin(); rit != rays.end(); ++rit) {
-		if (m_data.homogeneous() && !(*rit)->ray->isRay())
+		if (!(*rit)->ray->isRay())
 			continue;
 		// non-const copy
 		FaceWithDataPtr fdPtr(new FaceWithData((*rit)->face, (*rit)->ray, (*rit)->incidenceNumber));
@@ -182,7 +180,7 @@ bool SymmetryComputationADM::prepareStart(FacesUpToSymmetryList& rays) {
 
 	Face f(m_data.emptyFace());
 	QArrayPtr q(new QArray(m_data.dimension()));
-	if (!m_rayCompDefault->firstVertex(m_data, f, *q, m_data.homogeneous())) {
+	if (!m_rayCompDefault->firstVertex(m_data, f, *q, true)) {
 		return false;
 	}
 	FaceWithDataPtr fdPtr(new FaceWithData(f, q, m_data.incidenceNumber(f)));

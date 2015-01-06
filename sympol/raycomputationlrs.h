@@ -31,6 +31,7 @@ struct lrs_dic_struct;
 typedef struct lrs_dic_struct lrs_dic;
 
 struct lrs_dat;
+typedef mpz_t **lrs_mp_matrix;
 
 namespace sympol {
   
@@ -49,6 +50,7 @@ public:
     
     bool determineRedundantColumns(const Polyhedron & data, std::set<ulong> & redundantColumns) const;
 
+    bool getLinearities(const Polyhedron & data, std::list<QArrayPtr>& linearities) const;
 private:
     static bool ms_bInitialized;
     static const char* ms_chName;
@@ -58,7 +60,7 @@ private:
     static FILE* ms_fOut;
     
     bool initLRS(const Polyhedron & data, lrs_dic* & P, lrs_dat* & Q) const;
-    bool initLRS(const Polyhedron & data, lrs_dic* & P, lrs_dat* & Q, int estimates, int maxDepth) const;
+    bool initLRS(const Polyhedron & data, lrs_dic* & P, lrs_dat* & Q, lrs_mp_matrix& Lin, int estimates, int maxDepth) const;
     
     void fillModelLRS(const Polyhedron & data, lrs_dic *P, lrs_dat *Q) const;
     

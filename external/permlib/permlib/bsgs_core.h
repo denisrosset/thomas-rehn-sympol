@@ -72,10 +72,10 @@ struct BSGSCore {
 		/// constructs empty data structure with given group id
 		explicit BSGSCore(unsigned int id) : m_id(id) {}
 		/// constructs empty data structure with given group id, group degree n and base size n
-		BSGSCore(unsigned int id, dom_int n, dom_int bSize) : B(bSize), n(n), m_id(id) {}
+		BSGSCore(unsigned int id, dom_int n_, dom_int bSize) : B(bSize), n(n_), m_id(id) {}
 		/// kind of copy constructor, initializes data structure with given data
-		BSGSCore(unsigned int id, const std::vector<dom_int>& B,  const std::vector<TRANS>& U, dom_int n) 
-			: B(B), U(U.size(), TRANS(n)), n(n), m_id(id) {}
+		BSGSCore(unsigned int id, const std::vector<dom_int>& B_,  const std::vector<TRANS>& U_, dom_int n_) 
+			: B(B_), U(U_.size(), TRANS(n_)), n(n_), m_id(id) {}
 		
 		/// id of this BSGS instance
 		int m_id;

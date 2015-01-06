@@ -50,6 +50,9 @@ public:
 
 	/// returns one element of the orbit
 	virtual const PDOMAIN& element() const = 0;
+	
+	/// type of permutation used for this orbit
+	typedef PERM PERMtype;
 protected:
 	/// computes orbit of beta under generators
 	/**
@@ -95,17 +98,19 @@ inline void Orbit<PERM,PDOMAIN>::orbit(const PDOMAIN& beta, const std::list<type
 	for (it = orbitList.begin(); it != orbitList.end(); ++it) {
 		const PDOMAIN &alpha = *it;
 		BOOST_FOREACH(const typename PERM::ptr& p, generators) {
+			//std::cout << "         " << orbitList.size() << std::endl;
 			PDOMAIN alpha_p = a(*p, alpha);
-			if (foundOrbitElement(alpha, alpha_p, p))
+			if (alpha_p != alpha && foundOrbitElement(alpha, alpha_p, p))
 				orbitList.push_back(alpha_p);
 		}
 	}
+	//std::cout << "orb size " << orbitList.size() << std::endl;
 }
 
 template <class PERM,class PDOMAIN>
 template<class Action>
 inline void Orbit<PERM,PDOMAIN>::orbitUpdate(const PDOMAIN& beta, const std::list<typename PERM::ptr> &generators, const typename PERM::ptr &g, Action a, std::list<PDOMAIN>& orbitList) {
-    if (orbitList.empty()) {
+	if (orbitList.empty()) {
 		orbitList.push_back(beta);
 		foundOrbitElement(beta, beta, typename PERM::ptr());
 	}
@@ -118,7 +123,7 @@ inline void Orbit<PERM,PDOMAIN>::orbitUpdate(const PDOMAIN& beta, const std::lis
 	for (it = orbitList.begin(); it != orbitList.end(); ++it) {
 		const PDOMAIN &alpha = *it;
 		PDOMAIN alpha_g = a(*g, alpha);
-		if (foundOrbitElement(alpha, alpha_g, g))
+		if (alpha_g != alpha && foundOrbitElement(alpha, alpha_g, g))
 			orbitList.push_back(alpha_g);
 	}
 	

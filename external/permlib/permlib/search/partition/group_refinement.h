@@ -56,15 +56,18 @@ public:
 private:
 	const BSGSCore<PERM,TRANS>& m_bsgs;
 	
-	std::vector<unsigned long> thetaOrbit;
+	std::vector<unsigned int> thetaOrbit;
 	std::vector<int> thetaBorder;
+	//WARNING: not thread-safe
+	/// pre-allocate memory for apply2
+	mutable Partition::vector_t m_myTheta;
 	
 	unsigned int apply2(Partition& pi, const PERM* t) const;
 };
 
 template<class PERM,class TRANS>
-GroupRefinement<PERM,TRANS>::GroupRefinement(const BSGSCore<PERM,TRANS>& bsgs) 
-	: Refinement<PERM>(bsgs.n, Group), m_bsgs(bsgs), thetaOrbit(m_bsgs.n), thetaBorder(m_bsgs.n, -1)
+GroupRefinement<PERM,TRANS>::GroupRefinement(const BSGSCore<PERM,TRANS>& bsgs_) 
+	: Refinement<PERM>(bsgs_.n, Group), m_bsgs(bsgs_), thetaOrbit(m_bsgs.n), thetaBorder(m_bsgs.n, -1), m_myTheta(m_bsgs.n)
 {
 }
 
@@ -82,10 +85,11 @@ template<class PERM,class TRANS>
 unsigned int GroupRefinement<PERM,TRANS>::apply2(Partition& pi, const PERM* t) const {
 	BOOST_ASSERT( this->initialized() );
 	
-	std::vector<unsigned long> myTheta(thetaOrbit);	
+	Partition::vector_t& myTheta = m_myTheta;
 	
-	std::vector<unsigned long>::iterator thetaIt;
-	std::vector<unsigned long>::iterator thetaBeginIt, thetaEndIt;
+	Partition::vector_t::iterator thetaIt;
+	Partition::vector_t::iterator thetaBeginIt, thetaEndIt;
+	Partition::vector_t::const_iterator thetaOrbitIt;
 	std::list<int>::const_iterator cellPairIt = Refinement<PERM>::m_cellPairs.begin();
 	unsigned int ret = false;
 	while (cellPairIt != Refinement<PERM>::m_cellPairs.end()) {
@@ -103,8 +107,11 @@ unsigned int GroupRefinement<PERM,TRANS>::apply2(Partition& pi, const PERM* t) c
 		thetaEndIt   = myTheta.begin() + thetaBorder[thetaC];
 		
 		if (t) {
-			for (thetaIt = thetaBeginIt; thetaIt != thetaEndIt; ++thetaIt) {
-				*thetaIt = *t / *thetaIt;
+			for (thetaIt = thetaBeginIt, thetaOrbitIt =  thetaOrbit.begin() + borderLo;
+					 thetaIt != thetaEndIt,  thetaOrbitIt != thetaOrbit.begin() + thetaBorder[thetaC];
+					 ++thetaIt, ++thetaOrbitIt) 
+			{
+				*thetaIt = *t / *thetaOrbitIt;
 			}
 			std::sort(thetaBeginIt, thetaEndIt);
 		}
@@ -132,8 +139,8 @@ bool GroupRefinement<PERM,TRANS>::init(Partition& pi) {
 		boost::dynamic_bitset<> orbitCharacterstic(m_bsgs.n);
 		
 		std::vector<dom_int>::const_iterator Bit;
-		std::vector<unsigned long>::const_iterator fixIt = pi.fixPointsBegin();
-		std::vector<unsigned long>::const_iterator fixEndIt = pi.fixPointsEnd();
+		Partition::vector_t::const_iterator fixIt = pi.fixPointsBegin();
+		Partition::vector_t::const_iterator fixEndIt = pi.fixPointsEnd();
 		for (Bit = m_bsgs.B.begin(); Bit != m_bsgs.B.end(); ++Bit) {
 			while (fixIt != fixEndIt && *fixIt != *Bit) {
 				PERMLIB_DEBUG(std::cout << "skip " << (*fixIt + 1) << " for " << (*Bit + 1) << std::endl;)
@@ -160,22 +167,22 @@ bool GroupRefinement<PERM,TRANS>::init(Partition& pi) {
 		
 		unsigned int thetaIndex = 0;
 		std::vector<int>::iterator thetaBorderIt = thetaBorder.begin();
-		std::vector<unsigned long>::iterator thetaIt = thetaOrbit.begin();
+		std::vector<unsigned int>::iterator thetaIt = thetaOrbit.begin();
 		for (unsigned long alpha = 0; alpha < m_bsgs.n; ++alpha) {
 			if (orbitCharacterstic[alpha])
 				continue;
 			orbitCharacterstic.flip(alpha);
-			std::vector<unsigned long>::iterator thetaOrbitBeginIt = thetaIt;
+			std::vector<unsigned int>::iterator thetaOrbitBeginIt = thetaIt;
 			*thetaIt = alpha;
 			++thetaIt;
 			++thetaIndex;
-			std::vector<unsigned long>::iterator thetaOrbitEndIt = thetaIt;
+			std::vector<unsigned int>::iterator thetaOrbitEndIt = thetaIt;
 			
-			std::vector<unsigned long>::iterator it;
+			std::vector<unsigned int>::iterator it;
 			for (it = thetaOrbitBeginIt; it != thetaOrbitEndIt; ++it) {
-				unsigned long beta = *it;
+				unsigned int beta = *it;
 				BOOST_FOREACH(const PERM &p, S_fix) {
-					unsigned long beta_p = p / beta;
+					unsigned int beta_p = p / beta;
 					if (!orbitCharacterstic[beta_p]) {
 						*thetaIt = beta_p;
 						++thetaIt;
@@ -190,7 +197,7 @@ bool GroupRefinement<PERM,TRANS>::init(Partition& pi) {
 		}
 		
 		thetaIt = thetaOrbit.begin();
-		std::vector<unsigned long>::iterator thetaItEnd;
+		std::vector<unsigned int>::iterator thetaItEnd;
 		thetaBorderIt = thetaBorder.begin();
 		unsigned int thetaC = 0;
 		int oldBorder = 0;

@@ -84,8 +84,8 @@ private:
 		dset D;
 		dset J;
 
-		Candidate(dset D) : D(D), J(D.size()) {}
-		Candidate(dset D, dset J) : D(D), J(J) {}
+		Candidate(dset D_) : D(D_), J(D_.size()) {}
+		Candidate(dset D_, dset J_) : D(D_), J(J_) {}
 
 		void print(const char* prefix) const {
 			std::cout << prefix <<  ".J = " << J << "  ; " << prefix << ".D = " << D << std::endl;

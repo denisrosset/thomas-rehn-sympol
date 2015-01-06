@@ -91,17 +91,21 @@ template <class ForwardIterator, class InputIterator>
 BSGS<PERM, TRANS> SchreierSimsConstruction<PERM, TRANS>
 	::construct(ForwardIterator generatorsBegin, ForwardIterator generatorsEnd, InputIterator prescribedBaseBegin, InputIterator prescribedBaseEnd) const
 {
-	const dom_int &n = BaseConstruction<PERM, TRANS>::m_n;
+	const dom_int &n = this->m_n;
 	BSGS<PERM, TRANS> ret(n);
 	std::vector<dom_int> &B = ret.B;
 	std::vector<TRANS> &U = ret.U;
 	std::vector<std::list<typename PERM::ptr> > S;
 	setup(generatorsBegin, generatorsEnd, prescribedBaseBegin, prescribedBaseEnd, ret, S);
-
+	
 	std::vector<boost::shared_ptr<SchreierGenerator<PERM, TRANS> > > SchreierGens;
-	SchreierGens.push_back(boost::shared_ptr<SchreierGenerator<PERM, TRANS> >(new SchreierGenerator<PERM, TRANS>(&U[0], S[0].begin(), S[0].end())));
-
-	unsigned int j = 1;
+	for (unsigned int i = 0; i < B.size(); ++i) {
+		BOOST_ASSERT( i < U.size() );
+		BOOST_ASSERT( i < S.size() );
+		SchreierGens.push_back(boost::shared_ptr<SchreierGenerator<PERM, TRANS> >(new SchreierGenerator<PERM, TRANS>(&U[i], S[i].begin(), S[i].end())));
+	}
+	
+	unsigned int j = B.size();
 	bool breakUp = false;
 	while (j >= 1) {
 		breakUp = false;

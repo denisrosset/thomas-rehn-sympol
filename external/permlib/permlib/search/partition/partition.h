@@ -53,8 +53,8 @@ public:
 	/// intersects the j-th cell of this partition with a given set
 	/**
 	 * @see intersects
-	 * @param begin begin iterator(unsigned long) to a sorted list of elements 
-	 * @param end end iterator(unsigned long) to a sorted list of elements 
+	 * @param begin begin iterator(unsigned int) to a sorted list of elements 
+	 * @param end end iterator(unsigned int) to a sorted list of elements 
 	 * @param j 
 	 * @return true if intersection really splits the j-th cell
 	 */
@@ -68,18 +68,19 @@ public:
 	template<class ForwardIterator>
 	bool intersects(ForwardIterator begin, ForwardIterator end, unsigned int j) const;
 	
+	typedef std::vector<unsigned int> vector_t;
 	/// number of fix points in this partition
 	unsigned int fixPointsSize() const;
 	/// iterator to the begin of fix points
-	std::vector<unsigned long>::const_iterator fixPointsBegin() const;
+	vector_t::const_iterator fixPointsBegin() const;
 	/// iterator to the end of fix points
-	std::vector<unsigned long>::const_iterator fixPointsEnd() const;
+	vector_t::const_iterator fixPointsEnd() const;
 	/// number of cells in this partition
 	unsigned long cells() const;
 	/// size of the c-th cell
 	unsigned long cellSize(unsigned int c) const;
 	
-	typedef std::vector<unsigned long>::const_iterator CellIt;
+	typedef vector_t::const_iterator CellIt;
 	
 	CellIt cellBegin(unsigned long cell) const { 
 		BOOST_ASSERT(cell < cells());
@@ -93,17 +94,19 @@ public:
 private:
 	explicit Partition(unsigned long n, bool);
 	
-	std::vector<unsigned long> partition;
-	std::vector<unsigned int> partitionCellBorder;
-	std::vector<unsigned int> partitionCellLength;
-	std::vector<unsigned int> partitionCellOf;
+	vector_t partition;
+	vector_t partitionCellBorder;
+	vector_t partitionCellLength;
+	vector_t partitionCellOf;
+	/// pre-allocated memory for cell intersection
+	vector_t m_newCell;
 	
 	/// index of last cell
 	unsigned int cellCounter;
 	
 	/// fix points; to avoid frequent allocation, space is preallocated
 	/// @see fixCounter
-	std::vector<unsigned long> fix;
+	vector_t fix;
 	/// index up to which entries in fix-array are valid
 	unsigned int fixCounter;
 	
@@ -115,8 +118,8 @@ private:
 
 inline std::ostream& operator<<(std::ostream& out, const Partition& p) {
 	out << "[";
-	std::vector<unsigned int>::const_iterator border = p.partitionCellBorder.begin();
-	std::vector<unsigned int>::const_iterator length = p.partitionCellLength.begin();
+	Partition::vector_t::const_iterator border = p.partitionCellBorder.begin();
+	Partition::vector_t::const_iterator length = p.partitionCellLength.begin();
 	for (unsigned int j = 0; j < p.cellCounter; ++j) {
 		for (unsigned int i = *border; i < *border + *length; ++i) {
 			out << (p.partition[i] + 1) << " ";
@@ -137,7 +140,7 @@ inline std::ostream& operator<<(std::ostream& out, const Partition& p) {
 }
 
 inline Partition::Partition(unsigned long n) 
-	: partition(n), partitionCellBorder(n), partitionCellLength(n), partitionCellOf(n), cellCounter(1), fix(n), fixCounter(0)
+	: partition(n), partitionCellBorder(n), partitionCellLength(n), partitionCellOf(n), m_newCell(n), cellCounter(1), fix(n), fixCounter(0)
 {
 	for (unsigned int i=0; i<n; ++i) {
 		partition[i] = i;
@@ -148,7 +151,7 @@ inline Partition::Partition(unsigned long n)
 }
 
 inline Partition::Partition(unsigned long n, bool) 
-	: partition(n), partitionCellBorder(n), partitionCellLength(n), partitionCellOf(n), cellCounter(0), fix(n), fixCounter(0)
+	: partition(n), partitionCellBorder(n), partitionCellLength(n), partitionCellOf(n), m_newCell(n), cellCounter(0), fix(n), fixCounter(0)
 { }
 
 inline unsigned long Partition::cells() const {
@@ -158,10 +161,10 @@ inline unsigned long Partition::cells() const {
 inline unsigned int Partition::fixPointsSize() const {
 	return fixCounter;
 }
-inline std::vector<unsigned long>::const_iterator Partition::fixPointsBegin() const {
+inline Partition::vector_t::const_iterator Partition::fixPointsBegin() const {
 	return fix.begin();
 }
-inline std::vector<unsigned long>::const_iterator Partition::fixPointsEnd() const {
+inline Partition::vector_t::const_iterator Partition::fixPointsEnd() const {
 	return fix.begin() + fixCounter;
 }
 inline unsigned long Partition::cellSize(unsigned int c) const {
@@ -184,25 +187,24 @@ inline bool Partition::intersect(ForwardIterator otherCellBegin, ForwardIterator
 	if (!intersects(otherCellBegin, otherCellEnd, j))
 		return false;
 	
-	//WARNING: not thread-safe
-	static std::vector<unsigned long> newCell(partition.size());
+	vector_t& newCell = m_newCell;
 	
 	ForwardIterator otherCellIt = otherCellBegin;
-	std::vector<unsigned long>::iterator cellIt;
-	std::vector<unsigned long>::reverse_iterator newCellIt;
-	std::vector<unsigned long>::reverse_iterator newCellBeginIt;
-	std::vector<unsigned long>::iterator newCell2It;
-	std::vector<unsigned int>::iterator   borderIt;
+	vector_t::iterator cellIt;
+	vector_t::reverse_iterator newCellIt;
+	vector_t::reverse_iterator newCellBeginIt;
+	vector_t::iterator newCell2It;
+	vector_t::iterator borderIt;
 	bool createdNewCell = false;
-	const unsigned int cellSize = partitionCellLength[j];
+	const unsigned int partitionCellSize = partitionCellLength[j];
 	if (j >= cellCounter)
 		return false;
-	if (cellSize <= 1)
+	if (partitionCellSize <= 1)
 		return false;
-	std::vector<unsigned long>::iterator cellBeginIt = partition.begin() + partitionCellBorder[j];
-	std::vector<unsigned long>::iterator cellEndIt   = partition.begin() + (partitionCellBorder[j] + partitionCellLength[j]);
+	vector_t::iterator cellBeginIt = partition.begin() + partitionCellBorder[j];
+	vector_t::iterator cellEndIt   = partition.begin() + (partitionCellBorder[j] + partitionCellLength[j]);
 	//print_iterable(cellBeginIt, cellEndIt, 1, " ^ cell");
-	newCellBeginIt  = newCell.rbegin() + (partition.size() - cellSize);
+	newCellBeginIt  = newCell.rbegin() + (partition.size() - partitionCellSize);
 	newCellIt       = newCellBeginIt;
 	newCell2It      = newCell.begin();
 	unsigned int newCellCounter = 0;
@@ -227,21 +229,21 @@ inline bool Partition::intersect(ForwardIterator otherCellBegin, ForwardIterator
 		}
 	}
 	
-	if (newCellCounter > 0 && newCellCounter < cellSize) {
+	if (newCellCounter > 0 && newCellCounter < partitionCellSize) {
 		std::reverse(newCellBeginIt, newCellIt);
-		std::copy(newCell.begin(), newCell.begin() + cellSize, cellBeginIt);
-		/*std::cout << "new cell[" << cellSize << "] = ";
-		print_iterable(newCell.begin(), newCell.begin() + cellSize, 1);
+		std::copy(newCell.begin(), newCell.begin() + partitionCellSize, cellBeginIt);
+		/*std::cout << "new cell[" << partitionCellSize << "] = ";
+		print_iterable(newCell.begin(), newCell.begin() + partitionCellSize, 1);
 		std::cout << std::endl;*/
-		std::vector<unsigned long>::iterator fixIt = fix.begin() + fixCounter;
+		vector_t::iterator fixIt = fix.begin() + fixCounter;
 		
 		if (newCellCounter == 1) {
 			*fixIt = newCell[0];
 			++fixIt;
 			++fixCounter;
 		}
-		if (newCellCounter == cellSize - 1) {
-			*fixIt = newCell[cellSize - 1];
+		if (newCellCounter == partitionCellSize - 1) {
+			*fixIt = newCell[partitionCellSize - 1];
 			++fixIt;
 			++fixCounter;
 		}
@@ -258,8 +260,10 @@ inline bool Partition::intersect(ForwardIterator otherCellBegin, ForwardIterator
 		
 		//std::cout << "cellCounter " << cellCounter << std::endl;
 		partitionCellBorder[cellCounter] = partitionCellBorder[j] + newCellCounter;
-		partitionCellLength[cellCounter] = cellSize - newCellCounter;
-		for (unsigned int i = partitionCellBorder[cellCounter]; i < partitionCellBorder[j] + cellSize; ++i) {
+		partitionCellLength[cellCounter] = partitionCellSize - newCellCounter;
+		for (unsigned int i = partitionCellBorder[cellCounter]; i < partitionCellBorder[j] + partitionCellSize; ++i) {
+			BOOST_ASSERT( i < partition.size() );
+			BOOST_ASSERT( partition[i] < partitionCellOf.size() );
 			partitionCellOf[partition[i]] = cellCounter;
 		}
 		++cellCounter;

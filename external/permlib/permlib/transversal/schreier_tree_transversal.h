@@ -37,6 +37,8 @@
 
 namespace permlib {
 
+namespace exports { class BSGSSchreierExport; class BSGSSchreierImport; }
+
 /// Transversal class that stores transversal elements in a Schreier tree
 template <class PERM>
 class SchreierTreeTransversal : public Transversal<PERM> {
@@ -60,6 +62,9 @@ public:
     mutable unsigned int m_statMaxDepth;
 protected:
     virtual void registerMove(unsigned long from, unsigned long to, const typename PERM::ptr &p);
+	
+	friend class permlib::exports::BSGSSchreierExport;
+	friend class permlib::exports::BSGSSchreierImport;
 };
 
 //
@@ -67,8 +72,8 @@ protected:
 //
 
 template <class PERM>
-SchreierTreeTransversal<PERM>::SchreierTreeTransversal(unsigned int n) 
-	: Transversal<PERM>(n), m_statMaxDepth(0) 
+SchreierTreeTransversal<PERM>::SchreierTreeTransversal(unsigned int n_) 
+	: Transversal<PERM>(n_), m_statMaxDepth(0) 
 { }
 
 template <class PERM>
@@ -99,7 +104,8 @@ PERM* SchreierTreeTransversal<PERM>::at(unsigned long val) const {
 	//TODO: reserve space for PermutationWord-res beforehand (we know how long the m_word vector will be)
 	while (pred != val) {
 		inv = transversal[pred].get();
-		//std::cout << "Schreier2 " << inv << " / " << val << " , " << pred << std::endl;
+		BOOST_ASSERT(inv);
+		PERMLIB_DEBUG(std::cout << "Schreier2 " << inv << " / " << val << " , " << pred << std::endl;)
 		*res ^= *inv;
 		val = pred;
 		pred = *inv % pred;

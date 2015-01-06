@@ -43,8 +43,8 @@ class Polyhedron {
     ~Polyhedron();
     
     void addRow(const QArray& row);
-    void setHomogeneous() { m_homogeneous = true; }
-    bool homogeneous() const { return m_homogeneous; }
+    void setHomogenized() { m_homogenized = true; }
+    bool homogenized() const { return m_homogenized; }
     // indices with respect to rowsBegin/rowsEnd, i.e. all previous non redundant rows
     // list is expected to be sorted ascendingly
     void addRedundancies(const std::list<ulong>& filteredIndices);
@@ -81,7 +81,7 @@ class Polyhedron {
     std::set<unsigned long>  m_setLinearities;
     std::set<unsigned long>  m_setRedundancies;
     PolyhedronDataStorage*   m_polyData;
-    bool                     m_homogeneous;
+    bool                     m_homogenized;
     Representation           m_representation;
     
     // store "axis" of polyhedron,

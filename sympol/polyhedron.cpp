@@ -36,7 +36,7 @@ yal::LoggerPtr Polyhedron::logger = yal::Logger::getLogger("Polyhedron");
 
 Polyhedron::Polyhedron(PolyhedronDataStorage * stor, Representation representation, const std::set<ulong>& lin, 
                        const std::set<ulong>& red) 
-  : m_setLinearities(lin), m_setRedundancies(red), m_polyData(stor), m_homogeneous(false),
+  : m_setLinearities(lin), m_setRedundancies(red), m_polyData(stor), m_homogenized(false),
     m_representation(representation), m_dimension(0)
 { }
 
@@ -110,17 +110,7 @@ Face sympol::Polyhedron::faceDescription ( const sympol::QArray& ray ) const {
 }
 
 sympol::Polyhedron sympol::Polyhedron::supportCone(const Face& f) const {
-	PolyhedronDataStorage* stor = m_polyData;
-	if (!this->m_homogeneous) {
-		stor = PolyhedronDataStorage::createStorage(*m_polyData);
-		YALLOG_DEBUG(logger, "create homogeneous copy " << stor << " of polyhedron of " << this);
-		BOOST_FOREACH(QArray& row, stor->m_aQIneq) {
-			mpq_set_ui(row[0], 0, 1);
-		}
-	}
-
-  Polyhedron supportCone(stor, H, m_setLinearities, m_setRedundancies);
-  supportCone.m_homogeneous = true;
+  Polyhedron supportCone(m_polyData, H, m_setLinearities, m_setRedundancies);
   for (Face::size_type i = 0; i < f.size(); ++i) {
     if (!f[i] && !m_setLinearities.count(i))
       supportCone.m_setRedundancies.insert(i);

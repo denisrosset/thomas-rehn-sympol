@@ -88,17 +88,16 @@ bool RayComputationCDD::dualDescription(const Polyhedron & data, std::vector<Fac
 	}
 	dd_MatrixPtr G = dd_CopyGenerators(poly);
 	dd_Amatrix A = G->matrix;
-	
-	if (data.homogeneous()) {
-		// cdd doesn't return the cone apex, so add it manually
-		QArrayPtr row(new QArray(data.dimension()));
-		mpq_set_ui((*row)[0], 1, 1);
-		Face face(data.faceDescription(*row));
-		if (face.count() == data.rows()) {
-			FaceWithDataPtr fdPtr(new FaceWithData(face,row));
-			rays.push_back(fdPtr);
-		}
-	}
+
+  // we assume here that the polyhedron is a (possibly homogenized) cone
+  // cdd doesn't return the cone apex, so add it manually
+  QArrayPtr row(new QArray(data.dimension()));
+  mpq_set_ui((*row)[0], 1, 1);
+  Face face(data.faceDescription(*row));
+  if (face.count() == data.rows()) {
+    FaceWithDataPtr fdPtr(new FaceWithData(face,row));
+    rays.push_back(fdPtr);
+  }
 
 	for (uint i = 0; i < static_cast<uint>(G->rowsize); ++i) {
 		QArrayPtr row(new QArray(data.dimension()));
@@ -116,66 +115,7 @@ bool RayComputationCDD::dualDescription(const Polyhedron & data, std::vector<Fac
 }
 
 bool RayComputationCDD::firstVertex(const Polyhedron & data, Face & f, QArray & q, bool requireRay) const {
-	dd_PolyhedraPtr poly = dd_CreatePolyhedraData(data.rows(), data.dimension());
-	if (!poly)
-		return false;
-	
-	poly->representation = dd_Inequality;
-	poly->homogeneous = data.homogeneous() ? dd_TRUE : dd_FALSE;
-	
-	uint i = 0;
-	BOOST_FOREACH(const QArray& row, data.rowPair()) {
-		for (uint j = 0; j < data.dimension(); ++j) {
-			dd_set(poly->A[i][j], row[j]);
-		}
-		if (data.isLinearity(row))
-			poly->EqualityIndex[i+1] = 1;
-		++i;
-	}
-	
-	dd_ConePtr cone = dd_ConeDataLoad(poly);
-	dd_DDInit(cone);
-	dd_boolean found = dd_FALSE;
-	dd_FindInitialRays(cone, &found);
-	if (found == dd_TRUE) {
-		dd_InitialDataSetup(cone);
-		dd_RayPtr ray = cone->FirstRay;
-		bool vertexFound = false;
-		while (ray) {
-			if (!ray->feasible) {
-				ray = ray->Next;
-				continue;
-			}
-			
-			// cdd reduces the cone dimension if it finds
-			// linearities (marked with cone->newcol[i] == 0)
-			uint j = 0;
-			for (i = 1; i <= static_cast<uint>(cone->d_orig); ++i) {
-				if (cone->newcol[i]) {
-					mpq_set(q[i-1], ray->Ray[j]);
-					++j;
-				} else {
-					mpq_set_ui(q[i-1], 0, 1);
-				}
-			}
-			
-			// the following condition is always fulfilled because q is always a ray
-			// by construction of cdd
-			if (!requireRay || (requireRay && q.isRay())) {
-				YALLOG_DEBUG3(logger, "found first vertex " << q);
-				f = data.faceDescription(q);
-				vertexFound = true;
-				break;
-			}
-			ray = ray->Next;
-		}
-		
-		dd_FreePolyhedra(poly);
-		return vertexFound;
-	}
-
-	dd_FreePolyhedra(poly);
-	return false;
+   return m_lrs->firstVertex(data, f, q, requireRay);
 }
 
 bool RayComputationCDD::determineRedundancies(Polyhedron & data, std::list<FaceWithData>& myRays) const {
@@ -208,6 +148,9 @@ double RayComputationCDD::estimate(const sympol::Polyhedron& data, std::list<Fac
     return m_lrs->estimate(data, rays);
 }
 
+bool RayComputationCDD::getLinearities(const Polyhedron & data, std::list<QArrayPtr>& linearities) const {
+	return m_lrs->getLinearities(data, linearities);
+}
 
 bool RayComputationCDD::fillModelCDD(const Polyhedron & data, dd_MatrixPtr& matrix) const {
 	matrix = dd_CreateMatrix(data.rows(), data.dimension());

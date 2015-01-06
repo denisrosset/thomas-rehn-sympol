@@ -50,6 +50,10 @@ public:
 	PointwiseStabilizerPredicate(InputIterator begin, InputIterator end) 
 		: m_toStabilize(begin, end)
 	{ }
+	
+	explicit PointwiseStabilizerPredicate(unsigned int x) 
+		: m_toStabilize(1, x)
+	{ }
 
 	/// evaluate predicate
 	bool operator()(const typename PERM::ptr &p) const {

@@ -55,12 +55,12 @@ public:
 	explicit ConjugatingBaseChange(const BSGSCore<PERM,TRANS>&);
 	
 	/// changes base of bsgs so that it starts with the sequence given by baseBegin to baseEnd
-    template <class InputIterator>
-    unsigned int change(BSGS<PERM,TRANS> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant = false) const;
+	template <class InputIterator>
+	unsigned int change(BSGS<PERM,TRANS> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant = false) const;
 	
 	/// changes base of symmetric group so that it starts with the sequence given by baseBegin to baseEnd
-    template <class InputIterator>
-    unsigned int change(SymmetricGroup<PERM> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant = false) const;
+	template <class InputIterator>
+	unsigned int change(SymmetricGroup<PERM> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant = false) const;
 };
 
 template<class PERM, class TRANS, class BASETRANSPOSE>
@@ -71,23 +71,23 @@ ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::ConjugatingBaseChange(const BSG
 template<class PERM, class TRANS, class BASETRANSPOSE>
 template<class InputIterator>
 unsigned int ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,TRANS> &bsgs, InputIterator baseBegin, InputIterator baseEnd, bool skipRedundant) const {
-    if (baseBegin == baseEnd)
-        return 0;
+	if (baseBegin == baseEnd)
+		return 0;
 	
 	const boost::uint64_t origOrder __attribute__((unused)) = bsgs.order();
-    BASETRANSPOSE trans;
+	BASETRANSPOSE trans;
 	PERM c(bsgs.n);
 	PERM cInv(bsgs.n);
 	/// true iff we multiply c with another permutation (and thus c is no longer with absolute certainty the identity)
 	bool touchedC = false;
 	
 	unsigned int baseTargetPos = 0;
-    while (baseBegin != baseEnd && baseTargetPos < bsgs.B.size()) {
-        const unsigned long alpha = cInv.at(*baseBegin);
+	while (baseBegin != baseEnd && baseTargetPos < bsgs.B.size()) {
+		const unsigned long alpha = cInv.at(*baseBegin);
 		const unsigned long beta = bsgs.B[baseTargetPos];
 		const bool redundant = skipRedundant && isRedundant(bsgs, baseTargetPos, alpha);
 		
-        if (!redundant && beta != alpha) {
+		if (!redundant && beta != alpha) {
 			boost::scoped_ptr<PERM> r(bsgs.U[baseTargetPos].at(alpha));
 			if (r) {
 				c ^= *r;
@@ -100,12 +100,11 @@ unsigned int ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,T
 					++BaseChange<PERM,TRANS>::m_statTranspositions;
 				}
 			}
-        }
+		}
 		if (!redundant)
 			++baseTargetPos;
-
-        ++baseBegin;
-    }
+		++baseBegin;
+	}
 	
 	// insert remaining base points
 	while (!skipRedundant && baseBegin != baseEnd) {
@@ -133,14 +132,14 @@ unsigned int ConjugatingBaseChange<PERM,TRANS,BASETRANSPOSE>::change(BSGS<PERM,T
 	// always strip redundant base points from the end of the new base
 	bsgs.stripRedundantBasePoints(baseTargetPos);
 	BaseChange<PERM,TRANS>::m_statScheierGeneratorsConsidered += trans.m_statScheierGeneratorsConsidered;
-
+	
 	if (touchedC) {
-		for (unsigned int i=0; i<bsgs.B.size(); ++i) {
-			//std::cout << " ~~ permute " << bsgs.B[i] << std::endl;
+		for (unsigned int i=0; i<bsgs.U.size(); ++i) {
 			bsgs.U[i].permute(c, cInv);
 		}
 	}
 
+	BOOST_ASSERT(bsgs.B.size() == bsgs.U.size());
 	BOOST_ASSERT(origOrder == bsgs.order());
 	
 	return baseTargetPos;

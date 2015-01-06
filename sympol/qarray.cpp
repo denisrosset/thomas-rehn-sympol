@@ -126,7 +126,7 @@ void QArray::denominatorLCM(mpz_t & lcm) const {
 	return;
 }
 
-void QArray::normalize(ulong pivotIndex) {
+void QArray::normalizeArray(ulong pivotIndex) {
 	if (mpq_sgn(m_aq[pivotIndex]) == 0) {
 		return;
 	}
