@@ -38,10 +38,10 @@
 namespace permlib {
 
 /// stores an orbit in a sorted list
-template<class PERM,class DOMAIN>
-class OrbitList : public Orbit<PERM,DOMAIN> {
+template<class PERM,class PDOMAIN>
+class OrbitList : public Orbit<PERM,PDOMAIN> {
 public:
-	virtual bool contains(const DOMAIN& val) const;
+	virtual bool contains(const PDOMAIN& val) const;
 
 	/// true iff orbit is empty (i.e. contains no element at all)
 	bool empty() const { return m_orbitList.empty(); }
@@ -50,26 +50,26 @@ public:
 	/**
 	 * @param beta
 	 * @param generators
-	 * @param a ()-callable structure that defines how a PERM acts on a DOMAIN-element
+	 * @param a ()-callable structure that defines how a PERM acts on a PDOMAIN-element
 	 * @see Transversal::TrivialAction
 	 */
 	template<class Action>
-	void orbit(const DOMAIN& beta, const PERMlist &generators, Action a);
+	void orbit(const PDOMAIN& beta, const PERMlist &generators, Action a);
 
 	/// number of orbit elements
 	ulong size() const { return m_orbitList.size(); }
     
-    virtual const DOMAIN& element() const;
+    virtual const PDOMAIN& element() const;
 protected:
 	/// orbit elements as set
-	std::list<DOMAIN> m_orbitList;
+	std::list<PDOMAIN> m_orbitList;
 
-	virtual bool foundOrbitElement(const DOMAIN& alpha, const DOMAIN& alpha_p, const PERMptr& p);
+	virtual bool foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const PERMptr& p);
 };
 
-template <class PERM,class DOMAIN>
-inline bool OrbitList<PERM,DOMAIN>::foundOrbitElement(const DOMAIN& alpha, const DOMAIN& alpha_p, const PERMptr& p) {
-	typename std::list<DOMAIN>::iterator it = std::lower_bound(m_orbitList.begin(), m_orbitList.end(), alpha_p);
+template <class PERM,class PDOMAIN>
+inline bool OrbitList<PERM,PDOMAIN>::foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const PERMptr& p) {
+	typename std::list<PDOMAIN>::iterator it = std::lower_bound(m_orbitList.begin(), m_orbitList.end(), alpha_p);
 	if (*it != alpha_p) {
 		m_orbitList.insert(it, alpha_p);
 		return true;
@@ -77,21 +77,21 @@ inline bool OrbitList<PERM,DOMAIN>::foundOrbitElement(const DOMAIN& alpha, const
 	return false;
 }
 
-template <class PERM,class DOMAIN>
-inline bool OrbitList<PERM,DOMAIN>::contains(const DOMAIN& val) const {
+template <class PERM,class PDOMAIN>
+inline bool OrbitList<PERM,PDOMAIN>::contains(const PDOMAIN& val) const {
 	return std::binary_search(m_orbitList.begin(), m_orbitList.end(), val);
 }
 
-template <class PERM,class DOMAIN>
+template <class PERM,class PDOMAIN>
 template<class Action>
-inline void OrbitList<PERM,DOMAIN>::orbit(const DOMAIN& beta, const PERMlist &generators, Action a) {
+inline void OrbitList<PERM,PDOMAIN>::orbit(const PDOMAIN& beta, const PERMlist &generators, Action a) {
 	// use separate list here because m_orbitList is sorted
-	std::list<DOMAIN> orbitList;
-	Orbit<PERM,DOMAIN>::orbit(beta, generators, a, orbitList);
+	std::list<PDOMAIN> orbitList;
+	Orbit<PERM,PDOMAIN>::orbit(beta, generators, a, orbitList);
 }
 
-template <class PERM,class DOMAIN>
-inline const DOMAIN& OrbitList<PERM,DOMAIN>::element() const {
+template <class PERM,class PDOMAIN>
+inline const PDOMAIN& OrbitList<PERM,PDOMAIN>::element() const {
     return *(m_orbitList.begin());
 }
 

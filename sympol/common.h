@@ -28,12 +28,12 @@
 #include <map>
 #include <iostream>
 
+#include "types.h"
+
 #include <permlib/permutation.h>
 //#include <permlib/transversal/explicit_transversal.h>
 #include <permlib/transversal/schreier_tree_transversal.h>
 #include <permlib/bsgs.h>
-
-typedef unsigned long ulong;
 
 namespace sympol {
 

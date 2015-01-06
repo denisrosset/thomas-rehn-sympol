@@ -40,26 +40,26 @@
 namespace permlib {
 
 /// abstract base class for orbit computation
-template<class PERM,class DOMAIN>
+template<class PERM,class PDOMAIN>
 class Orbit {
 public:
 	virtual ~Orbit() {}
 	
 	/// true iff there exists a transversal element mapping \f$\alpha\f$ to val
-	virtual bool contains(const DOMAIN& val) const = 0;
+	virtual bool contains(const PDOMAIN& val) const = 0;
 
 	/// returns one element of the orbit
-	virtual const DOMAIN& element() const = 0;
+	virtual const PDOMAIN& element() const = 0;
 protected:
 	/// computes orbit of beta under generators
 	/**
 	 * @param beta
 	 * @param generators
-	 * @param a ()-callable structure that defines how a PERM acts on a DOMAIN-element
+	 * @param a ()-callable structure that defines how a PERM acts on a PDOMAIN-element
 	 * @param orbitList a list of all orbit elements to be filled by the algorithm
 	 */
 	template<class Action>
-	void orbit(const DOMAIN& beta, const PERMlist &generators, Action a, std::list<DOMAIN>& orbitList);
+	void orbit(const PDOMAIN& beta, const PERMlist &generators, Action a, std::list<PDOMAIN>& orbitList);
 	
 	/// updates an existing orbit of beta after one element has been added
 	/**
@@ -68,22 +68,22 @@ protected:
 	 * @param beta
 	 * @param generators updated generators, which must include g
 	 * @param g new generator which has not been there before
-	 * @param a ()-callable structure that defines how a PERM acts on a DOMAIN-element
+	 * @param a ()-callable structure that defines how a PERM acts on a PDOMAIN-element
 	 * @param orbitList a list of all orbit elements to be filled by the algorithm
 	 */
 	template<class Action>
-	void orbitUpdate(const DOMAIN& beta, const PERMlist &generators, const PERMptr &g, Action a, std::list<DOMAIN>& orbitList);
+	void orbitUpdate(const PDOMAIN& beta, const PERMlist &generators, const PERMptr &g, Action a, std::list<PDOMAIN>& orbitList);
 	
 	/// callback when the orbit algorithm constructs an element alpha_p from alpha and p
 	/**
 	 * @return true iff alpha_p is a new element that has not been seen before
 	 */
-	virtual bool foundOrbitElement(const DOMAIN& alpha, const DOMAIN& alpha_p, const PERMptr& p) = 0;
+	virtual bool foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const PERMptr& p) = 0;
 };
 
-template <class PERM,class DOMAIN>
+template <class PERM,class PDOMAIN>
 template<class Action>
-inline void Orbit<PERM,DOMAIN>::orbit(const DOMAIN& beta, const PERMlist &generators, Action a, std::list<DOMAIN>& orbitList) {
+inline void Orbit<PERM,PDOMAIN>::orbit(const PDOMAIN& beta, const PERMlist &generators, Action a, std::list<PDOMAIN>& orbitList) {
 	if (orbitList.empty()) {
 		orbitList.push_back(beta);
 		foundOrbitElement(beta, beta, PERMptr());
@@ -91,20 +91,20 @@ inline void Orbit<PERM,DOMAIN>::orbit(const DOMAIN& beta, const PERMlist &genera
 	BOOST_ASSERT( orbitList.size() >= 1 );
 	
 	DEBUG(std::cout << "orbit of " << beta << std::endl;)
-	typename std::list<DOMAIN>::const_iterator it;
+	typename std::list<PDOMAIN>::const_iterator it;
 	for (it = orbitList.begin(); it != orbitList.end(); ++it) {
-		const DOMAIN &alpha = *it;
+		const PDOMAIN &alpha = *it;
 		BOOST_FOREACH(const PERMptr& p, generators) {
-			DOMAIN alpha_p = a(*p, alpha);
+			PDOMAIN alpha_p = a(*p, alpha);
 			if (foundOrbitElement(alpha, alpha_p, p))
 				orbitList.push_back(alpha_p);
 		}
 	}
 }
 
-template <class PERM,class DOMAIN>
+template <class PERM,class PDOMAIN>
 template<class Action>
-inline void Orbit<PERM,DOMAIN>::orbitUpdate(const DOMAIN& beta, const PERMlist &generators, const PERMptr &g, Action a, std::list<DOMAIN>& orbitList) {
+inline void Orbit<PERM,PDOMAIN>::orbitUpdate(const PDOMAIN& beta, const PERMlist &generators, const PERMptr &g, Action a, std::list<PDOMAIN>& orbitList) {
     if (orbitList.empty()) {
 		orbitList.push_back(beta);
 		foundOrbitElement(beta, beta, PERMptr());
@@ -114,10 +114,10 @@ inline void Orbit<PERM,DOMAIN>::orbitUpdate(const DOMAIN& beta, const PERMlist &
 	DEBUG(std::cout << "orbiUpdate of " << beta << " and " << *g << std::endl;)
 	const uint oldSize = orbitList.size();
 	// first, compute only ORBIT^g
-	typename std::list<DOMAIN>::const_iterator it;
+	typename std::list<PDOMAIN>::const_iterator it;
 	for (it = orbitList.begin(); it != orbitList.end(); ++it) {
-		const DOMAIN &alpha = *it;
-		DOMAIN alpha_g = a(*g, alpha);
+		const PDOMAIN &alpha = *it;
+		PDOMAIN alpha_g = a(*g, alpha);
 		if (foundOrbitElement(alpha, alpha_g, g))
 			orbitList.push_back(alpha_g);
 	}

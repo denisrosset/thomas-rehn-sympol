@@ -1,9 +1,12 @@
 cmake_minimum_required (VERSION 2.6)
 project (SymPol)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/cmake/Modules")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+FIND_PACKAGE(GMP REQUIRED)
+include_directories(${GMP_INCLUDE_DIR})
 
 IF( NOT CMAKE_BUILD_TYPE )
     SET( CMAKE_BUILD_TYPE Debug CACHE STRING

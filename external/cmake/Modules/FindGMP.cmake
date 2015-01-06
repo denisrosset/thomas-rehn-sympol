@@ -1,0 +1,28 @@
+# (C) Copyright 2008 Andrew Sutton
+# modified by Thomas Rehn to search for gmpxx
+# Distributed under the Boost Software License, Version 1.0.
+
+# ${GMP_LIBRARIES} contains libgmp and libgmpxx if GMP is found
+
+
+FIND_PATH(GMP_INCLUDE_DIR gmp.h)
+FIND_LIBRARY(GMP_LIBRARY gmp)
+FIND_LIBRARY(GMP_LIBRARY_CPP gmpxx)
+
+IF (GMP_INCLUDE_DIR AND GMP_LIBRARY)
+   SET(GMP_FOUND TRUE)
+ENDIF (GMP_INCLUDE_DIR AND GMP_LIBRARY)
+
+IF (GMP_FOUND)
+   IF (NOT GMP_FIND_QUIETLY)
+      MESSAGE(STATUS "Found GMP: ${GMP_LIBRARY}")
+   ENDIF (NOT GMP_FIND_QUIETLY)
+   IF (GMP_LIBRARY_CPP)
+      MESSAGE(STATUS "Found GMP C++ wrapper: ${GMP_LIBRARY_CPP}")
+   ENDIF(GMP_LIBRARY_CPP)
+   SET(GMP_LIBRARIES ${GMP_LIBRARY} ${GMP_LIBRARY_CPP})
+ELSE (GMP_FOUND)
+   IF (GMP_FIND_REQUIRED)
+      MESSAGE(FATAL_ERROR "Could not find GMP")
+   ENDIF (GMP_FIND_REQUIRED)
+ENDIF (GMP_FOUND)

@@ -89,7 +89,7 @@ uint correct_id(uint id, uint apexIndex) {
 }
 
 int main(int argc, char* argv[]) {
-	std::cout << "SymPol v0.1.2 and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
+	std::cout << "SymPol v0.1.3 and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
 #if HAVE_NAUTY && HAVE_NTL
 	std::cout << " and nauty and NTL";
 #endif

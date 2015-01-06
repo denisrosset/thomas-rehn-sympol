@@ -172,12 +172,12 @@ Transversal<PERM>::Transversal(uint n)
 
 template <class PERM>
 void Transversal<PERM>::orbit(ulong beta, const PERMlist &generators) {
-	return Orbit<PERM,ulong>::orbit(beta, generators, TrivialAction(), m_orbit);
+	Orbit<PERM,ulong>::orbit(beta, generators, TrivialAction(), m_orbit);
 }
 
 template <class PERM>
 void Transversal<PERM>::orbitUpdate(ulong beta, const PERMlist &generators, const PERMptr &g) {
-	return Orbit<PERM,ulong>::orbitUpdate(beta, generators, g, TrivialAction(), m_orbit);
+  Orbit<PERM,ulong>::orbitUpdate(beta, generators, g, TrivialAction(), m_orbit);
 }
 
 template <class PERM>

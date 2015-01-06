@@ -1,8 +1,12 @@
-INCLUDE (CheckSymbolExists) 
+INCLUDE (CheckSymbolExists)
+INCLUDE (CheckTypeSize)
+INCLUDE (CheckIncludeFile)
+
 CHECK_SYMBOL_EXISTS(sysconf "stdlib.h;unistd.h" HAVE_SYSCONF_PROTO)
 CHECK_SYMBOL_EXISTS(getrusage "sys/resource.h" HAVE_GETRUSAGE_PROTO) 
+CHECK_TYPE_SIZE(uint UINT)
+CHECK_TYPE_SIZE(ulong ULONG)
 
-INCLUDE (CheckIncludeFile)
 IF(NAUTY_NTL_CHECK)
   SET(CMAKE_REQUIRED_INCLUDES ${PROJECT_SOURCE_DIR}/external/nauty ${PROJECT_SOURCE_DIR}/external/NTL)
   CHECK_INCLUDE_FILE("nauty.h" HAVE_NAUTY)
@@ -64,7 +68,7 @@ add_executable (sympol
   yal/usagestats.cpp
 )
 
-set(TARGET_LIBS lrsgmp cddgmp gmpxx ${Boost_LIBRARIES})
+set(TARGET_LIBS lrsgmp cddgmp ${GMP_LIBRARIES} ${Boost_LIBRARIES})
 IF(HAVE_NAUTY)
     MESSAGE("building with nauty")
     set(TARGET_LIBS ${TARGET_LIBS} libnauty)

@@ -38,10 +38,10 @@
 namespace permlib {
 
 /// stores an orbit in a set for fast contains() operation
-template<class PERM,class DOMAIN>
-class OrbitSet : public Orbit<PERM,DOMAIN> {
+template<class PERM,class PDOMAIN>
+class OrbitSet : public Orbit<PERM,PDOMAIN> {
 public:
-	virtual bool contains(const DOMAIN& val) const;
+	virtual bool contains(const PDOMAIN& val) const;
 	
 	/// true iff orbit is empty (i.e. contains no element at all)
 	bool empty() const { return m_orbitSet.empty(); }
@@ -50,31 +50,31 @@ public:
 	/**
 	 * @param beta
 	 * @param generators
-	 * @param a ()-callable structure that defines how a PERM acts on a DOMAIN-element
+	 * @param a ()-callable structure that defines how a PERM acts on a PDOMAIN-element
 	 * @see Transversal::TrivialAction
 	 */
 	template<class Action>
-	void orbit(const DOMAIN& beta, const PERMlist &generators, Action a);
+	void orbit(const PDOMAIN& beta, const PERMlist &generators, Action a);
     
 	/// number of orbit elements
 	ulong size() const {return m_orbitSet.size(); }
     
-	virtual const DOMAIN& element() const;
+	virtual const PDOMAIN& element() const;
 	
-	typedef typename std::set<DOMAIN>::const_iterator OrbitIt;
+	typedef typename std::set<PDOMAIN>::const_iterator OrbitIt;
 	/// begin-iterator to orbit elements
 	OrbitIt begin() const { return m_orbitSet.begin(); }
 	/// end-iterator to orbit elements
 	OrbitIt end() const { return m_orbitSet.end(); }
 protected:
 	/// orbit elements as set
-	std::set<DOMAIN> m_orbitSet;
+	std::set<PDOMAIN> m_orbitSet;
 	
-	virtual bool foundOrbitElement(const DOMAIN& alpha, const DOMAIN& alpha_p, const PERMptr& p);
+	virtual bool foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const PERMptr& p);
 };
 
-template <class PERM,class DOMAIN>
-inline bool OrbitSet<PERM,DOMAIN>::foundOrbitElement(const DOMAIN& alpha, const DOMAIN& alpha_p, const PERMptr& p) {
+template <class PERM,class PDOMAIN>
+inline bool OrbitSet<PERM,PDOMAIN>::foundOrbitElement(const PDOMAIN& alpha, const PDOMAIN& alpha_p, const PERMptr& p) {
 	if (m_orbitSet.insert(alpha_p).second) {
 		DEBUG(std::cout << " o " << alpha_p <<  "  @ " << (*p) << std::endl;)
 		return true;
@@ -82,20 +82,20 @@ inline bool OrbitSet<PERM,DOMAIN>::foundOrbitElement(const DOMAIN& alpha, const 
 	return false;
 }
 
-template <class PERM,class DOMAIN>
-inline bool OrbitSet<PERM,DOMAIN>::contains(const DOMAIN& val) const {
+template <class PERM,class PDOMAIN>
+inline bool OrbitSet<PERM,PDOMAIN>::contains(const PDOMAIN& val) const {
 	return m_orbitSet.find(val) != m_orbitSet.end();
 }
 
-template <class PERM,class DOMAIN>
+template <class PERM,class PDOMAIN>
 template<class Action>
-inline void OrbitSet<PERM,DOMAIN>::orbit(const DOMAIN& beta, const PERMlist &generators, Action a) {
-	std::list<DOMAIN> orbitList;
-	Orbit<PERM,DOMAIN>::orbit(beta, generators, a, orbitList);
+inline void OrbitSet<PERM,PDOMAIN>::orbit(const PDOMAIN& beta, const PERMlist &generators, Action a) {
+	std::list<PDOMAIN> orbitList;
+	Orbit<PERM,PDOMAIN>::orbit(beta, generators, a, orbitList);
 }
 
-template <class PERM,class DOMAIN>
-inline const DOMAIN& OrbitSet<PERM,DOMAIN>::element() const {
+template <class PERM,class PDOMAIN>
+inline const PDOMAIN& OrbitSet<PERM,PDOMAIN>::element() const {
     return *(m_orbitSet.begin());
 }
 
