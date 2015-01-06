@@ -52,6 +52,7 @@ class Polyhedron {
     void setLinearities(const std::set<ulong>& lin);
     void addLinearity(const QArray& row);
     void removeLinearity(const QArray& row);
+    std::list<ulong> linearities() const { return std::list<ulong>(m_setLinearities.begin(), m_setLinearities.end()); }
     
     ulong dimension() const { return m_polyData->m_ulSpaceDim; }
     /// number of rows, not counting redundant ones
@@ -71,8 +72,10 @@ class Polyhedron {
     ulong incidenceNumber(const Face& f) const;
     bool checkFace(const QArray& ray) const;
     
+    /// WARNING: value may be cached
     const QArray & axis() const;
 
+		/// WARNING: value may be cached
     ulong workingDimension() const;
   private:
     std::set<unsigned long>  m_setLinearities;
@@ -84,6 +87,7 @@ class Polyhedron {
     // store "axis" of polyhedron,
     // sum of all normal vectors of defining hyperplanes
     mutable boost::shared_ptr<QArray> m_qAxis;
+    mutable ulong m_dimension;
 
   public:
     bool isLinearity(const QArray& row) const { return m_setLinearities.count(row.index()) > 0; }

@@ -21,12 +21,17 @@
 // ---------------------------------------------------------------------------
 
 #include "recursionstrategy.h"
+#include "polyhedronio.h"
 
+#include <iostream>
 #include <fstream>
+#include <sstream>
 
 using namespace sympol;
+using namespace std;
 
 yal::LoggerPtr RecursionStrategy::logger(yal::Logger::getLogger("RecrStrat "));
+uint RecursionStrategy::ms_instanceCounter = 0;
 
 RecursionStrategy::RecursionStrategy() 
 	: m_dumpFilename(0), m_usedComputations(), m_compIt(m_usedComputations.begin()), m_recursionDepth(0) 
@@ -51,6 +56,15 @@ bool RecursionStrategy::enumerateRaysUpToSymmetry(const RayComputation* rayComp,
 		sd = this->devise(rayComp, data, permGroup, rays);
 		m_usedComputations.push_back(sd->rememberMe());
 		
+		if (!Configuration::getInstance().intermediatePolyFilePrefix.empty()) {
+			stringstream ss;
+			ss << Configuration::getInstance().intermediatePolyFilePrefix << "-" << setw(7) << setfill('0') << ms_instanceCounter << ".ine";
+			
+			ofstream ofile(ss.str().c_str());
+			PolyhedronIO::writeRedundanciesFiltered(data, ofile);
+			ofile.close();
+		}
+		++ms_instanceCounter;
 	}
 	++m_recursionDepth;
 	const bool ret = sd->enumerateRaysUpToSymmetry();

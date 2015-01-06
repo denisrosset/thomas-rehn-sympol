@@ -50,6 +50,7 @@ class RecursionStrategy {
 		virtual SymmetryComputation* devise(const RayComputation* rayComp, const Polyhedron & data, 
 						const PermutationGroup & permGroup, FacesUpToSymmetryList& rays) = 0;
 		
+		static uint ms_instanceCounter;
 		static yal::LoggerPtr logger;
 		uint recursionDepth() const { return m_recursionDepth; }
 	private:
@@ -103,6 +104,40 @@ class RecursionStrategyADM : public RecursionStrategy {
     }
   private:
     const double m_estimateThreshold;
+};
+
+class RecursionStrategyADMDimension : public RecursionStrategy {
+  public:
+    RecursionStrategyADMDimension(uint threshold) : m_dimensionThreshold(threshold) {}
+  protected:
+    virtual SymmetryComputation* devise(const RayComputation* rayComp, const Polyhedron & data, 
+            const PermutationGroup & permGroup, FacesUpToSymmetryList& rays)
+    {
+      const uint dim = data.workingDimension();
+      YALLOG_INFO(logger, "working dim: " << dim << " <=? " << m_dimensionThreshold);
+      if (dim <= m_dimensionThreshold)
+        return new SymmetryComputationDirect(this, rayComp, data, permGroup, rays);
+      return new SymmetryComputationADM(this, rayComp, data, permGroup, rays);
+    }
+  private:
+    const uint m_dimensionThreshold;
+};
+
+class RecursionStrategyADMIncidence : public RecursionStrategy {
+  public:
+    RecursionStrategyADMIncidence(uint threshold) : m_incidenceThreshold(threshold) {}
+  protected:
+    virtual SymmetryComputation* devise(const RayComputation* rayComp, const Polyhedron & data, 
+            const PermutationGroup & permGroup, FacesUpToSymmetryList& rays)
+    {
+      const uint rows = data.rows();
+      YALLOG_INFO(logger, "number of rows: " << rows << " <=? " << m_incidenceThreshold);
+      if (rows <= m_incidenceThreshold)
+        return new SymmetryComputationDirect(this, rayComp, data, permGroup, rays);
+      return new SymmetryComputationADM(this, rayComp, data, permGroup, rays);
+    }
+  private:
+    const uint m_incidenceThreshold;
 };
 
 }

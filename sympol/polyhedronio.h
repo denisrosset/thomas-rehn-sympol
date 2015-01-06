@@ -37,7 +37,14 @@ class PolyhedronIO {
 	public:
 		static Polyhedron* read (std::istream& is, std::list<boost::shared_ptr<PERM> >& groupGenerators, std::vector<ulong>& groupBase);
 		static void write(const FacesUpToSymmetryList& rays, bool homogenized, std::ostream& os);
+		/**
+		 * writes a polyhedron to the given output stream, all redundancies are printed and marked as such
+		 */
 		static void write(const Polyhedron& poly, std::ostream& os);
+		/**
+		 * writes a polyhedron to the given output stream, all redundancies are filtered and not printed
+		 */
+		static void writeRedundanciesFiltered(const sympol::Polyhedron& poly, std::ostream& os);
 	private:
 		static yal::LoggerPtr logger;
 };

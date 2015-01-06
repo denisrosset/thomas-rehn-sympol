@@ -57,9 +57,10 @@ public:
 	/// initializes search
 	/**
 	 * @param matrix symmetric matrix
+	 * @param initialPartition initial list of row/column indices that have to be mapped onto each other, may be NULL
 	 */
 	template<class MATRIX>
-	void construct(const MATRIX& matrix);
+	void construct(const MATRIX& matrix, const std::list<ulong>* initialPartition = 0);
 };
 
 template<class BSGSIN,class TRANSRET>
@@ -69,8 +70,14 @@ MatrixAutomorphismSearch<BSGSIN,TRANSRET>::MatrixAutomorphismSearch(const BSGSIN
 
 template<class BSGSIN,class TRANSRET>
 template<class MATRIX>
-void MatrixAutomorphismSearch<BSGSIN,TRANSRET>::construct(const MATRIX& matrix) {
+void MatrixAutomorphismSearch<BSGSIN,TRANSRET>::construct(const MATRIX& matrix, const std::list<ulong>* initialPartition) {
 	MatrixAutomorphismPredicate<PERM,MATRIX>* matrixPred = new MatrixAutomorphismPredicate<PERM,MATRIX>(matrix);
+	
+	if (initialPartition) {
+		// set up partitions such that the elements of initialPartition will be mapped onto itself
+		RBase<BSGSIN,TRANSRET>::m_partition.intersect(initialPartition->begin(), initialPartition->end(), 0);
+		RBase<BSGSIN,TRANSRET>::m_partition2.intersect(initialPartition->begin(), initialPartition->end(), 0);
+	}
 	
 	MatrixRefinement1<PERM,MATRIX> matRef(RBase<BSGSIN,TRANSRET>::m_bsgs.n, matrix);
 	matRef.initializeAndApply(RBase<BSGSIN,TRANSRET>::m_partition);

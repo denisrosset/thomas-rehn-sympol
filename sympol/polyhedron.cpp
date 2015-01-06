@@ -37,7 +37,7 @@ yal::LoggerPtr Polyhedron::logger = yal::Logger::getLogger("Polyhedron");
 Polyhedron::Polyhedron(PolyhedronDataStorage * stor, Representation representation, const std::set<ulong>& lin, 
                        const std::set<ulong>& red) 
   : m_setLinearities(lin), m_setRedundancies(red), m_polyData(stor), m_homogeneous(false),
-    m_representation(representation)
+    m_representation(representation), m_dimension(0)
 { }
 
 Polyhedron::~Polyhedron() {
@@ -191,18 +191,21 @@ const QArray & Polyhedron::axis() const {
 }
 
 ulong Polyhedron::workingDimension() const {
-	typedef Matrix<mpq_class> QMatrix;
-	QMatrix qmat(rows(), dimension());
-	uint i = 0;
-	BOOST_FOREACH(const QArray& row, rowPair()) {
-		for (uint j = 0; j < dimension(); ++j) {
-			qmat.at(i,j) = mpq_class(row[j]);
+	if (!m_dimension) {
+		typedef Matrix<mpq_class> QMatrix;
+		QMatrix qmat(rows(), dimension());
+		uint i = 0;
+		BOOST_FOREACH(const QArray& row, rowPair()) {
+			for (uint j = 0; j < dimension(); ++j) {
+				qmat.at(i,j) = mpq_class(row[j]);
+			}
+			++i;
 		}
-		++i;
-	}
 
-	Rank<QMatrix> rank(&qmat);
-	return rank.rank();
+		Rank<QMatrix> rank(&qmat);
+		m_dimension = rank.rank();
+	}
+	return m_dimension;
 }
 
 namespace sympol {

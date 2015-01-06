@@ -247,7 +247,6 @@ void sympol::PolyhedronIO::write(const FacesUpToSymmetryList& rays, bool homogen
 }
 
 void sympol::PolyhedronIO::write(const sympol::Polyhedron& poly, std::ostream& os) {
-  os << "polyhedron" << std::endl;
   if (poly.m_representation == Polyhedron::H)
     os << "H-representation" << std::endl;
   else if (poly.m_representation == Polyhedron::V)
@@ -278,6 +277,36 @@ void sympol::PolyhedronIO::write(const sympol::Polyhedron& poly, std::ostream& o
         os << std::endl;
       }
     }
+  }
+  os << "end" << std::endl;
+}
+
+void sympol::PolyhedronIO::writeRedundanciesFiltered(const sympol::Polyhedron& poly, std::ostream& os) {
+  if (poly.m_representation == Polyhedron::H)
+    os << "H-representation" << std::endl;
+  else if (poly.m_representation == Polyhedron::V)
+    os << "V-representation" << std::endl;
+  
+  std::list<ulong> correctedLinearities;
+  uint index = 1;
+  BOOST_FOREACH(const QArray& row, poly.rowPair()) {
+		if (poly.isLinearity(row)) {
+			correctedLinearities.push_back(index);
+		}
+		++index;
+	}
+	if (!correctedLinearities.empty()) {
+		os << "linearity " << correctedLinearities.size() << " ";
+    BOOST_FOREACH(ulong l, correctedLinearities) {
+      os << l << " ";
+    }
+    os << std::endl;
+	}
+	
+  os << "begin" << std::endl;
+  os << poly.rows() << " " << poly.m_polyData->m_ulSpaceDim << " rational" << std::endl;
+  BOOST_FOREACH(const QArray& row, poly.rowPair()) {
+		os << row << std::endl;
   }
   os << "end" << std::endl;
 }

@@ -41,6 +41,7 @@ public:
 	uint lrsEstimateMaxDepth;
 	uint computeInvariants;
 	uint computeOrbitLimit;
+	std::string intermediatePolyFilePrefix;
 };
 
 }

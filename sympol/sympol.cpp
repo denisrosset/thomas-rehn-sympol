@@ -29,12 +29,12 @@
 #include "recursionstrategy.h"
 #include "recursionstrategyidmadm.h"
 #include "recursionstrategyidmadmlevel.h"
+#include "recursionstrategyadmidmlevel.h"
 #include "symmetrycomputationdirect.h"
 #include "symmetrycomputationadm.h"
 #include "symmetrycomputationidm.h"
 #include "yal/logger.h"
 #include "yal/usagestats.h"
-#include "revision.h"
 #include "config.h"
 
 // PermLib
@@ -89,10 +89,16 @@ uint correct_id(uint id, uint apexIndex) {
 }
 
 int main(int argc, char* argv[]) {
-	std::cout << "SymPol v0.1." << SVN_REVISION << " and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
+	std::cout << "SymPol v0.1.1 and PermLib " << PERMLIB_VERSION << " with lrs 4.2c and cddlib 0.94f";
 #if HAVE_NAUTY && HAVE_NTL
 	std::cout << " and nauty and NTL";
 #endif
+	std::cout << std::endl;
+	
+	std::cout << "called as";
+	for (int i = 0; i < argc; ++i) {
+		std::cout << " " << argv[i];
+	}
 	std::cout << std::endl;
 	
 	LoggerPtr logger = Logger::getLogger("SymPol    ");
@@ -119,8 +125,11 @@ int main(int argc, char* argv[]) {
 		// removed defunct lattice code in rev.1207; needs to be rewritten
 		//("lattice,l", "compute face lattice")
 		("adm,a", po::value<double>(), "use adjacency decomposition method up to given estimate threshold")
+		("adm-dim", po::value<uint>(), "use adjacency decomposition method up to given dimension threshold")
+		("adm-incidence", po::value<uint>(), "use adjacency decomposition method up to given incidence number threshold")
 		("idm-adm", po::value<vector<double> >()->multitoken(), "combined IDM,ADM strategy, expects two parameters: thresholdIDM thresholdADM")
 		("idm-adm-level", po::value<vector<uint> >()->multitoken(), "combined IDM,ADM strategy, expects two parameters: levelIDM levelADM")
+		("adm-idm-level", po::value<vector<uint> >()->multitoken(), "combined ADM,IDM strategy, expects two parameters: levelADM levelIDM")
 		("cdd", "use cdd for core dual description conversion (EXPERIMENTAL)")
 		("adjacencies", "records facet adjacencies (requires ADM method at level 0)")
 
@@ -135,6 +144,7 @@ int main(int argc, char* argv[]) {
 		("conf-lrs-estimate-maxdepth", po::value<uint>(&Configuration::getInstance().lrsEstimateMaxDepth)->default_value(Configuration::getInstance().lrsEstimateMaxDepth), "maximal allowed depth of LRS estimates")
 		("conf-compute-invariants", po::value<uint>(&Configuration::getInstance().computeInvariants)->default_value(Configuration::getInstance().computeInvariants), "maximal degree of permutation group invariant polynomials to use")
 		("conf-compute-orbit-limit", po::value<uint>(&Configuration::getInstance().computeOrbitLimit)->default_value(Configuration::getInstance().computeOrbitLimit), "memory limit for computing full orbit (in megabytes)")
+		("conf-intermediate-poly-fileprefix", po::value<string>(&Configuration::getInstance().intermediatePolyFilePrefix)->default_value(""), "prefix for filenames in which intermediate polyhedra are saved (useful for debugging and analyzing instances)")
 	;
 	desc.add(confOptions);
 
@@ -214,6 +224,13 @@ int main(int argc, char* argv[]) {
 	BOOST_ASSERT( pg );
     
 	if (vm.count("automorphisms-only")) {
+		if (yal::ReportLevel::get() >= yal::DEBUG3) {
+			cout << "transversal sizes for Aut(P) " << endl;
+			BOOST_FOREACH( const TRANSVERSAL &u, pg->U ) {
+				cout << u.size() << " * ";
+			}
+			cout << endl;
+		}
 		cout << "generators for Aut(P) of order " << pg->order() << ":" << endl;
 		BOOST_FOREACH( const PERMptr &p, pg->S ) {
 			cout << " " << *p << endl;
@@ -234,6 +251,10 @@ int main(int argc, char* argv[]) {
 				YALLOG_WARNING(logger, "Option --adjacencies requires ADM. Use one of the adm options instead of direct computation.")
 		}	else if (vm.count("adm")) {
 			rs = new RecursionStrategyADM(vm["adm"].as<double>());
+		}	else if (vm.count("adm-dim")) {
+			rs = new RecursionStrategyADMDimension(vm["adm-dim"].as<uint>());
+		}	else if (vm.count("adm-incidence")) {
+			rs = new RecursionStrategyADMIncidence(vm["adm-incidence"].as<uint>());
 		}	else if (vm.count("idm-adm")) {
 			const vector<double>& thresholds = vm["idm-adm"].as<vector<double> >();
 			BOOST_ASSERT( thresholds.size() >= 2 );
@@ -242,6 +263,10 @@ int main(int argc, char* argv[]) {
 			const vector<uint>& levels = vm["idm-adm-level"].as<vector<uint> >();
 			BOOST_ASSERT( levels.size() >= 2 );
 			rs = new RecursionStrategyIDMADMLevel(levels[0], levels[1]);
+		} else if (vm.count("adm-idm-level")) {
+			const vector<uint>& levels = vm["adm-idm-level"].as<vector<uint> >();
+			BOOST_ASSERT( levels.size() >= 2 );
+			rs = new RecursionStrategyADMIDMLevel(levels[1], levels[0]);
 		}
 		
 		if (rs) {

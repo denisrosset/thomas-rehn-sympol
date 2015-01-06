@@ -4,7 +4,7 @@ CHECK_SYMBOL_EXISTS(getrusage "sys/resource.h" HAVE_GETRUSAGE_PROTO)
 
 INCLUDE (CheckIncludeFile)
 IF(NAUTY_NTL_CHECK)
-  SET(CMAKE_REQUIRED_INCLUDES ${PROJECT_SOURCE_DIR}/include)
+  SET(CMAKE_REQUIRED_INCLUDES ${PROJECT_SOURCE_DIR}/external/nauty ${PROJECT_SOURCE_DIR}/external/NTL)
   CHECK_INCLUDE_FILE("nauty.h" HAVE_NAUTY)
   CHECK_INCLUDE_FILE("NTL/config.h" HAVE_NTL)
 ENDIF(NAUTY_NTL_CHECK)
@@ -31,12 +31,14 @@ IF(HAVE_NAUTY)
 ENDIF(HAVE_NAUTY)
 
 IF(HAVE_NAUTY)
+    include_directories(../external/nauty)
     add_library(libnauty STATIC IMPORTED)
     set_property(TARGET libnauty PROPERTY
                  IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/external/nauty/libnauty.a)
 ENDIF(HAVE_NAUTY)
 
 IF(HAVE_NTL)
+    include_directories(../external/NTL)
     add_library(libntl STATIC IMPORTED)
     set_property(TARGET libntl PROPERTY
                  IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/external/NTL/libntl.a)

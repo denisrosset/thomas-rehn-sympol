@@ -48,6 +48,7 @@ class Matrix {
 	public:
 		Matrix(ulong dimension) : m_rows(dimension), m_cols(dimension), m_matrix(dimension*dimension), m_transposed(false) {}
 		Matrix(ulong rows, ulong cols) : m_rows(rows), m_cols(cols), m_matrix(rows*cols), m_transposed(false) {}
+		Matrix(const Matrix<T>& mat) : m_rows(mat.m_rows), m_cols(mat.m_cols), m_matrix(mat.m_matrix), m_transposed(mat.m_transposed) {}
 		
 		inline ulong dimension() const { return m_rows; }
 		inline ulong rows() const { return m_rows; }
